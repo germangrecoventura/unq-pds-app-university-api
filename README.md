@@ -1,1 +1,1 @@
-# -unq-pds-app-university-api
+# unq-pds-app-university-api
