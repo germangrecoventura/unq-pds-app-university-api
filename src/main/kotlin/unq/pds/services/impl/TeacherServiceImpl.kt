@@ -47,6 +47,7 @@ open class TeacherServiceImpl : TeacherService {
         if (teacherFound != null) {
             throw Throwable("The email is already registered")
         }
+
         val teacher = Teacher(
             teacherCreateRequestDTO.firstName,
             teacherCreateRequestDTO.lastName,
@@ -55,15 +56,44 @@ open class TeacherServiceImpl : TeacherService {
         return teacherDAO.save(teacher)
     }
 
-    override fun update(teacherUpdate: Teacher): Teacher {
-        if (teacherUpdate.getEmail().isNullOrBlank()) {
+    override fun update(teacher: Teacher): Teacher {
+        val teacherUpdate = teacherDAO.findAllById(teacher.getId()) ?: throw Throwable("Not found the teacher")
+        if (teacher.getFirstName().isNullOrBlank()) {
+            throw Throwable("The firstname cannot be empty")
+        }
+        if (Validator.containsSpecialCharacter(teacher.getFirstName())) {
+            throw Throwable("First Name can not contain special characters")
+        }
+        if (Validator.containsNumber(teacher.getFirstName())) {
+            throw Throwable("First Name can not contain numbers")
+        }
+        if (teacher.getLastName().isNullOrBlank()) {
+            throw Throwable("The lastname cannot be empty")
+        }
+        if (Validator.containsSpecialCharacter(teacher.getLastName())) {
+            throw Throwable("Last Name can not contain special characters")
+        }
+        if (Validator.containsNumber(teacher.getLastName())) {
+            throw Throwable("Last Name can not contain numbers")
+        }
+        if (teacher.getEmail().isNullOrBlank()) {
             throw Throwable("The email cannot be empty")
         }
-        if (!Validator.isValidEMail(teacherUpdate.getEmail())) {
+        if (!Validator.isValidEMail(teacher.getEmail())) {
             throw Throwable("Mail is not valid")
         }
-        teacherDAO.saveAndFlush(teacherUpdate)
-        return teacherUpdate
+        val teacherFound =
+            teacherDAO.findAll().filter { t -> t.getId() != teacher.getId() }.
+            find { teacherSearch: Teacher -> teacherSearch.getEmail() == teacher.getEmail() }
+
+        if (teacherFound != null) {
+            throw Throwable("The email is already registered")
+        }
+        teacherUpdate?.get(0)?.setFirstName(teacher.getFirstName())
+        teacherUpdate?.get(0)?.setLastName(teacher.getLastName())
+        teacherUpdate?.get(0)?.setEmail(teacher.getEmail())
+        teacherDAO.saveAndFlush(teacher)
+        return teacher!!
     }
 
     override fun delete(teacher: Teacher) {
@@ -74,7 +104,9 @@ open class TeacherServiceImpl : TeacherService {
         return teacherDAO.count().toInt()
     }
 
+
     override fun clearTeachers() {
         teacherDAO.deleteAll()
     }
+
 }

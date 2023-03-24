@@ -130,7 +130,6 @@ class TeacherServiceTest {
     @Test
     fun `should change the firstname of the teacher`() {
         var teacher = teacherService.save(TeacherCreateRequestDTO("German", "Greco Ventura", "prueba@gmail.com"))
-        var n = teacher.getFirstName()
         teacher.setFirstName("Juan")
         var teacherRecovery = teacherService.update(teacher)
         Assertions.assertTrue(teacherRecovery.getFirstName() == teacher.getFirstName())
@@ -165,6 +164,7 @@ class TeacherServiceTest {
         teacherService.delete(teacher)
         Assertions.assertTrue(teacherService.count() == 0)
     }
+
 
     @AfterEach
     fun tearDown() {
