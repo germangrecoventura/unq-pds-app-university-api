@@ -92,8 +92,8 @@ open class TeacherServiceImpl : TeacherService {
         teacherUpdate?.get(0)?.setFirstName(teacher.getFirstName())
         teacherUpdate?.get(0)?.setLastName(teacher.getLastName())
         teacherUpdate?.get(0)?.setEmail(teacher.getEmail())
-        teacherDAO.saveAndFlush(teacher)
-        return teacher!!
+        teacherDAO.saveAndFlush(teacherUpdate?.get(0))
+        return teacherUpdate?.get(0)!!
     }
 
     override fun delete(teacher: Teacher) {
