@@ -18,8 +18,7 @@ class TeacherServiceTest {
     @Test
     fun `should add a teacher`() {
         var teacher = teacherService.save(Teacher("German", "Greco Ventura", "prueba@gmail.com"))
-        var email = teacher.getEmail()
-        Assertions.assertTrue(email == "prueba@gmail.com")
+        Assertions.assertTrue(teacher.getId() != null)
     }
 
     @Test
