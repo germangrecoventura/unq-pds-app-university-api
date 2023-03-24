@@ -1,9 +1,9 @@
 package unq.pds.api.dtos
 
 class TeacherCreateRequestDTO(
-    val firstName: String,
-    val lastName: String,
-    val email: String,
+    val firstName: String?,
+    val lastName: String?,
+    val email: String?,
 ) {
     companion object {
         fun fromModel(

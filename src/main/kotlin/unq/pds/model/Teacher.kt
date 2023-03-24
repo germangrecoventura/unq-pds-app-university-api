@@ -7,7 +7,7 @@ import javax.persistence.*
 class Teacher(
     @Column(nullable = false) private var firstName: String?,
     @Column(nullable = false) private var lastName: String?,
-    @Column(nullable = false) private var email: String?
+    @Column(nullable = false, unique = true) private var email: String?
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
