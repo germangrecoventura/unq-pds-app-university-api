@@ -161,7 +161,7 @@ class TeacherServiceTest {
     @Test
     fun `should delete the teacher`() {
         var teacher = teacherService.save(TeacherCreateRequestDTO("German", "Greco Ventura", "prueba@gmail.com"))
-        teacherService.delete(teacher)
+        teacher.getId()?.let { teacherService.deleteById(it) }
         Assertions.assertTrue(teacherService.count() == 0)
     }
 

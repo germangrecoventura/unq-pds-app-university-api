@@ -6,4 +6,5 @@ import unq.pds.model.Teacher
 
 interface TeacherDAO : JpaRepository<Teacher, Long> {
     fun findAllById(id: Long?): MutableList<Teacher>?
+    override fun deleteById(id: Long?)
 }
