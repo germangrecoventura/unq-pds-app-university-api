@@ -27,6 +27,13 @@ open class TeacherServiceImpl : TeacherService {
         return teacherDAO.save(teacher)
     }
 
+    override fun delete(teacher: Teacher) {
+        teacherDAO.delete(teacher)
+    }
+
+    override fun count(): Int {
+        return teacherDAO.count().toInt()
+    }
     override fun clearTeachers() {
         teacherDAO.deleteAll()
     }

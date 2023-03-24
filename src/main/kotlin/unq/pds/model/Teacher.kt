@@ -29,5 +29,16 @@ class Teacher(
         return email;
     }
 
-}
+    fun setFirstName(first_name: String?) {
+        firstName = first_name
+    }
 
+    fun setLastName(last_name: String?) {
+        lastName = last_name
+    }
+
+    fun setEmail(email_address: String?) {
+        email = email_address
+    }
+
+}

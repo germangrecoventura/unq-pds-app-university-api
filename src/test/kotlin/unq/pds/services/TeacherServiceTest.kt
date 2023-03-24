@@ -51,6 +51,37 @@ class TeacherServiceTest {
         assertThrows<Throwable> { teacherService.save(Teacher("German", "Greco Ventura", "")) }
     }
 
+    @Test
+    fun `should change the firstname of the teacher`() {
+        var teacher = teacherService.save(Teacher("German", "Greco Ventura", "prueba@gmail.com"))
+        teacher.setFirstName("Juan")
+        var teacherRecovery = teacherService.save(teacher)
+        Assertions.assertTrue(teacherRecovery.getFirstName() == teacher.getFirstName())
+    }
+
+    @Test
+    fun `should change the lastname of the teacher`() {
+        var teacher = teacherService.save(Teacher("German", "Greco Ventura", "prueba@gmail.com"))
+        teacher.setLastName("Perez")
+        var teacherRecovery = teacherService.save(teacher)
+        Assertions.assertTrue(teacherRecovery.getLastName() == teacher.getLastName())
+    }
+
+    @Test
+    fun `should change the email of the teacher`() {
+        var teacher = teacherService.save(Teacher("German", "Greco Ventura", "prueba@gmail.com"))
+        teacher.setEmail("juanPerez@gmail.com")
+        var teacherRecovery = teacherService.save(teacher)
+        Assertions.assertTrue(teacherRecovery.getEmail() == teacher.getEmail())
+    }
+
+    @Test
+    fun `should delete the teacher`() {
+        var teacher = teacherService.save(Teacher("German", "Greco Ventura", "prueba@gmail.com"))
+        teacherService.delete(teacher)
+        Assertions.assertTrue(teacherService.count() == 0)
+    }
+
     @AfterEach
     fun tearDown() {
         teacherService.clearTeachers()
