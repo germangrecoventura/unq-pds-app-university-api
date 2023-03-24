@@ -3,28 +3,10 @@ package unq.pds.services.impl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import unq.pds.api.controllers.Validator
 import unq.pds.model.Teacher
 import unq.pds.persistence.TeacherDAO
 import unq.pds.services.TeacherService
-import java.util.regex.Matcher
-import java.util.regex.Pattern
-
-class ValidatorMail {
-    companion object {
-        fun validator(email: String?): Matcher {
-            var pattern = Pattern.compile(
-                "[a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256}" +
-                        "\\@" +
-                        "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
-                        "(" +
-                        "\\." +
-                        "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
-                        ")+"
-            )
-            return pattern.matcher(email)
-        }
-    }
-}
 
 @Service
 @Transactional
@@ -37,14 +19,26 @@ open class TeacherServiceImpl : TeacherService {
         if (teacher.getFirstName().isNullOrBlank()) {
             throw Throwable("The firstname cannot be empty")
         }
+        if (Validator.containsSpecialCharacter(teacher.getFirstName())) {
+            throw Throwable("First Name can not contain special characters")
+        }
+        if (Validator.containsNumber(teacher.getFirstName())) {
+            throw Throwable("First Name can not contain numbers")
+        }
         if (teacher.getLastName().isNullOrBlank()) {
             throw Throwable("The lastname cannot be empty")
+        }
+        if (Validator.containsSpecialCharacter(teacher.getLastName())) {
+            throw Throwable("Last Name can not contain special characters")
+        }
+        if (Validator.containsNumber(teacher.getLastName())) {
+            throw Throwable("Last Name can not contain numbers")
         }
         if (teacher.getEmail().isNullOrBlank()) {
             throw Throwable("The email cannot be empty")
         }
-        if (!ValidatorMail.validator(teacher.getEmail()).matches()) {
-            throw Throwable("The email given is not an email")
+        if (!Validator.isValidEMail(teacher.getEmail())) {
+            throw Throwable("Mail is not valid")
         }
         return teacherDAO.save(teacher)
     }

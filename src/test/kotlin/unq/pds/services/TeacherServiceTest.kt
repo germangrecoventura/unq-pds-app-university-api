@@ -27,23 +27,43 @@ class TeacherServiceTest {
     }
 
     @Test
-    fun `should throw an exception if no lastname is null`() {
-        assertThrows<Throwable> { teacherService.save(Teacher("German", null, "prueba@gmail.com")) }
-    }
-
-    @Test
-    fun `should throw an exception if no email is null`() {
-        assertThrows<Throwable> { teacherService.save(Teacher("German", "Greco Ventura", null)) }
-    }
-
-    @Test
     fun `should throw an exception if no firstname is empty`() {
         assertThrows<Throwable> { teacherService.save(Teacher("", "Greco Ventura", "prueba@gmail.com")) }
     }
 
     @Test
+    fun `should throw an exception if the first name has any special characters`() {
+        assertThrows<Throwable> { teacherService.save(Teacher("J@", "Greco Ventura", "prueba@gmail.com")) }
+    }
+
+    @Test
+    fun `should throw an exception if the first name has any number`() {
+        assertThrows<Throwable> { teacherService.save(Teacher("Jav1er", "Greco Ventura", "prueba@gmail.com")) }
+    }
+
+    @Test
+    fun `should throw an exception if no lastname is null`() {
+        assertThrows<Throwable> { teacherService.save(Teacher("German", null, "prueba@gmail.com")) }
+    }
+
+    @Test
     fun `should throw an exception if no lastname is empty`() {
         assertThrows<Throwable> { teacherService.save(Teacher("German", "", "prueba@gmail.com")) }
+    }
+
+    @Test
+    fun `should throw an exception if the lastname has any special characters`() {
+        assertThrows<Throwable> { teacherService.save(Teacher("German", "Grec@ Ventura", "prueba@gmail.com")) }
+    }
+
+    @Test
+    fun `should throw an exception if the lastname has any number`() {
+        assertThrows<Throwable> { teacherService.save(Teacher("German", "Grec0 Ventur4", "prueba@gmail.com")) }
+    }
+
+    @Test
+    fun `should throw an exception if no email is null`() {
+        assertThrows<Throwable> { teacherService.save(Teacher("German", "Greco Ventura", null)) }
     }
 
     @Test
