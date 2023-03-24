@@ -76,6 +76,13 @@ class TeacherServiceTest {
     }
 
     @Test
+    fun `should throw an exception when the email is not valid`() {
+        var teacher = teacherService.save(Teacher("German", "Greco Ventura", "prueba@gmail.com"))
+        teacher.setEmail("juanPerezgmail.com")
+        assertThrows<Throwable> { teacherService.save(teacher) }
+    }
+
+    @Test
     fun `should delete the teacher`() {
         var teacher = teacherService.save(Teacher("German", "Greco Ventura", "prueba@gmail.com"))
         teacherService.delete(teacher)
