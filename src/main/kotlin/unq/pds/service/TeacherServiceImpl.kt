@@ -3,7 +3,6 @@ package unq.pds.service
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import unq.pds.model.Student
 import unq.pds.model.Teacher
 import unq.pds.persistence.TeacherDAO
 import unq.pds.webservice.Validator
