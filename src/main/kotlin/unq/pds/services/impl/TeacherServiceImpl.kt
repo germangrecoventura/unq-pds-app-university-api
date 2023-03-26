@@ -21,25 +21,25 @@ open class TeacherServiceImpl : TeacherService {
             throw RuntimeException("The firstname cannot be empty")
         }
         if (Validator.containsSpecialCharacter(teacherCreateRequestDTO.firstName)) {
-            throw RuntimeException("First Name can not contain special characters")
+            throw RuntimeException("The firstname can not contain special characters")
         }
         if (Validator.containsNumber(teacherCreateRequestDTO.firstName)) {
-            throw RuntimeException("First Name can not contain numbers")
+            throw RuntimeException("The firstname can not contain numbers")
         }
         if (teacherCreateRequestDTO.lastName.isNullOrBlank()) {
             throw RuntimeException("The lastname cannot be empty")
         }
         if (Validator.containsSpecialCharacter(teacherCreateRequestDTO.lastName)) {
-            throw RuntimeException("Last Name can not contain special characters")
+            throw RuntimeException("The lastname can not contain special characters")
         }
         if (Validator.containsNumber(teacherCreateRequestDTO.lastName)) {
-            throw RuntimeException("Last Name can not contain numbers")
+            throw RuntimeException("The lastname can not contain numbers")
         }
         if (teacherCreateRequestDTO.email.isNullOrBlank()) {
             throw RuntimeException("The email cannot be empty")
         }
         if (!Validator.isValidEMail(teacherCreateRequestDTO.email)) {
-            throw RuntimeException("Mail is not valid")
+            throw RuntimeException("The email is not valid")
         }
         val teacherFound =
             teacherDAO.findAll().find { teacher: Teacher -> teacher.getEmail() == teacherCreateRequestDTO.email }
@@ -62,25 +62,25 @@ open class TeacherServiceImpl : TeacherService {
             throw RuntimeException("The firstname cannot be empty")
         }
         if (Validator.containsSpecialCharacter(teacher.getFirstName())) {
-            throw RuntimeException("First Name can not contain special characters")
+            throw RuntimeException("The firstname can not contain special characters")
         }
         if (Validator.containsNumber(teacher.getFirstName())) {
-            throw RuntimeException("First Name can not contain numbers")
+            throw RuntimeException("The firstname can not contain numbers")
         }
         if (teacher.getLastName().isNullOrBlank()) {
             throw RuntimeException("The lastname cannot be empty")
         }
         if (Validator.containsSpecialCharacter(teacher.getLastName())) {
-            throw RuntimeException("Last Name can not contain special characters")
+            throw RuntimeException("The lastname can not contain special characters")
         }
         if (Validator.containsNumber(teacher.getLastName())) {
-            throw RuntimeException("Last Name can not contain numbers")
+            throw RuntimeException("The lastname can not contain numbers")
         }
         if (teacher.getEmail().isNullOrBlank()) {
             throw RuntimeException("The email cannot be empty")
         }
         if (!Validator.isValidEMail(teacher.getEmail())) {
-            throw RuntimeException("Mail is not valid")
+            throw RuntimeException("The email is not valid")
         }
         val teacherFound =
             teacherDAO.findAll().filter { t -> t.getId() != teacher.getId() }
