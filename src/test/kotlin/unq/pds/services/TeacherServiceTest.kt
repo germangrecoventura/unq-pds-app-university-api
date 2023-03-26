@@ -3,12 +3,13 @@ package unq.pds.services
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import unq.pds.api.dtos.TeacherCreateRequestDTO
+import unq.pds.service.TeacherServiceImpl
+import unq.pds.webservice.dto.TeacherCreateRequestDTO
 
 @SpringBootTest
 class TeacherServiceTest {
     @Autowired
-    lateinit var teacherService: TeacherService
+    lateinit var teacherService: TeacherServiceImpl
 
     @BeforeEach
     fun setUp() {

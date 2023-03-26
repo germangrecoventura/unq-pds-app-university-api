@@ -1,22 +1,20 @@
-package unq.pds.services.impl
+package unq.pds.service
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import unq.pds.api.controllers.Validator
-import unq.pds.api.dtos.TeacherCreateRequestDTO
 import unq.pds.model.Teacher
 import unq.pds.persistence.TeacherDAO
-import unq.pds.services.TeacherService
+import unq.pds.webservice.Validator
+import unq.pds.webservice.dto.TeacherCreateRequestDTO
 
 @Service
 @Transactional
-open class TeacherServiceImpl : TeacherService {
-
+open class TeacherServiceImpl {
     @Autowired
-    private lateinit var teacherDAO: TeacherDAO
+    lateinit var teacherDAO: TeacherDAO
 
-    override fun save(teacherCreateRequestDTO: TeacherCreateRequestDTO): Teacher {
+    fun save(teacherCreateRequestDTO: TeacherCreateRequestDTO): Teacher {
         if (teacherCreateRequestDTO.firstName.isNullOrBlank()) {
             throw RuntimeException("The firstname cannot be empty")
         }
@@ -56,7 +54,7 @@ open class TeacherServiceImpl : TeacherService {
         return teacherDAO.save(teacher)
     }
 
-    override fun update(teacher: Teacher): Teacher {
+    fun update(teacher: Teacher): Teacher {
         val teacherUpdate = teacherDAO.findAllById(teacher.getId()) ?: throw RuntimeException("Not found the teacher")
         if (teacher.getFirstName().isNullOrBlank()) {
             throw RuntimeException("The firstname cannot be empty")
@@ -92,20 +90,20 @@ open class TeacherServiceImpl : TeacherService {
         teacherUpdate?.get(0)?.setFirstName(teacher.getFirstName())
         teacherUpdate?.get(0)?.setLastName(teacher.getLastName())
         teacherUpdate?.get(0)?.setEmail(teacher.getEmail())
-        teacherDAO.save(teacherUpdate?.get(0))
+        teacherDAO.save(teacherUpdate?.get(0)!!)
         return teacherUpdate?.get(0)!!
     }
 
-    override fun deleteById(id: Long) {
+    fun deleteById(id: Long) {
         teacherDAO.deleteById(id)
     }
 
-    override fun count(): Int {
+    fun count(): Int {
         return teacherDAO.count().toInt()
     }
 
 
-    override fun clearTeachers() {
+    fun clearTeachers() {
         teacherDAO.deleteAll()
     }
 

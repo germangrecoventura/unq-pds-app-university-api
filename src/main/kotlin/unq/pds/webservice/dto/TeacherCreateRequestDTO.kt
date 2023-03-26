@@ -1,4 +1,4 @@
-package unq.pds.api.dtos
+package unq.pds.webservice.dto
 
 class TeacherCreateRequestDTO(
     var firstName: String? = null,

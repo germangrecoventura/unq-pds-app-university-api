@@ -4,8 +4,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-open class AppUniversity
+class UnqPdsAppUniversityApiApplication
 
 fun main(args: Array<String>) {
-    runApplication<AppUniversity>(*args)
+	runApplication<UnqPdsAppUniversityApiApplication>(*args)
 }
