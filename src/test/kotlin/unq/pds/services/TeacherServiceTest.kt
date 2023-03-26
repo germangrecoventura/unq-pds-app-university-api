@@ -365,10 +365,18 @@ class TeacherServiceTest {
 
 
     @Test
-    fun `should delete the teacher`() {
+    fun `should the teacher if it exists`() {
         var teacher = teacherService.save(TeacherCreateRequestDTO("German", "Greco Ventura", "prueba@gmail.com"))
         teacher.getId()?.let { teacherService.deleteById(it) }
         Assertions.assertTrue(teacherService.count() == 0)
+    }
+
+    @Test
+    fun `shouldnt throw an exception when deleting a non-existent teacher`() {
+        var teachers = teacherService.count()
+        teacherService.deleteById(-1)
+
+        Assertions.assertTrue(teachers == teacherService.count())
     }
 
 
