@@ -3,6 +3,7 @@ package unq.pds.service
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import unq.pds.model.Student
 import unq.pds.model.Teacher
 import unq.pds.persistence.TeacherDAO
 import unq.pds.webservice.Validator
@@ -55,7 +56,10 @@ open class TeacherServiceImpl {
     }
 
     fun update(teacher: Teacher): Teacher {
-        val teacherUpdate = teacherDAO.findAllById(teacher.getId()) ?: throw RuntimeException("Not found the teacher")
+        var teacherUpdate = teacherDAO.findAllById(teacher.getId())
+        if (teacherUpdate.isNullOrEmpty()) {
+            throw RuntimeException("Not found the student")
+        }
         if (teacher.getFirstName().isNullOrBlank()) {
             throw RuntimeException("The firstname cannot be empty")
         }
@@ -87,11 +91,11 @@ open class TeacherServiceImpl {
         if (teacherFound != null) {
             throw RuntimeException("The email is already registered")
         }
-        teacherUpdate?.get(0)?.setFirstName(teacher.getFirstName())
-        teacherUpdate?.get(0)?.setLastName(teacher.getLastName())
-        teacherUpdate?.get(0)?.setEmail(teacher.getEmail())
-        teacherDAO.save(teacherUpdate?.get(0)!!)
-        return teacherUpdate?.get(0)!!
+        teacherUpdate[0].setFirstName(teacher.getFirstName())
+        teacherUpdate[0].setLastName(teacher.getLastName())
+        teacherUpdate[0].setEmail(teacher.getEmail())
+        teacherDAO.save(teacherUpdate[0])
+        return teacherUpdate[0]
     }
 
     fun deleteById(id: Long) {
