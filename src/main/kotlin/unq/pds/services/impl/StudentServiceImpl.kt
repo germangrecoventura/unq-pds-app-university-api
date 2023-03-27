@@ -59,8 +59,8 @@ open class StudentServiceImpl : StudentService {
     override fun update(student: Student): Student {
         var studentUpdate = studentDAO.findAllById(student.getId())
         if (studentUpdate.isNullOrEmpty()) {
-            throw RuntimeException("Not found the student")
-        }
+            throw RuntimeException("Not found the student with id ${student.getId()}")
+        }/*
         if (student.getFirstName().isNullOrBlank()) {
             throw RuntimeException("The firstname cannot be empty")
         }
@@ -84,7 +84,7 @@ open class StudentServiceImpl : StudentService {
         }
         if (!Validator.isValidEMail(student.getEmail())) {
             throw RuntimeException("The email is not valid")
-        }
+        }*/
         val studentFound =
             studentDAO.findAll().filter { s -> s.getId() != student.getId() }
                 .find { studentSearch: Student -> studentSearch.getEmail() == student.getEmail() }
@@ -95,12 +95,15 @@ open class StudentServiceImpl : StudentService {
         studentUpdate[0].setFirstName(student.getFirstName())
         studentUpdate[0].setLastName(student.getLastName())
         studentUpdate[0].setEmail(student.getEmail())
-        studentDAO.save(studentUpdate[0])
-        return studentUpdate[0]
+        return studentDAO.save(studentUpdate[0])
     }
 
     override fun deleteById(id: Long) {
-        studentDAO.deleteById(id)
+        try {
+            studentDAO.deleteById(id)
+        } catch (e: RuntimeException) {
+            throw RuntimeException("The student with id $id is not registered")
+        }
     }
 
     override fun count(): Int {

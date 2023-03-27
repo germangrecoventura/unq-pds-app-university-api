@@ -201,6 +201,22 @@ class StudentServiceTest {
         Assertions.assertTrue(studentUpdated.getFirstName() == student.getFirstName())
     }
 
+
+
+    // TODO: DE ACA PARA ABAJO ROMPEN PORQUE EN REALIDAD SON TEST DE MODELO Y NO DE SERVICES
+    // TODO: ARREGLAR MAÑANA. TAMBIEN FALTA UN TEST DE ACTUALIZAR CUANDO NO SE ENCUENTRA EL ESTUDIANTE
+
+
+
+
+
+
+
+
+
+
+
+
     @Test
     fun `should throw an exception when firstname is null`() {
         var request =
@@ -378,7 +394,7 @@ class StudentServiceTest {
             Assertions.assertThrows(RuntimeException::class.java, { studentService.deleteById(-1) })
 
         Assertions.assertEquals(
-            "No class unq.pds.model.Student entity with id -1 exists!",
+            "The student with id -1 is not registered",
             thrown.message
         )
     }

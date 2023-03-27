@@ -1,5 +1,6 @@
 package unq.pds.model
 
+import unq.pds.api.Validator
 import javax.persistence.*
 
 @Entity
@@ -15,6 +16,38 @@ class Student(
 
     @Column(nullable = true)
     private var repository: String? = null
+
+    init {
+        validateCreate()
+    }
+
+    private fun validateCreate() {
+        if (firstName.isNullOrBlank()) {
+            throw RuntimeException("The firstname cannot be empty")
+        }
+        if (Validator.containsNumber(firstName)) {
+            throw RuntimeException("The firstname can not contain numbers")
+        }
+        if (Validator.containsSpecialCharacter(firstName)) {
+            throw RuntimeException("The firstname can not contain special characters")
+        }
+        if (lastName.isNullOrBlank()) {
+            throw RuntimeException("The firstname cannot be empty")
+        }
+        if (Validator.containsNumber(lastName)) {
+            throw RuntimeException("The firstname can not contain numbers")
+        }
+        if (Validator.containsSpecialCharacter(lastName)) {
+            throw RuntimeException("The firstname can not contain special characters")
+        }
+        if (email.isNullOrBlank()) {
+            throw RuntimeException("The email cannot be empty")
+        }
+        if (!Validator.isValidEMail(email)) {
+            throw RuntimeException("The email is not valid")
+        }
+    }
+
     fun getId(): Long? {
         return id
     }
