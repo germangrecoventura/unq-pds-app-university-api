@@ -4,11 +4,11 @@ package unq.pds.services.impl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import unq.pds.api.Validator
 import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.model.Student
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.StudentService
+import java.util.*
 
 @Service
 @Transactional
@@ -17,30 +17,6 @@ open class StudentServiceImpl : StudentService {
     lateinit var studentDAO: StudentDAO
 
     override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
-        if (studentCreateRequestDTO.firstName.isNullOrBlank()) {
-            throw RuntimeException("The firstname cannot be empty")
-        }
-        if (Validator.containsSpecialCharacter(studentCreateRequestDTO.firstName)) {
-            throw RuntimeException("The firstname can not contain special characters")
-        }
-        if (Validator.containsNumber(studentCreateRequestDTO.firstName)) {
-            throw RuntimeException("The firstname can not contain numbers")
-        }
-        if (studentCreateRequestDTO.lastName.isNullOrBlank()) {
-            throw RuntimeException("The lastname cannot be empty")
-        }
-        if (Validator.containsSpecialCharacter(studentCreateRequestDTO.lastName)) {
-            throw RuntimeException("The lastname can not contain special characters")
-        }
-        if (Validator.containsNumber(studentCreateRequestDTO.lastName)) {
-            throw RuntimeException("The lastname can not contain numbers")
-        }
-        if (studentCreateRequestDTO.email.isNullOrBlank()) {
-            throw RuntimeException("The email cannot be empty")
-        }
-        if (!Validator.isValidEMail(studentCreateRequestDTO.email)) {
-            throw RuntimeException("The email is not valid")
-        }
         val studentFound =
             studentDAO.findAll().find { student: Student -> student.getEmail() == studentCreateRequestDTO.email }
 
@@ -57,34 +33,10 @@ open class StudentServiceImpl : StudentService {
     }
 
     override fun update(student: Student): Student {
-        var studentUpdate = studentDAO.findAllById(student.getId())
-        if (studentUpdate.isNullOrEmpty()) {
+        var studentRecovery = studentDAO.findById(student.getId()!!)
+        if (!studentRecovery.isPresent) {
             throw RuntimeException("Not found the student with id ${student.getId()}")
-        }/*
-        if (student.getFirstName().isNullOrBlank()) {
-            throw RuntimeException("The firstname cannot be empty")
         }
-        if (Validator.containsSpecialCharacter(student.getFirstName())) {
-            throw RuntimeException("The firstname can not contain special characters")
-        }
-        if (Validator.containsNumber(student.getFirstName())) {
-            throw RuntimeException("The firstname can not contain numbers")
-        }
-        if (student.getLastName().isNullOrBlank()) {
-            throw RuntimeException("The lastname cannot be empty")
-        }
-        if (Validator.containsSpecialCharacter(student.getLastName())) {
-            throw RuntimeException("The lastname can not contain special characters")
-        }
-        if (Validator.containsNumber(student.getLastName())) {
-            throw RuntimeException("The lastname can not contain numbers")
-        }
-        if (student.getEmail().isNullOrBlank()) {
-            throw RuntimeException("The email cannot be empty")
-        }
-        if (!Validator.isValidEMail(student.getEmail())) {
-            throw RuntimeException("The email is not valid")
-        }*/
         val studentFound =
             studentDAO.findAll().filter { s -> s.getId() != student.getId() }
                 .find { studentSearch: Student -> studentSearch.getEmail() == student.getEmail() }
@@ -92,10 +44,11 @@ open class StudentServiceImpl : StudentService {
         if (studentFound != null) {
             throw RuntimeException("The email is already registered")
         }
-        studentUpdate[0].setFirstName(student.getFirstName())
-        studentUpdate[0].setLastName(student.getLastName())
-        studentUpdate[0].setEmail(student.getEmail())
-        return studentDAO.save(studentUpdate[0])
+        val studentUpdate = studentRecovery.get()
+        studentUpdate.setFirstName(student.getFirstName())
+        studentUpdate.setLastName(student.getLastName())
+        studentUpdate.setEmail(student.getEmail())
+        return studentDAO.save(studentUpdate)
     }
 
     override fun deleteById(id: Long) {
@@ -110,10 +63,9 @@ open class StudentServiceImpl : StudentService {
         return studentDAO.count().toInt()
     }
 
-    override fun findAllById(id: Long?): MutableList<Student>? {
-        return studentDAO.findAllById(id)
+    override fun findById(id: Long): Optional<Student> {
+        return studentDAO.findById(id)
     }
-
 
     override fun clearStudents() {
         studentDAO.deleteAll()
