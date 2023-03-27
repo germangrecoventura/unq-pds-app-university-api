@@ -8,7 +8,7 @@ import javax.persistence.*
 class Student(
     @Column(nullable = false) private var firstName: String?,
     @Column(nullable = false) private var lastName: String?,
-    @Column(nullable = false) private var email: String?
+    @Column(nullable = false, unique = true) private var email: String?
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -64,7 +64,7 @@ class Student(
         return email
     }
 
-    fun setId(idNew:Long?) {
+    fun setId(idNew: Long?) {
         id = idNew
     }
 
