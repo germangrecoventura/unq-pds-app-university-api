@@ -30,6 +30,10 @@ open class MatterServiceImpl : MatterService {
         matterDAO.deleteById(matterId)
     }
 
+    override fun count(): Int {
+        return matterDAO.count().toInt()
+    }
+
     override fun clearMatters() {
         matterDAO.deleteAll()
     }
