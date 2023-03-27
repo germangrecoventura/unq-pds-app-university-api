@@ -11,9 +11,9 @@ class Matter(
     @GeneratedValue(strategy = GenerationType.AUTO)
     var id: Long? = null
 
-    init { this.validarCreacion() }
+    init { this.validateCreation() }
 
-    private fun validarCreacion() {
+    private fun validateCreation() {
         if (this.name.isBlank()) throw RuntimeException("Name cannot be empty")
     }
 }
