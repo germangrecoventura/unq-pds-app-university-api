@@ -22,28 +22,28 @@ class Student(
     }
 
     private fun validateCreate() {
-        if (firstName.isNullOrBlank()) {
-            throw RuntimeException("The firstname cannot be empty")
+        validatePerson(firstName, "firstname")
+        validatePerson(lastName, "lastname")
+        validateEmail(email)
+    }
+
+    private fun validatePerson(element: String?, field: String) {
+        if (element.isNullOrBlank()) {
+            throw RuntimeException("The $field cannot be empty")
         }
-        if (Validator.containsNumber(firstName)) {
-            throw RuntimeException("The firstname can not contain numbers")
+        if (Validator.containsNumber(element)) {
+            throw RuntimeException("The $field can not contain numbers")
         }
-        if (Validator.containsSpecialCharacter(firstName)) {
-            throw RuntimeException("The firstname can not contain special characters")
+        if (Validator.containsSpecialCharacter(element)) {
+            throw RuntimeException("The $field can not contain special characters")
         }
-        if (lastName.isNullOrBlank()) {
-            throw RuntimeException("The firstname cannot be empty")
-        }
-        if (Validator.containsNumber(lastName)) {
-            throw RuntimeException("The firstname can not contain numbers")
-        }
-        if (Validator.containsSpecialCharacter(lastName)) {
-            throw RuntimeException("The firstname can not contain special characters")
-        }
-        if (email.isNullOrBlank()) {
+    }
+
+    private fun validateEmail(email_address: String?) {
+        if (email_address.isNullOrBlank()) {
             throw RuntimeException("The email cannot be empty")
         }
-        if (!Validator.isValidEMail(email)) {
+        if (!Validator.isValidEMail(email_address)) {
             throw RuntimeException("The email is not valid")
         }
     }
@@ -64,15 +64,22 @@ class Student(
         return email
     }
 
+    fun setId(idNew:Long?) {
+        id = idNew
+    }
+
     fun setFirstName(first_name: String?) {
+        validatePerson(first_name, "firstname")
         firstName = first_name
     }
 
     fun setLastName(last_name: String?) {
+        validatePerson(last_name, "lastname")
         lastName = last_name
     }
 
     fun setEmail(email_address: String?) {
+        validateEmail(email_address)
         email = email_address
     }
 
