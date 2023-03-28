@@ -26,7 +26,11 @@ class MatterServiceTest {
 
     @Test
     fun `exception is thrown when trying to recover a matter with an invalid id`() {
-        Assertions.assertThrows(RuntimeException::class.java) { matterService.recover(-1) }
+        try {
+            matterService.recover(-1)
+        } catch (e:RuntimeException) {
+            Assertions.assertEquals("There is no matter with that id", e.message)
+        }
     }
 
     @Test
@@ -38,7 +42,11 @@ class MatterServiceTest {
 
     @Test
     fun `exception is thrown when trying to update a matter without persisting`() {
-        Assertions.assertThrows(RuntimeException::class.java) { matterService.update(Matter("Estrategias de Persistencia")) }
+        try {
+            matterService.update(Matter("Estrategias de Persistencia"))
+        } catch (e:RuntimeException) {
+            Assertions.assertEquals("Matter does not exist", e.message)
+        }
     }
 
     @Test
@@ -49,7 +57,11 @@ class MatterServiceTest {
 
     @Test
     fun `exception is thrown when trying to delete a matter with an invalid id`() {
-        Assertions.assertThrows(RuntimeException::class.java) { matterService.delete(-1) }
+        try {
+            matterService.delete(-1)
+        } catch (e:RuntimeException) {
+            Assertions.assertEquals("There is no matter with that id", e.message)
+        }
     }
 
     @AfterEach

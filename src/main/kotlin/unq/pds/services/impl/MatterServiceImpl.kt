@@ -18,7 +18,7 @@ open class MatterServiceImpl : MatterService {
     }
 
     override fun update(matter: Matter): Matter {
-        if (matterDAO.existsById(matter.id!!)) return matterDAO.save(matter)
+        if (matter.id != null && matterDAO.existsById(matter.id!!)) return matterDAO.save(matter)
          else throw RuntimeException("Matter does not exist")
     }
 
@@ -27,7 +27,8 @@ open class MatterServiceImpl : MatterService {
     }
 
     override fun delete(matterId: Long) {
-        matterDAO.deleteById(matterId)
+        if (matterDAO.existsById(matterId)) matterDAO.deleteById(matterId)
+         else throw RuntimeException("There is no matter with that id")
     }
 
     override fun count(): Int {
