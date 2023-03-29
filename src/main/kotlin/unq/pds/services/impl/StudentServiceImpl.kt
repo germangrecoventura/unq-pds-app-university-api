@@ -67,6 +67,10 @@ open class StudentServiceImpl : StudentService {
         return studentDAO.findById(id)
     }
 
+    override fun findByEmail(email: String): Optional<Student> {
+        return studentDAO.findByEmail(email)
+    }
+
     override fun clearStudents() {
         studentDAO.deleteAll()
     }
