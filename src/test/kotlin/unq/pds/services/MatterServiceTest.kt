@@ -3,29 +3,28 @@ package unq.pds.services
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import unq.pds.model.Matter
+import unq.pds.model.builder.MatterBuilder.Companion.aMatter
 
 @SpringBootTest
 class MatterServiceTest {
 
     @Autowired lateinit var matterService: MatterService
 
-    lateinit var matter: Matter
-
-    @BeforeEach
-    fun setUp() {
-        matter = Matter("Practica de Desarrollo de Software")
-        matterService.save(matter)
+    @Test
+    fun `should be create a matter when it has valid credentials`() {
+        val matter = matterService.save(aMatter().build())
+        Assertions.assertNotNull(matter.id)
     }
 
     @Test
-    fun `recover a matter`() {
+    fun `should recover a matter when it exists`() {
+        val matter = matterService.save(aMatter().build())
         val recoverMatter = matterService.recover(matter.id!!)
         Assertions.assertEquals(matter.name, recoverMatter.name)
     }
 
     @Test
-    fun `exception is thrown when trying to recover a matter with an invalid id`() {
+    fun `should throw an exception when trying to recover a matter with an invalid id`() {
         try {
             matterService.recover(-1)
         } catch (e:RuntimeException) {
@@ -34,29 +33,31 @@ class MatterServiceTest {
     }
 
     @Test
-    fun `update a matter`() {
+    fun `should update a matter when it exists`() {
+        val matter = matterService.save(aMatter().build())
         matter.name = "PDeS"
         val updatedMatter = matterService.update(matter)
         Assertions.assertEquals(matter.name, updatedMatter.name)
     }
 
     @Test
-    fun `exception is thrown when trying to update a matter without persisting`() {
+    fun `should throw an exception when trying to update a matter without persisting`() {
         try {
-            matterService.update(Matter("Estrategias de Persistencia"))
+            matterService.update(aMatter().build())
         } catch (e:RuntimeException) {
-            Assertions.assertEquals("Matter does not exist", e.message)
+            Assertions.assertEquals("Matter does not exists", e.message)
         }
     }
 
     @Test
-    fun `delete a matter`() {
+    fun `should delete a matter when it exists`() {
+        val matter = matterService.save(aMatter().build())
         matterService.delete(matter.id!!)
         Assertions.assertEquals(0, matterService.count())
     }
 
     @Test
-    fun `exception is thrown when trying to delete a matter with an invalid id`() {
+    fun `should throw an exception when trying to delete a matter with an invalid id`() {
         try {
             matterService.delete(-1)
         } catch (e:RuntimeException) {

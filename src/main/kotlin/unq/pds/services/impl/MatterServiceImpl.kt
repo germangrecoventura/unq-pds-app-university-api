@@ -19,7 +19,7 @@ open class MatterServiceImpl : MatterService {
 
     override fun update(matter: Matter): Matter {
         if (matter.id != null && matterDAO.existsById(matter.id!!)) return matterDAO.save(matter)
-         else throw RuntimeException("Matter does not exist")
+         else throw RuntimeException("Matter does not exists")
     }
 
     override fun recover(matterId: Long): Matter {
