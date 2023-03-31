@@ -25,9 +25,9 @@ open class StudentServiceImpl : StudentService {
         }
 
         val student = Student(
-            studentCreateRequestDTO.firstName,
-            studentCreateRequestDTO.lastName,
-            studentCreateRequestDTO.email
+            studentCreateRequestDTO.firstName!!,
+            studentCreateRequestDTO.lastName!!,
+            studentCreateRequestDTO.email!!
         )
         return studentDAO.save(student)
     }

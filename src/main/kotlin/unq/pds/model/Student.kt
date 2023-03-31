@@ -6,9 +6,9 @@ import javax.persistence.*
 @Entity
 @Table(name = "student")
 class Student(
-    @Column(nullable = false) private var firstName: String?,
-    @Column(nullable = false) private var lastName: String?,
-    @Column(nullable = false, unique = true) private var email: String?
+    @Column(nullable = false) private var firstName: String,
+    @Column(nullable = false) private var lastName: String,
+    @Column(nullable = false, unique = true) private var email: String
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -68,19 +68,19 @@ class Student(
         id = idNew
     }
 
-    fun setFirstName(first_name: String?) {
-        validatePerson(first_name, "firstname")
-        firstName = first_name
+    fun setFirstName(firstName: String?) {
+        validatePerson(firstName, "firstname")
+        this.firstName = firstName!!
     }
 
-    fun setLastName(last_name: String?) {
-        validatePerson(last_name, "lastname")
-        lastName = last_name
+    fun setLastName(lastName: String?) {
+        validatePerson(lastName, "lastname")
+        this.lastName = lastName!!
     }
 
-    fun setEmail(email_address: String?) {
-        validateEmail(email_address)
-        email = email_address
+    fun setEmail(emailAddress: String?) {
+        validateEmail(emailAddress)
+        this.email = emailAddress!!
     }
 
     fun getRepositories(): String? {

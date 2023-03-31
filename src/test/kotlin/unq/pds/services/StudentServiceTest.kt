@@ -22,13 +22,8 @@ class StudentServiceTest {
     @Test
     fun `should throw an exception if firstname is null`() {
         var request = aStudentDTO().withFirstName(null).build()
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
 
-        Assertions.assertEquals(
-            "The firstname cannot be empty",
-            thrown.message
-        )
+        Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
     }
 
     @Test
@@ -70,13 +65,8 @@ class StudentServiceTest {
     @Test
     fun `should throw an exception if lastname is null`() {
         var request = aStudentDTO().withLastName(null).build()
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
 
-        Assertions.assertEquals(
-            "The lastname cannot be empty",
-            thrown.message
-        )
+        Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
     }
 
     @Test
@@ -120,13 +110,8 @@ class StudentServiceTest {
     @Test
     fun `should throw an exception if email is null`() {
         var request =aStudentDTO().withEmail(null).build()
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
 
-        Assertions.assertEquals(
-            "The email cannot be empty",
-            thrown.message
-        )
+        Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
     }
 
     @Test

@@ -9,7 +9,7 @@ class BuilderStudent {
     private var emailAddress: String? = "german@gmail.com"
 
     fun build(): Student {
-        return Student(firstName, lastName, emailAddress)
+        return Student(firstName!!, lastName!!, emailAddress!!)
     }
 
     fun withFirstName(name: String?): BuilderStudent {

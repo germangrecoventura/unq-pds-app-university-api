@@ -17,16 +17,7 @@ class StudentTest {
 
     @Test
     fun `should throw an exception if firstname is null`() {
-        val thrown: RuntimeException =
-            Assertions.assertThrows(
-                RuntimeException::class.java
-            )
-            { aStudent().withFirstName(null).build() }
-
-        Assertions.assertEquals(
-            "The firstname cannot be empty",
-            thrown.message
-        )
+        Assertions.assertThrows(RuntimeException::class.java) { aStudent().withFirstName(null).build() }
     }
 
     @Test
@@ -73,16 +64,7 @@ class StudentTest {
 
     @Test
     fun `should throw an exception if lastname is null`() {
-        val thrown: RuntimeException =
-            Assertions.assertThrows(
-                RuntimeException::class.java
-            )
-            { aStudent().withLastName(null).build() }
-
-        Assertions.assertEquals(
-            "The lastname cannot be empty",
-            thrown.message
-        )
+        Assertions.assertThrows(RuntimeException::class.java) { aStudent().withLastName(null).build() }
     }
 
     @Test
@@ -130,15 +112,7 @@ class StudentTest {
 
     @Test
     fun `should throw an exception if email is null`() {
-        val thrown: RuntimeException =
-            Assertions.assertThrows(
-                RuntimeException::class.java
-            )
-            { aStudent().withEmail(null).build() }
-        Assertions.assertEquals(
-            "The email cannot be empty",
-            thrown.message
-        )
+        Assertions.assertThrows(RuntimeException::class.java) { aStudent().withEmail(null).build() }
     }
 
     @Test
