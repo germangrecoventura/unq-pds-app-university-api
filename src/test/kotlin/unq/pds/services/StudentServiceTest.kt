@@ -191,10 +191,10 @@ class StudentServiceTest {
         var request = aStudentDTO().withEmail("prueba@gmail.com").build()
         studentService.save(request)
         var request2 = aStudentDTO().withEmail("jose@gmail.com").build()
-        var teacher2 = studentService.save(request2)
-        teacher2.setEmail("prueba@gmail.com")
+        var student = studentService.save(request2)
+        student.setEmail("prueba@gmail.com")
         val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.update(teacher2) }
+            Assertions.assertThrows(RuntimeException::class.java) { studentService.update(student) }
 
 
         Assertions.assertEquals(
