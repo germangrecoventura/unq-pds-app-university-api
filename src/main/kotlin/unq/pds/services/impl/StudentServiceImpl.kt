@@ -16,10 +16,7 @@ open class StudentServiceImpl : StudentService {
     lateinit var studentDAO: StudentDAO
 
     override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
-        val studentFound =
-            studentDAO.findAll().find { student: Student -> student.getEmail() == studentCreateRequestDTO.email }
-
-        if (studentFound != null) {
+        if (studentDAO.findByEmail(studentCreateRequestDTO.email!!).isPresent) {
             throw RuntimeException("The email is already registered")
         }
 
