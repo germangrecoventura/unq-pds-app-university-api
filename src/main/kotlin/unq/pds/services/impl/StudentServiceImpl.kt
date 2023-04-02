@@ -64,8 +64,7 @@ open class StudentServiceImpl : StudentService {
     }
 
     override fun findByEmail(email: String): Student {
-        return studentDAO.findByEmail(email)
-            .orElseThrow { RuntimeException("Not found the student with email $email") }
+        return studentDAO.findByEmail(email).orElseThrow { RuntimeException("Not found the student with email $email") }
     }
 
     override fun clearStudents() {

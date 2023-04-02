@@ -187,7 +187,7 @@ class StudentServiceTest {
     }
 
     @Test
-    fun `should not update the teacher if the email already exists`() {
+    fun `should not update the student if the email already exists`() {
         var request = aStudentDTO().withEmail("prueba@gmail.com").build()
         studentService.save(request)
         var request2 = aStudentDTO().withEmail("jose@gmail.com").build()
@@ -239,7 +239,7 @@ class StudentServiceTest {
     }
 
     @Test
-    fun `should return a teacher when searched for by id`() {
+    fun `should return a student when searched for by id`() {
         var student = studentService.save(aStudentDTO().build())
         var studentRecovery = studentService.findById(student.getId()!!)
 
@@ -247,7 +247,7 @@ class StudentServiceTest {
     }
 
     @Test
-    fun `should throw an exception if the teacher does not exist`() {
+    fun `should throw an exception if the student does not exist`() {
         val thrown: RuntimeException =
             Assertions.assertThrows(RuntimeException::class.java) { studentService.findById(-1) }
 
@@ -258,7 +258,7 @@ class StudentServiceTest {
     }
 
     @Test
-    fun `should return a teacher when searched for by email`() {
+    fun `should return a student when searched for by email`() {
         var student = studentService.save(aStudentDTO().build())
         var studentRecovery = studentService.findByEmail(student.getEmail()!!)
 
