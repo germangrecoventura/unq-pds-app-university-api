@@ -2,8 +2,6 @@ package unq.pds.services
 
 import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.model.Student
-import unq.pds.model.Teacher
-import java.util.*
 
 interface StudentService {
     fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student
