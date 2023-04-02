@@ -8,7 +8,6 @@ import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.model.Student
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.StudentService
-import java.util.*
 
 @Service
 @Transactional
@@ -63,12 +62,13 @@ open class StudentServiceImpl : StudentService {
         return studentDAO.count().toInt()
     }
 
-    override fun findById(id: Long): Optional<Student> {
-        return studentDAO.findById(id)
+    override fun findById(id: Long): Student {
+        return studentDAO.findById(id).orElseThrow { RuntimeException("There is no student with that id $id") }
     }
 
-    override fun findByEmail(email: String): Optional<Student> {
+    override fun findByEmail(email: String): Student {
         return studentDAO.findByEmail(email)
+            .orElseThrow { RuntimeException("There is no student with that email $email") }
     }
 
     override fun clearStudents() {

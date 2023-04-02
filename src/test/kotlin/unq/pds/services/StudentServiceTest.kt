@@ -407,12 +407,18 @@ class StudentServiceTest {
         var student = studentService.save(aStudentDTO().build())
         var studentRecovery = studentService.findById(student.getId()!!)
 
-        Assertions.assertTrue(studentRecovery.isPresent)
+        Assertions.assertTrue(studentRecovery.getId() == student.getId())
     }
 
     @Test
     fun `should throw an exception if the teacher does not exist`() {
-        assertDoesNotThrow { studentService.findById(-1) }
+        val thrown: RuntimeException =
+            Assertions.assertThrows(RuntimeException::class.java) { studentService.findById(-1) }
+
+        Assertions.assertEquals(
+            "There is no student with that id -1",
+            thrown.message
+        )
     }
 
     @Test
@@ -420,12 +426,18 @@ class StudentServiceTest {
         var student = studentService.save(aStudentDTO().build())
         var studentRecovery = studentService.findByEmail(student.getEmail()!!)
 
-        Assertions.assertTrue(studentRecovery.isPresent)
+        Assertions.assertTrue(studentRecovery.getId() == student.getId())
     }
 
     @Test
     fun `should throw an exception if the email does not exist`() {
-        assertDoesNotThrow { studentService.findByEmail("german@gmial.com") }
+        val thrown: RuntimeException =
+            Assertions.assertThrows(RuntimeException::class.java) { studentService.findByEmail("german@gmial.com") }
+
+        Assertions.assertEquals(
+            "There is no student with that email german@gmial.com",
+            thrown.message
+        )
     }
 
     @AfterEach

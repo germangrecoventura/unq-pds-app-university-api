@@ -10,7 +10,7 @@ interface StudentService {
     fun update(student: Student): Student
     fun deleteById(id: Long)
     fun count(): Int
-    fun findById(id: Long): Optional<Student>
-    fun findByEmail(email: String): Optional<Student>
+    fun findById(id: Long): Student
+    fun findByEmail(email: String): Student
     fun clearStudents()
 }
