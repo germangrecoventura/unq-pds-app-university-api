@@ -203,15 +203,6 @@ class StudentServiceTest {
         )
     }
 
-
-    @Test
-    fun `should delete a student if it exists`() {
-        var student = studentService.save(StudentCreateRequestDTO("German", "Greco Ventura", "prueba@gmail.com"))
-        student.getId()?.let { studentService.deleteById(it) }
-        Assertions.assertTrue(studentService.count() == 0)
-    }
-
-
     @Test
     fun `should throw an exception when update a non-existent student`() {
         var student = studentService.save(aStudentDTO().build())
@@ -226,6 +217,15 @@ class StudentServiceTest {
             thrown.message
         )
     }
+
+
+    @Test
+    fun `should delete a student if it exists`() {
+        var student = studentService.save(StudentCreateRequestDTO("German", "Greco Ventura", "prueba@gmail.com"))
+        student.getId()?.let { studentService.deleteById(it) }
+        Assertions.assertTrue(studentService.count() == 0)
+    }
+
 
     @Test
     fun `should throw an exception when deleting a non-existent student`() {
