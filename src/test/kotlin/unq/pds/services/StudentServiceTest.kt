@@ -416,7 +416,7 @@ class StudentServiceTest {
             Assertions.assertThrows(RuntimeException::class.java) { studentService.findById(-1) }
 
         Assertions.assertEquals(
-            "There is no student with that id -1",
+            "Not found the student with id -1",
             thrown.message
         )
     }
@@ -435,7 +435,7 @@ class StudentServiceTest {
             Assertions.assertThrows(RuntimeException::class.java) { studentService.findByEmail("german@gmial.com") }
 
         Assertions.assertEquals(
-            "There is no student with that email german@gmial.com",
+            "Not found the student with email german@gmial.com",
             thrown.message
         )
     }

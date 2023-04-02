@@ -32,10 +32,7 @@ open class StudentServiceImpl : StudentService {
     }
 
     override fun update(student: Student): Student {
-        var studentRecovery = studentDAO.findById(student.getId()!!)
-        if (!studentRecovery.isPresent) {
-            throw RuntimeException("Not found the student with id ${student.getId()}")
-        }
+        var studentRecovery = findById(student.getId()!!)
         val studentFound =
             studentDAO.findAll().filter { s -> s.getId() != student.getId() }
                 .find { studentSearch: Student -> studentSearch.getEmail() == student.getEmail() }
@@ -43,11 +40,11 @@ open class StudentServiceImpl : StudentService {
         if (studentFound != null) {
             throw RuntimeException("The email is already registered")
         }
-        val studentUpdate = studentRecovery.get()
-        studentUpdate.setFirstName(student.getFirstName())
-        studentUpdate.setLastName(student.getLastName())
-        studentUpdate.setEmail(student.getEmail())
-        return studentDAO.save(studentUpdate)
+
+        studentRecovery.setFirstName(student.getFirstName())
+        studentRecovery.setLastName(student.getLastName())
+        studentRecovery.setEmail(student.getEmail())
+        return studentDAO.save(studentRecovery)
     }
 
     override fun deleteById(id: Long) {
@@ -63,12 +60,12 @@ open class StudentServiceImpl : StudentService {
     }
 
     override fun findById(id: Long): Student {
-        return studentDAO.findById(id).orElseThrow { RuntimeException("There is no student with that id $id") }
+        return studentDAO.findById(id).orElseThrow { RuntimeException("Not found the student with id $id") }
     }
 
     override fun findByEmail(email: String): Student {
         return studentDAO.findByEmail(email)
-            .orElseThrow { RuntimeException("There is no student with that email $email") }
+            .orElseThrow { RuntimeException("Not found the student with email $email") }
     }
 
     override fun clearStudents() {
