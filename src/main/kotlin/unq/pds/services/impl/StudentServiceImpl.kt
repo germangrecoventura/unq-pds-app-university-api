@@ -30,11 +30,8 @@ open class StudentServiceImpl : StudentService {
 
     override fun update(student: Student): Student {
         var studentRecovery = findById(student.getId()!!)
-        val studentFound =
-            studentDAO.findAll().filter { s -> s.getId() != student.getId() }
-                .find { studentSearch: Student -> studentSearch.getEmail() == student.getEmail() }
-
-        if (studentFound != null) {
+        var studentWithEmail = studentDAO.findByEmail(student.getEmail()!!)
+        if (studentWithEmail.isPresent && studentRecovery.getId() != studentWithEmail.get().getId()) {
             throw RuntimeException("The email is already registered")
         }
 
