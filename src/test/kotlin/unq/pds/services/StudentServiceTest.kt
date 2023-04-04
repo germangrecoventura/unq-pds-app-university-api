@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.impl.StudentServiceImpl
 
@@ -221,7 +220,7 @@ class StudentServiceTest {
 
     @Test
     fun `should delete a student if it exists`() {
-        var student = studentService.save(StudentCreateRequestDTO("German", "Greco Ventura", "prueba@gmail.com"))
+        var student = studentService.save(aStudentDTO().build())
         student.getId()?.let { studentService.deleteById(it) }
         Assertions.assertTrue(studentService.count() == 0)
     }
