@@ -7,6 +7,7 @@ interface MatterService {
     fun update(matter: Matter): Matter
     fun recover(matterId: Long): Matter
     fun delete(matterId: Long)
+    fun findByName(name: String): Matter
     fun count(): Int
     fun clearMatters()
 }

@@ -17,6 +17,16 @@ class MatterServiceTest {
     }
 
     @Test
+    fun `should throw an exception when trying to save a matter with a name registered`() {
+        matterService.save(aMatter().build())
+        try {
+            matterService.save(aMatter().build())
+        } catch (e:RuntimeException) {
+            Assertions.assertEquals("The matter name is already registered", e.message)
+        }
+    }
+
+    @Test
     fun `should recover a matter when it exists`() {
         val matter = matterService.save(aMatter().build())
         val recoverMatter = matterService.recover(matter.id!!)
@@ -50,6 +60,18 @@ class MatterServiceTest {
     }
 
     @Test
+    fun `should throw an exception when trying to update a matter with a name registered`() {
+        matterService.save(aMatter().build())
+        val matterToUpdate = matterService.save(aMatter().withName("PDeS").build())
+        matterToUpdate.name = "Practica de Desarrollo de Software"
+        try {
+            matterService.update(matterToUpdate)
+        } catch (e:RuntimeException) {
+            Assertions.assertEquals("The matter name is already registered", e.message)
+        }
+    }
+
+    @Test
     fun `should delete a matter when it exists`() {
         val matter = matterService.save(aMatter().build())
         matterService.delete(matter.id!!)
@@ -62,6 +84,23 @@ class MatterServiceTest {
             matterService.delete(-1)
         } catch (e:RuntimeException) {
             Assertions.assertEquals("There is no matter with that id", e.message)
+        }
+    }
+
+    @Test
+    fun `should return a matter when searched with a name registered`() {
+        val matter = matterService.save(aMatter().build())
+        val matterWithName = matterService.findByName(matter.name)
+        Assertions.assertEquals(matter.id, matterWithName.id)
+        Assertions.assertEquals(matter.name, matterWithName.name)
+    }
+
+    @Test
+    fun `should throw an exception when trying to return a matter with a name unregistered`() {
+        try {
+            matterService.findByName("PDeS")
+        } catch (e:RuntimeException) {
+            Assertions.assertEquals("There is no matter with that name", e.message)
         }
     }
 
