@@ -11,7 +11,8 @@ import unq.pds.services.MatterService
 @Transactional
 open class MatterServiceImpl : MatterService {
 
-    @Autowired private lateinit var matterDAO: MatterDAO
+    @Autowired
+    private lateinit var matterDAO: MatterDAO
 
     override fun save(matter: Matter): Matter {
         if (matterDAO.findByName(matter.name).isPresent) throw RuntimeException("The matter name is already registered")
@@ -22,8 +23,7 @@ open class MatterServiceImpl : MatterService {
         val matterWithNameRegistered = matterDAO.findByName(matter.name)
         if (matterWithNameRegistered.isPresent && matterWithNameRegistered.get().id != matter.id)
             throw RuntimeException("The matter name is already registered")
-        if (matter.id != null && matterDAO.existsById(matter.id!!)) return matterDAO.save(matter)
-         else throw RuntimeException("Matter does not exists")
+        return matterDAO.save(matter)
     }
 
     override fun recover(matterId: Long): Matter {
@@ -32,7 +32,7 @@ open class MatterServiceImpl : MatterService {
 
     override fun delete(matterId: Long) {
         if (matterDAO.existsById(matterId)) matterDAO.deleteById(matterId)
-         else throw RuntimeException("There is no matter with that id")
+        else throw RuntimeException("There is no matter with that id")
     }
 
     override fun findByName(name: String): Matter {
