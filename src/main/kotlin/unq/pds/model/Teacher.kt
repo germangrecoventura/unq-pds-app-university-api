@@ -1,21 +1,24 @@
 package unq.pds.model
 
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import io.swagger.v3.oas.annotations.media.Schema
 import unq.pds.api.Validator
 import javax.persistence.*
 
 @Entity
 @Table(name = "teacher")
+@JsonPropertyOrder("id", "firstName", "lastName", "email")
 class Teacher(
-    @Column(nullable = false) private var firstName: String,
-    @Column(nullable = false) private var lastName: String,
-    @Column(nullable = false, unique = true) private var email: String
+    @Column(nullable = false) @JsonProperty @field:Schema(example = "German") private var firstName: String,
+    @Column(nullable = false) @JsonProperty @field:Schema(example = "Greco") private var lastName: String,
+    @Column(nullable = false, unique = true) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty
+    @Schema(example = "1")
     private var id: Long? = null
-
-    @Column(nullable = true)
-    private var repository: String? = null
 
     init {
         validateCreate()
