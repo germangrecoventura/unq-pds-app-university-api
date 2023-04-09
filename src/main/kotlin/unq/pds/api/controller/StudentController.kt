@@ -75,7 +75,19 @@ class StudentController {
                 ),
                 ApiResponse(
                     responseCode = "400",
-                    description = "bad request",
+                    description = "Bad request",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"student\": \"The id cannot be empty\"\n" +
+                                    "}"
+                        )]
+                    )]
+                )
+                ,
+                ApiResponse(
+                    responseCode = "404",
+                    description = "Not found",
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
@@ -92,7 +104,7 @@ class StudentController {
                 ResponseEntity(
                     "{\n" +
                             "  \"student\": \"Not found student with id\"\n" +
-                            "}", HttpStatus.BAD_REQUEST
+                            "}", HttpStatus.NOT_FOUND
                 )
             }
         }
@@ -125,7 +137,18 @@ class StudentController {
                                     "}"
                         )]
                     )]
+                ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Not found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"student\": \"Not found student with id\"\n" +
+                                "}"
+                    )]
                 )]
+            )]
         )
         fun updateStudent(@RequestBody student: Student): ResponseEntity<Any> {
             return try {
@@ -133,8 +156,8 @@ class StudentController {
             } catch (e: Exception) {
                 ResponseEntity(
                     "{\n" +
-                            "  \"student\": \"Not found student with id\"\n" +
-                            "}", HttpStatus.BAD_REQUEST
+                            "  \"student\": \"Not found student with id ${student.getId()}\"\n" +
+                            "}", HttpStatus.NOT_FOUND
                 )
             }
         }
@@ -161,7 +184,19 @@ class StudentController {
                 ),
                 ApiResponse(
                     responseCode = "400",
-                    description = "bad request",
+                    description = "Bad request",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"student\": \"The id cannot be empty\"\n" +
+                                    "}"
+                        )]
+                    )]
+                )
+                ,
+                ApiResponse(
+                    responseCode = "404",
+                    description = "Not Found",
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
@@ -183,101 +218,10 @@ class StudentController {
             } catch (e: Exception) {
                 ResponseEntity(
                     "{\n" +
-                            "  \"student\": \"Not found student with id\"\n" +
-                            "}", HttpStatus.BAD_REQUEST
+                            "  \"student\": \"Not found student with id ${id}\"\n" +
+                            "}", HttpStatus.NOT_FOUND
                 )
             }
         }
     }
 }
-
-
-/*
-        @PutMapping
-        @Operation(
-            summary = "Update a student",
-            description = "Update a student",
-        )
-        @ApiResponses(
-            value = [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "success",
-                    content = [
-                        Content(
-                            mediaType = "application/json",
-                            schema = Schema(implementation = Student::class),
-                        )
-                    ]
-                ),
-                ApiResponse(
-                    responseCode = "400",
-                    description = "bad request",
-                    content = [Content(
-                        mediaType = "application/json", examples = [ExampleObject(
-                            value = "{\n" +
-                                    "  \"additionalProp1\": \"string\",\n" +
-                                    "  \"additionalProp2\": \"string\",\n" +
-                                    "  \"additionalProp3\": \"string\"\n" +
-                                    "}"
-                        )]
-                    )]
-                )]
-        )
-        fun updateStudent(@RequestBody @Valid student: Student): ResponseEntity<Any> {
-            return try {
-                ResponseEntity(studentService.update(student), HttpStatus.OK)
-            } catch (e: HttpMessageNotReadableException) {
-                ResponseEntity(e.message.toString(),HttpStatus.BAD_REQUEST)
-
-            }
-        }
-    }
-}*/
-/*
-         @DeleteMapping
-         @Operation(summary = "Delete student")
-         @ApiResponses(
-             value = [ApiResponse(
-                 responseCode = "200", content = [
-                     (Content(
-                         mediaType = "application/json", examples = [ExampleObject(
-                             value = "{\n" +
-                                     "  \"message\": \"Student has been deleted successfully\"\n" +
-                                     "}"
-                         )]
-                     ))]
-             ), ApiResponse(
-                 responseCode = "400",
-                 description = "Bad request",
-                 content = [Content(
-                     mediaType = "application/json", examples = [ExampleObject(
-                         value = "{\n" +
-                                 "  \"message\": \"error explanation\"\n" +
-                                 "}"
-                     )]
-                 )]
-             )]
-         )
-         fun deleteStudent(@RequestParam id: Long): ResponseEntity<Any> {
-             return try {
-                 studentService.deleteById(id)
-                 ResponseEntity.ok().body(MessageDTO("Student has been deleted successfully"))
-             } catch (e: RuntimeException) {
-                 ResponseEntity.badRequest().body(MessageDTO(e.message!!))
-             }
-         }*/
-/*
-@ControllerAdvice
-class Handler {
-    @ExceptionHandler(java.lang.Exception::class)
-    fun handle(
-        ex: java.lang.Exception?,
-        request: HttpServletRequest?, response: HttpServletResponse?
-    ): ResponseEntity<Any> {
-        return if (ex is NullPointerException) {
-            ResponseEntity(HttpStatus.BAD_REQUEST)
-        } else
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex?.localizedMessage!!)
-    }
-}*/

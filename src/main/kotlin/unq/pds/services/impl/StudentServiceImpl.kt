@@ -4,6 +4,7 @@ package unq.pds.services.impl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import unq.pds.api.controller.EmailAlreadyRegisteredException
 import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.model.Student
 import unq.pds.persistence.StudentDAO
@@ -17,7 +18,7 @@ open class StudentServiceImpl : StudentService {
 
     override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
         if (studentDAO.findByEmail(studentCreateRequestDTO.email!!).isPresent) {
-            throw RuntimeException("The email is already registered")
+            throw EmailAlreadyRegisteredException()
         }
 
         val student = Student(
@@ -32,7 +33,7 @@ open class StudentServiceImpl : StudentService {
         var studentRecovery = findById(student.getId()!!)
         var studentWithEmail = studentDAO.findByEmail(student.getEmail()!!)
         if (studentWithEmail.isPresent && studentRecovery.getId() != studentWithEmail.get().getId()) {
-            throw RuntimeException("The email is already registered")
+            throw EmailAlreadyRegisteredException()
         }
 
         studentRecovery.setFirstName(student.getFirstName())
