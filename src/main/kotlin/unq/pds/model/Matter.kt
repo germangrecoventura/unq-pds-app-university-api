@@ -1,13 +1,16 @@
 package unq.pds.model
 
+import com.fasterxml.jackson.annotation.*
+import io.swagger.v3.oas.annotations.media.Schema
 import javax.persistence.*
 
 @Entity
 @Table(name = "matter")
+@JsonPropertyOrder("id", "name")
 class Matter(
      name: String
 ) {
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true) @JsonProperty @field:Schema(example = "Matematica")
     var name = name
         set(value) {
             this.validateName(value)
@@ -16,6 +19,8 @@ class Matter(
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty
+    @Schema(example = "1")
     var id: Long? = null
 
     init { this.validateCreation() }
