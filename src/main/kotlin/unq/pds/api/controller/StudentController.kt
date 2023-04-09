@@ -79,12 +79,11 @@ class StudentController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"student\": \"The id cannot be empty\"\n" +
+                                    "  \"message\": \"Required request parameter 'id' for method parameter type long is not present\"\n" +
                                     "}"
                         )]
                     )]
-                )
-                ,
+                ),
                 ApiResponse(
                     responseCode = "404",
                     description = "Not found",
@@ -100,7 +99,7 @@ class StudentController {
         fun getStudent(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
             return try {
                 ResponseEntity(studentService.findById(id), HttpStatus.OK)
-            } catch (e: Exception) {
+            } catch (e: RuntimeException) {
                 ResponseEntity(
                     "{\n" +
                             "  \"student\": \"Not found student with id\"\n" +
@@ -138,17 +137,17 @@ class StudentController {
                         )]
                     )]
                 ),
-            ApiResponse(
-                responseCode = "400",
-                description = "Not found",
-                content = [Content(
-                    mediaType = "application/json", examples = [ExampleObject(
-                        value = "{\n" +
-                                "  \"student\": \"Not found student with id\"\n" +
-                                "}"
+                ApiResponse(
+                    responseCode = "400",
+                    description = "Not found",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"student\": \"Not found student with id\"\n" +
+                                    "}"
+                        )]
                     )]
                 )]
-            )]
         )
         fun updateStudent(@RequestBody student: Student): ResponseEntity<Any> {
             return try {
@@ -188,12 +187,11 @@ class StudentController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"student\": \"The id cannot be empty\"\n" +
+                                    "  \"message\": \"Required request parameter 'id' for method parameter type long is not present\"\n" +
                                     "}"
                         )]
                     )]
-                )
-                ,
+                ),
                 ApiResponse(
                     responseCode = "404",
                     description = "Not Found",
