@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
+import unq.pds.model.exceptions.MatterNameAlreadyRegisteredException
 
 @SpringBootTest
 class MatterServiceTest {
@@ -21,7 +22,7 @@ class MatterServiceTest {
         matterService.save(aMatter().build())
         try {
             matterService.save(aMatter().build())
-        } catch (e:RuntimeException) {
+        } catch (e: MatterNameAlreadyRegisteredException) {
             Assertions.assertEquals("The matter name is already registered", e.message)
         }
     }
@@ -37,7 +38,7 @@ class MatterServiceTest {
     fun `should throw an exception when trying to recover a matter with an invalid id`() {
         try {
             matterService.recover(-1)
-        } catch (e:RuntimeException) {
+        } catch (e:NoSuchElementException) {
             Assertions.assertEquals("There is no matter with that id", e.message)
         }
     }
@@ -54,7 +55,7 @@ class MatterServiceTest {
     fun `should throw an exception when trying to update a matter without persisting`() {
         try {
             matterService.update(aMatter().build())
-        } catch (e:RuntimeException) {
+        } catch (e:NoSuchElementException) {
             Assertions.assertEquals("Matter does not exists", e.message)
         }
     }
@@ -66,7 +67,7 @@ class MatterServiceTest {
         matterToUpdate.name = "Practica de Desarrollo de Software"
         try {
             matterService.update(matterToUpdate)
-        } catch (e:RuntimeException) {
+        } catch (e:MatterNameAlreadyRegisteredException) {
             Assertions.assertEquals("The matter name is already registered", e.message)
         }
     }
@@ -82,7 +83,7 @@ class MatterServiceTest {
     fun `should throw an exception when trying to delete a matter with an invalid id`() {
         try {
             matterService.delete(-1)
-        } catch (e:RuntimeException) {
+        } catch (e:NoSuchElementException) {
             Assertions.assertEquals("There is no matter with that id", e.message)
         }
     }
@@ -99,7 +100,7 @@ class MatterServiceTest {
     fun `should throw an exception when trying to return a matter with a name unregistered`() {
         try {
             matterService.findByName("PDeS")
-        } catch (e:RuntimeException) {
+        } catch (e:NoSuchElementException) {
             Assertions.assertEquals("There is no matter with that name", e.message)
         }
     }

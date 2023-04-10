@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.*
 import io.swagger.v3.oas.annotations.responses.*
 import org.springframework.http.*
 import org.springframework.web.bind.annotation.*
+import unq.pds.api.dtos.ErrorDTO
 import unq.pds.api.dtos.MatterDTO
 import unq.pds.model.Matter
 import unq.pds.services.MatterService
@@ -29,25 +30,24 @@ class MatterController(private val matterService: MatterService) {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Matter::class),
+                        schema = Schema(implementation = MatterDTO::class),
                     )
                 ]
             ),
             ApiResponse(
                 responseCode = "400",
-                description = "bad request",
+                description = "Bad request",
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"additionalProp1\": \"string\"\n" +
+                                "  \"message\": \"string\"\n" +
                                 "}"
                     )]
                 )]
             )]
     )
-    fun createMatter(@RequestBody @Valid matter: MatterDTO): ResponseEntity<Matter> {
-        val matterSaved = matterService.save(matter.fromDTOToModel())
-        return ResponseEntity(matterSaved, HttpStatus.OK)
+    fun createMatter(@RequestBody @Valid matter: Matter): ResponseEntity<MatterDTO> {
+        return ResponseEntity(MatterDTO.fromModelToDTO(matterService.save(matter)), HttpStatus.OK)
     }
 
     @GetMapping
@@ -59,21 +59,32 @@ class MatterController(private val matterService: MatterService) {
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "success",
+                description = "Success",
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Matter::class),
+                        schema = Schema(implementation = MatterDTO::class),
                     )
                 ]
             ),
             ApiResponse(
                 responseCode = "400",
-                description = "bad request",
+                description = "Bad request",
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"Not found matter with id\"\n" +
+                                "  \"message\": \"Required request parameter 'id' for method parameter type long is not present\"\n" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"There is no matter with that id\"\n" +
                                 "}"
                     )]
                 )]
@@ -81,13 +92,9 @@ class MatterController(private val matterService: MatterService) {
     )
     fun getMatter(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         return try {
-            ResponseEntity(matterService.recover(id), HttpStatus.OK)
-        } catch (e: Exception) {
-            ResponseEntity(
-                "{\n" +
-                        "  \"message\": \"Not found matter with id\"\n" +
-                        "}", HttpStatus.BAD_REQUEST
-            )
+            ResponseEntity(MatterDTO.fromModelToDTO(matterService.recover(id)), HttpStatus.OK)
+        } catch (e: NoSuchElementException) {
+            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -104,13 +111,13 @@ class MatterController(private val matterService: MatterService) {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Matter::class)
+                        schema = Schema(implementation = MatterDTO::class)
                     )
                 ]
             ),
             ApiResponse(
                 responseCode = "400",
-                description = "bad request",
+                description = "Bad request",
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
@@ -118,17 +125,24 @@ class MatterController(private val matterService: MatterService) {
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"Matter does not exists\"\n" +
+                                "}"
+                    )]
+                )]
             )]
     )
     fun updateMatter(@RequestBody matter: Matter): ResponseEntity<Any> {
         return try {
-            ResponseEntity(matterService.update(matter), HttpStatus.OK)
-        } catch (e: Exception) {
-            ResponseEntity(
-                "{\n" +
-                        "  \"matter\": \"Not found matter with id\"\n" +
-                        "}", HttpStatus.BAD_REQUEST
-            )
+            ResponseEntity(MatterDTO.fromModelToDTO(matterService.update(matter)), HttpStatus.OK)
+        } catch (e: NoSuchElementException) {
+            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -153,11 +167,22 @@ class MatterController(private val matterService: MatterService) {
             ),
             ApiResponse(
                 responseCode = "400",
-                description = "bad request",
+                description = "Bad request",
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"Not found matter with id\"\n" +
+                                "  \"message\": \"Required request parameter 'id' for method parameter type long is not present\"\n" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not Found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"There is no matter with that id\"\n" +
                                 "}"
                     )]
                 )]
@@ -171,12 +196,8 @@ class MatterController(private val matterService: MatterService) {
                         "  \"message\": \"Matter has been deleted successfully\"\n" +
                         "}", HttpStatus.OK
             )
-        } catch (e: Exception) {
-            ResponseEntity(
-                "{\n" +
-                        "  \"message\": \"Not found matter with id\"\n" +
-                        "}", HttpStatus.BAD_REQUEST
-            )
+        } catch (e: NoSuchElementException) {
+            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 }

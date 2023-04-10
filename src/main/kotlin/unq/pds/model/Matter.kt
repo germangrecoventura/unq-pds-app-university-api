@@ -2,7 +2,9 @@ package unq.pds.model
 
 import com.fasterxml.jackson.annotation.*
 import io.swagger.v3.oas.annotations.media.Schema
+import javax.management.InvalidAttributeValueException
 import javax.persistence.*
+import javax.validation.constraints.Pattern
 
 @Entity
 @Table(name = "matter")
@@ -10,7 +12,10 @@ import javax.persistence.*
 class Matter(
      name: String
 ) {
-    @Column(nullable = false, unique = true) @JsonProperty @field:Schema(example = "Matematica")
+    @Column(nullable = false, unique = true)
+    @JsonProperty
+    @Pattern(regexp = "[a-zA-Z0-9 ]+")
+    @Schema(example = "Matematica")
     var name = name
         set(value) {
             this.validateName(value)
@@ -30,7 +35,7 @@ class Matter(
     }
 
     private fun validateName(name: String) {
-        if (name.isBlank()) throw RuntimeException("Name cannot be empty")
-        if (name.any { !(it.isLetterOrDigit() or it.isWhitespace())}) throw RuntimeException("Name cannot contain special characters")
+        if (name.isBlank()) throw InvalidAttributeValueException("Name cannot be empty")
+        if (name.any { !(it.isLetterOrDigit() or it.isWhitespace())}) throw InvalidAttributeValueException("Name cannot contain special characters")
     }
 }
