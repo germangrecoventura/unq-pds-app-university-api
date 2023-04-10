@@ -12,7 +12,8 @@ import unq.pds.services.MatterService
 @Transactional
 open class MatterServiceImpl : MatterService {
 
-    @Autowired private lateinit var matterDAO: MatterDAO
+    @Autowired
+    private lateinit var matterDAO: MatterDAO
 
     override fun save(matter: Matter): Matter {
         if (matterDAO.findByName(matter.name).isPresent) throw MatterNameAlreadyRegisteredException()
