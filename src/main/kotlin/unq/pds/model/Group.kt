@@ -4,7 +4,7 @@ import javax.management.InvalidAttributeValueException
 import javax.persistence.*
 
 @Entity
-@Table(name = "group")
+@Table(name = "grupo")
 class Group(
     name: String
 ) {
@@ -20,7 +20,7 @@ class Group(
     var id: Long? = null
 
     @ManyToMany
-    var members: MutableList<Student> = mutableListOf()
+    var members: MutableSet<Student> = mutableSetOf()
 
     @Column(nullable = true)
     var repository: String? = null
