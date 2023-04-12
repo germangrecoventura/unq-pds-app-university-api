@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.TeacherCreateRequestDTO
 import unq.pds.model.Teacher
+import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.persistence.TeacherDAO
 import unq.pds.services.TeacherService
 
@@ -16,7 +17,7 @@ open class TeacherServiceImpl : TeacherService {
 
     override fun save(teacherCreateRequestDTO: TeacherCreateRequestDTO): Teacher {
         if (teacherDAO.findByEmail(teacherCreateRequestDTO.email!!).isPresent) {
-            throw RuntimeException("The email is already registered")
+            throw AlreadyRegisteredException("email")
         }
 
         val teacher = Teacher(
@@ -31,7 +32,7 @@ open class TeacherServiceImpl : TeacherService {
         var teacherRecovery = findById(teacher.getId()!!)
         var teacherWithEmail = teacherDAO.findByEmail(teacher.getEmail())
         if (teacherWithEmail.isPresent && teacherRecovery.getId() != teacherWithEmail.get().getId()) {
-            throw RuntimeException("The email is already registered")
+            throw AlreadyRegisteredException("email")
         }
         teacherRecovery.setFirstName(teacher.getFirstName())
         teacherRecovery.setLastName(teacher.getLastName())
@@ -43,7 +44,7 @@ open class TeacherServiceImpl : TeacherService {
         try {
             teacherDAO.deleteById(id)
         } catch (e: RuntimeException) {
-            throw RuntimeException("The teacher with id $id is not registered")
+            throw NoSuchElementException("The teacher with id $id is not registered")
         }
     }
 
@@ -52,11 +53,12 @@ open class TeacherServiceImpl : TeacherService {
     }
 
     override fun findById(id: Long): Teacher {
-        return teacherDAO.findById(id).orElseThrow { RuntimeException("Not found the teacher with id $id") }
+        return teacherDAO.findById(id).orElseThrow { NoSuchElementException("Not found the teacher with id $id") }
     }
 
     override fun findByEmail(email: String): Teacher {
-        return teacherDAO.findByEmail(email).orElseThrow { RuntimeException("Not found the teacher with email $email") }
+        return teacherDAO.findByEmail(email)
+            .orElseThrow { NoSuchElementException("Not found the teacher with email $email") }
     }
 
     override fun clearTeachers() {

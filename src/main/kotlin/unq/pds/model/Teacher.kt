@@ -1,6 +1,7 @@
 package unq.pds.model
 
 import unq.pds.api.Validator
+import javax.management.InvalidAttributeValueException
 import javax.persistence.*
 
 @Entity
@@ -14,9 +15,6 @@ class Teacher(
     @GeneratedValue(strategy = GenerationType.AUTO)
     private var id: Long? = null
 
-    @Column(nullable = true)
-    private var repository: String? = null
-
     init {
         validateCreate()
     }
@@ -29,22 +27,22 @@ class Teacher(
 
     private fun validatePerson(element: String?, field: String) {
         if (element.isNullOrBlank()) {
-            throw RuntimeException("The $field cannot be empty")
+            throw InvalidAttributeValueException("The $field cannot be empty")
         }
         if (Validator.containsNumber(element)) {
-            throw RuntimeException("The $field can not contain numbers")
+            throw InvalidAttributeValueException("The $field can not contain numbers")
         }
         if (Validator.containsSpecialCharacter(element)) {
-            throw RuntimeException("The $field can not contain special characters")
+            throw InvalidAttributeValueException("The $field can not contain special characters")
         }
     }
 
     private fun validateEmail(email_address: String?) {
         if (email_address.isNullOrBlank()) {
-            throw RuntimeException("The email cannot be empty")
+            throw InvalidAttributeValueException("The email cannot be empty")
         }
         if (!Validator.isValidEMail(email_address)) {
-            throw RuntimeException("The email is not valid")
+            throw InvalidAttributeValueException("The email is not valid")
         }
     }
 
