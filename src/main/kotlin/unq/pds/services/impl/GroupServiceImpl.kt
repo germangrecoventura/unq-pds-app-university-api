@@ -24,7 +24,7 @@ open class GroupServiceImpl : GroupService {
          else throw NoSuchElementException("Group does not exists")
     }
 
-    override fun recover(groupId: Long): Group {
+    override fun read(groupId: Long): Group {
         return groupDAO.findById(groupId).orElseThrow { NoSuchElementException("There is no group with that id") }
     }
 
@@ -34,7 +34,7 @@ open class GroupServiceImpl : GroupService {
     }
 
     override fun addMember(groupId: Long, studentId: Long): Group {
-        val group = this.recover(groupId)
+        val group = this.read(groupId)
         val student = studentService.findById(studentId)
         group.addMember(student)
 
@@ -42,7 +42,7 @@ open class GroupServiceImpl : GroupService {
     }
 
     override fun removeMember(groupId: Long, studentId: Long): Group {
-        val group = this.recover(groupId)
+        val group = this.read(groupId)
         val student = studentService.findById(studentId)
         group.removeMember(student)
 

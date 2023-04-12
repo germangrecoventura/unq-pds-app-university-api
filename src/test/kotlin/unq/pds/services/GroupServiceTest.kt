@@ -21,7 +21,7 @@ class GroupServiceTest {
     @Test
     fun `should recover a group when it exists`() {
         val group = groupService.save(aGroup().build())
-        val recoverGroup = groupService.recover(group.id!!)
+        val recoverGroup = groupService.read(group.id!!)
         Assertions.assertEquals(group.id, recoverGroup.id)
         Assertions.assertEquals(group.name, recoverGroup.name)
     }
@@ -29,7 +29,7 @@ class GroupServiceTest {
     @Test
     fun `should throw an exception when trying to recover a group with an invalid id`() {
         try {
-            groupService.recover(-1)
+            groupService.read(-1)
         } catch (e:NoSuchElementException) {
             Assertions.assertEquals("There is no group with that id", e.message)
         }

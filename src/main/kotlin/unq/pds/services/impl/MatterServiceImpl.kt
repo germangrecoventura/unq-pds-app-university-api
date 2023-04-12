@@ -28,7 +28,7 @@ open class MatterServiceImpl : MatterService {
          else throw NoSuchElementException("Matter does not exists")
     }
 
-    override fun recover(matterId: Long): Matter {
+    override fun read(matterId: Long): Matter {
         return matterDAO.findById(matterId).orElseThrow { NoSuchElementException("There is no matter with that id") }
     }
 

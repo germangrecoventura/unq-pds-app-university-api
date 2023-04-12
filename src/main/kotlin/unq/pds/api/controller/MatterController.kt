@@ -92,7 +92,7 @@ class MatterController(private val matterService: MatterService) {
     )
     fun getMatter(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         return try {
-            ResponseEntity(matterService.recover(id), HttpStatus.OK)
+            ResponseEntity(matterService.read(id), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
             ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
