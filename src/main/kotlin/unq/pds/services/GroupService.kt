@@ -7,6 +7,8 @@ interface GroupService {
     fun update(group: Group): Group
     fun recover(groupId: Long): Group
     fun delete(groupId: Long)
+    fun addMember(groupId: Long, studentId: Long): Group
+    fun removeMember(groupId: Long, studentId: Long): Group
     fun count(): Int
     fun clearGroups()
 }
