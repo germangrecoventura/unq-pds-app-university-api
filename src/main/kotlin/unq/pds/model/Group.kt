@@ -25,6 +25,16 @@ class Group(
     @Column(nullable = true)
     var repository: String? = null
 
+    fun addMember(member: Student) {
+        if (members.contains(member)) throw CloneNotSupportedException("The member is already in the group")
+        members.add(member)
+    }
+
+    fun removeMember(member: Student) {
+        if (!members.contains(member)) throw NoSuchElementException("The member is not in the group")
+        members.remove(member)
+    }
+
     init { this.validateCreation() }
 
     private fun validateCreation() {
