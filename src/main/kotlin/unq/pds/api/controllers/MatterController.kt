@@ -30,7 +30,7 @@ class MatterController(private val matterService: MatterService) {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MatterDTO::class),
+                        schema = Schema(implementation = Matter::class),
                     )
                 ]
             ),
@@ -46,8 +46,8 @@ class MatterController(private val matterService: MatterService) {
                 )]
             )]
     )
-    fun createMatter(@RequestBody @Valid matter: Matter): ResponseEntity<MatterDTO> {
-        return ResponseEntity(MatterDTO.fromModelToDTO(matterService.save(matter)), HttpStatus.OK)
+    fun createMatter(@RequestBody @Valid matter: MatterDTO): ResponseEntity<Matter> {
+        return ResponseEntity(matterService.save(matter.fromDTOToModel()), HttpStatus.OK)
     }
 
     @GetMapping
@@ -63,7 +63,7 @@ class MatterController(private val matterService: MatterService) {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MatterDTO::class),
+                        schema = Schema(implementation = Matter::class),
                     )
                 ]
             ),
@@ -92,7 +92,7 @@ class MatterController(private val matterService: MatterService) {
     )
     fun getMatter(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         return try {
-            ResponseEntity(MatterDTO.fromModelToDTO(matterService.recover(id)), HttpStatus.OK)
+            ResponseEntity(matterService.recover(id), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
             ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
@@ -111,7 +111,7 @@ class MatterController(private val matterService: MatterService) {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MatterDTO::class)
+                        schema = Schema(implementation = Matter::class)
                     )
                 ]
             ),
@@ -140,7 +140,7 @@ class MatterController(private val matterService: MatterService) {
     )
     fun updateMatter(@RequestBody matter: Matter): ResponseEntity<Any> {
         return try {
-            ResponseEntity(MatterDTO.fromModelToDTO(matterService.update(matter)), HttpStatus.OK)
+            ResponseEntity(matterService.update(matter), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
             ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
