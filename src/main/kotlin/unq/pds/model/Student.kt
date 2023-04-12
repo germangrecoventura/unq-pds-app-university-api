@@ -1,21 +1,33 @@
 package unq.pds.model
 
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import io.swagger.v3.oas.annotations.media.Schema
 import unq.pds.api.Validator
+import javax.management.InvalidAttributeValueException
 import javax.persistence.*
 
 @Entity
 @Table(name = "student")
+@JsonPropertyOrder("id", "firstName", "lastName", "email", "repositories")
 class Student(
-    @Column(nullable = false) private var firstName: String,
-    @Column(nullable = false) private var lastName: String,
-    @Column(nullable = false, unique = true) private var email: String
+    @Column(nullable = false) @JsonProperty @field:Schema(example = "German") private var firstName: String,
+    @Column(nullable = false) @JsonProperty @field:Schema(example = "Greco") private var lastName: String,
+    @Column(
+        nullable = false,
+        unique = true
+    ) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty
+    @Schema(example = "1")
     private var id: Long? = null
 
     @Column(nullable = true)
-    private var repository: String? = null
+    @JsonProperty
+    @Schema(example = "")
+    private var repositories: String? = null
 
     init {
         validateCreate()
@@ -29,22 +41,22 @@ class Student(
 
     private fun validatePerson(element: String?, field: String) {
         if (element.isNullOrBlank()) {
-            throw RuntimeException("The $field cannot be empty")
+            throw InvalidAttributeValueException("The $field cannot be empty")
         }
         if (Validator.containsNumber(element)) {
-            throw RuntimeException("The $field can not contain numbers")
+            throw InvalidAttributeValueException("The $field can not contain numbers")
         }
         if (Validator.containsSpecialCharacter(element)) {
-            throw RuntimeException("The $field can not contain special characters")
+            throw InvalidAttributeValueException("The $field can not contain special characters")
         }
     }
 
     private fun validateEmail(email_address: String?) {
         if (email_address.isNullOrBlank()) {
-            throw RuntimeException("The email cannot be empty")
+            throw InvalidAttributeValueException("The email cannot be empty")
         }
         if (!Validator.isValidEMail(email_address)) {
-            throw RuntimeException("The email is not valid")
+            throw InvalidAttributeValueException("The email is not valid")
         }
     }
 
@@ -84,6 +96,6 @@ class Student(
     }
 
     fun getRepositories(): String? {
-        return repository
+        return repositories
     }
 }
