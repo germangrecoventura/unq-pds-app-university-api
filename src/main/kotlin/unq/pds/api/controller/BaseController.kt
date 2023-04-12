@@ -1,4 +1,4 @@
-package unq.pds.api.controllers
+package unq.pds.api.controller
 
 import org.springframework.http.*
 import org.springframework.http.converter.HttpMessageNotReadableException

@@ -54,7 +54,7 @@ open class StudentServiceImpl : StudentService {
     }
 
     override fun findById(id: Long): Student {
-        return studentDAO.findById(id).orElseThrow { RuntimeException("Not found the student with id $id") }
+        return studentDAO.findById(id).orElseThrow { NoSuchElementException("Not found the student with id $id") }
     }
 
     override fun findByEmail(email: String): Student {

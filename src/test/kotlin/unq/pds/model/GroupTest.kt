@@ -29,19 +29,17 @@ class GroupTest {
     @Test
     fun `should add a member when it has not been added previously`() {
         val group = aGroup().build()
-        val member = aStudent().build()
         Assertions.assertEquals(0, group.members.size)
-        group.addMember(member)
+        group.addMember(aStudent().build())
         Assertions.assertEquals(1, group.members.size)
     }
 
     @Test
     fun `should throw an exception when trying to add the same member to the group twice`() {
         val group = aGroup().build()
-        val member = aStudent().build()
-        group.addMember(member)
+        group.addMember(aStudent().build())
         try {
-            group.addMember(member)
+            group.addMember(aStudent().build())
         } catch (e: CloneNotSupportedException) {
             Assertions.assertEquals("The member is already in the group", e.message)
         }
@@ -61,9 +59,8 @@ class GroupTest {
     @Test
     fun `should throw an exception when trying to remove a member who does not belong to the group`() {
         val group = aGroup().build()
-        val member = aStudent().build()
         try {
-            group.removeMember(member)
+            group.removeMember(aStudent().build())
         } catch (e: NoSuchElementException) {
             Assertions.assertEquals("The member is not in the group", e.message)
         }

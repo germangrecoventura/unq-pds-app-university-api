@@ -26,12 +26,12 @@ class Group(
     var repository: String? = null
 
     fun addMember(member: Student) {
-        if (members.contains(member)) throw CloneNotSupportedException("The member is already in the group")
+        if (isMember(member)) throw CloneNotSupportedException("The member is already in the group")
         members.add(member)
     }
 
     fun removeMember(member: Student) {
-        if (!members.contains(member)) throw NoSuchElementException("The member is not in the group")
+        if (!isMember(member)) throw NoSuchElementException("The member is not in the group")
         members.remove(member)
     }
 
@@ -43,5 +43,9 @@ class Group(
 
     private fun validateName(name: String) {
         if (name.isBlank()) throw InvalidAttributeValueException("Name cannot be empty")
+    }
+
+    private fun isMember(member: Student): Boolean {
+        return members.any { it.getEmail() == member.getEmail() }
     }
 }
