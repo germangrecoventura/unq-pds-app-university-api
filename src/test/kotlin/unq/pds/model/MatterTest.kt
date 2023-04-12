@@ -2,6 +2,7 @@ package unq.pds.model
 
 import org.junit.jupiter.api.*
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
+import javax.management.InvalidAttributeValueException
 
 class MatterTest {
 
@@ -9,7 +10,7 @@ class MatterTest {
     fun `should throw an exception when matter name is empty`() {
         try {
             aMatter().withName("").build()
-        } catch (e: RuntimeException) {
+        } catch (e: InvalidAttributeValueException) {
             Assertions.assertEquals("Name cannot be empty", e.message)
         }
     }
@@ -18,7 +19,7 @@ class MatterTest {
     fun `should throw an exception when matter name contain special characters`() {
         try {
             aMatter().withName("M@tematica").build()
-        } catch (e: RuntimeException) {
+        } catch (e: InvalidAttributeValueException) {
             Assertions.assertEquals("Name cannot contain special characters", e.message)
         }
     }
@@ -28,7 +29,7 @@ class MatterTest {
         val matter = aMatter().build()
         try {
             matter.name = ""
-        } catch (e: RuntimeException) {
+        } catch (e: InvalidAttributeValueException) {
             Assertions.assertEquals("Name cannot be empty", e.message)
         }
     }
@@ -38,7 +39,7 @@ class MatterTest {
         val matter = aMatter().build()
         try {
             matter.name = "M@tematica"
-        } catch (e: RuntimeException) {
+        } catch (e: InvalidAttributeValueException) {
             Assertions.assertEquals("Name cannot contain special characters", e.message)
         }
     }
