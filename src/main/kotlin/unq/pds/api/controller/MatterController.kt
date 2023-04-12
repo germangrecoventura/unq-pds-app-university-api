@@ -1,4 +1,4 @@
-package unq.pds.api.controllers
+package unq.pds.api.controller
 
 import io.swagger.v3.oas.annotations.*
 import io.swagger.v3.oas.annotations.media.*
