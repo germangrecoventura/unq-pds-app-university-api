@@ -9,14 +9,22 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import unq.pds.api.dtos.ErrorDTO
 import unq.pds.model.exceptions.EmailAlreadyRegisteredException
 import unq.pds.model.exceptions.MatterNameAlreadyRegisteredException
+import java.util.function.Consumer
+import javax.management.InvalidAttributeValueException
 
 @RestControllerAdvice
 class BaseController {
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
-    fun handleMethodArgumentNotValidException(ex: MethodArgumentNotValidException): ResponseEntity<ErrorDTO> {
-        return ResponseEntity.badRequest().body(ErrorDTO(ex.message!!))
+    fun handleMethodArgumentNotValidException(ex: MethodArgumentNotValidException): MutableMap<String, String?> {
+        val errors: MutableMap<String, String?> = HashMap()
+        ex.bindingResult.allErrors.forEach(Consumer { error: ObjectError ->
+            val fieldName = (error as FieldError).field
+            val message = error.getDefaultMessage()
+            errors[fieldName] = message
+        })
+        return errors
     }
 
     @ExceptionHandler(EmailAlreadyRegisteredException::class)
@@ -53,5 +61,11 @@ class BaseController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleMatterNameAlreadyRegisteredException(ex: MatterNameAlreadyRegisteredException): ResponseEntity<ErrorDTO> {
         return ResponseEntity.badRequest().body(ErrorDTO(ex.message))
+    }
+
+    @ExceptionHandler(InvalidAttributeValueException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleInvalidAttributeValueException(ex: InvalidAttributeValueException): ResponseEntity<ErrorDTO> {
+        return ResponseEntity.badRequest().body(ErrorDTO(ex.message!!))
     }
 }
