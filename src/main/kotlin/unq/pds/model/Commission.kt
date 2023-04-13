@@ -14,14 +14,20 @@ class Commission(
     @GeneratedValue(strategy = GenerationType.AUTO)
     var id: Long? = null
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     var students: MutableSet<Student> = mutableSetOf()
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     var teachers: MutableSet<Teacher> = mutableSetOf()
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     var groupsStudents: MutableSet<Group> = mutableSetOf()
+
+    fun getYear() = year
+
+    fun getFourMonthPeriod() = fourMonthPeriod
+
+    fun getMatter() = matter
 
     init { this.validateCreation() }
 
@@ -30,6 +36,6 @@ class Commission(
     }
 
     private fun validateYear() {
-        if (year < 2000) throw InvalidAttributeValueException("Year should be greater or equal to 2000")
+        if (year < 2000) throw InvalidAttributeValueException("Year should be greater than or equal to 2000")
     }
 }

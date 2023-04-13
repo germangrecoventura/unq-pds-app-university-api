@@ -26,7 +26,7 @@ class Group(
     @Schema(example = "1")
     var id: Long? = null
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JsonProperty
     var members: MutableSet<Student> = mutableSetOf()
 

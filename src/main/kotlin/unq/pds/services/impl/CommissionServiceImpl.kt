@@ -6,14 +6,17 @@ import org.springframework.transaction.annotation.Transactional
 import unq.pds.model.Commission
 import unq.pds.persistence.CommissionDAO
 import unq.pds.services.CommissionService
+import unq.pds.services.MatterService
 
 @Service
 @Transactional
 open class CommissionServiceImpl : CommissionService {
 
     @Autowired private lateinit var commissionDAO: CommissionDAO
+    @Autowired private lateinit var matterService: MatterService
 
     override fun save(commission: Commission): Commission {
+        matterService.save(commission.getMatter())
         return commissionDAO.save(commission)
     }
 
