@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.model.Student
+import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.services.StudentService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -152,7 +153,13 @@ class StudentController {
         fun updateStudent(@RequestBody student: Student): ResponseEntity<Any> {
             return try {
                 ResponseEntity(studentService.update(student), HttpStatus.OK)
-            } catch (e: Exception) {
+            } catch (e: AlreadyRegisteredException) {
+                ResponseEntity(
+                    "{\n" +
+                            "  \"message\": \"${e.message}\"\n" +
+                            "}", HttpStatus.BAD_REQUEST
+                )
+            }catch (e: NoSuchElementException) {
                 ResponseEntity(
                     "{\n" +
                             "  \"student\": \"Not found student with id ${student.getId()}\"\n" +
