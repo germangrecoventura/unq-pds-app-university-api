@@ -15,14 +15,14 @@ class GroupServiceTest {
     @Test
     fun `should be create a group when it has valid credentials`() {
         val group = groupService.save(aGroup().build())
-        Assertions.assertNotNull(group.id)
+        Assertions.assertNotNull(group.getId())
     }
 
     @Test
     fun `should recover a group when it exists`() {
         val group = groupService.save(aGroup().build())
-        val recoverGroup = groupService.read(group.id!!)
-        Assertions.assertEquals(group.id, recoverGroup.id)
+        val recoverGroup = groupService.read(group.getId()!!)
+        Assertions.assertEquals(group.getId(), recoverGroup.getId())
         Assertions.assertEquals(group.name, recoverGroup.name)
     }
 
@@ -55,7 +55,7 @@ class GroupServiceTest {
     @Test
     fun `should delete a group when it exists`() {
         val group = groupService.save(aGroup().build())
-        groupService.delete(group.id!!)
+        groupService.delete(group.getId()!!)
         Assertions.assertEquals(0, groupService.count())
     }
 
@@ -73,7 +73,7 @@ class GroupServiceTest {
         val group = groupService.save(aGroup().build())
         val member = studentService.save(aStudentDTO().build())
         Assertions.assertEquals(0, group.members.size)
-        val groupWithAMember = groupService.addMember(group.id!!, member.getId()!!)
+        val groupWithAMember = groupService.addMember(group.getId()!!, member.getId()!!)
         Assertions.assertEquals(1, groupWithAMember.members.size)
     }
 
@@ -81,9 +81,9 @@ class GroupServiceTest {
     fun `should throw an exception when trying to add the same member to the group twice and both exists`() {
         val group = groupService.save(aGroup().build())
         val member = studentService.save(aStudentDTO().build())
-        groupService.addMember(group.id!!, member.getId()!!)
+        groupService.addMember(group.getId()!!, member.getId()!!)
         try {
-            groupService.addMember(group.id!!, member.getId()!!)
+            groupService.addMember(group.getId()!!, member.getId()!!)
         } catch (e: CloneNotSupportedException) {
             Assertions.assertEquals("The member is already in the group", e.message)
         }
@@ -93,7 +93,7 @@ class GroupServiceTest {
     fun `should throw an exception when trying to add a member to a group and the member does not exists`() {
         val group = groupService.save(aGroup().build())
         try {
-            groupService.addMember(group.id!!, -1)
+            groupService.addMember(group.getId()!!, -1)
         } catch (e: NoSuchElementException) {
             Assertions.assertEquals("Not found the student with id -1", e.message)
         }
@@ -114,9 +114,9 @@ class GroupServiceTest {
         val group = groupService.save(aGroup().build())
         val member = studentService.save(aStudentDTO().build())
         Assertions.assertEquals(0, group.members.size)
-        val groupWithAMember = groupService.addMember(group.id!!, member.getId()!!)
+        val groupWithAMember = groupService.addMember(group.getId()!!, member.getId()!!)
         Assertions.assertEquals(1, groupWithAMember.members.size)
-        val groupWithoutMembers = groupService.removeMember(group.id!!, member.getId()!!)
+        val groupWithoutMembers = groupService.removeMember(group.getId()!!, member.getId()!!)
         Assertions.assertEquals(0, groupWithoutMembers.members.size)
     }
 
@@ -125,7 +125,7 @@ class GroupServiceTest {
         val group = groupService.save(aGroup().build())
         val member = studentService.save(aStudentDTO().build())
         try {
-            groupService.removeMember(group.id!!, member.getId()!!)
+            groupService.removeMember(group.getId()!!, member.getId()!!)
         } catch (e:NoSuchElementException) {
             Assertions.assertEquals("The member is not in the group", e.message)
         }
@@ -135,7 +135,7 @@ class GroupServiceTest {
     fun `should throw an exception when trying to remove a member of a group and the member does not exists`() {
         val group = groupService.save(aGroup().build())
         try {
-            groupService.removeMember(group.id!!, -1)
+            groupService.removeMember(group.getId()!!, -1)
         } catch (e: NoSuchElementException) {
             Assertions.assertEquals("Not found the student with id -1", e.message)
         }

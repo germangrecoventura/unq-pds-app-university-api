@@ -21,7 +21,7 @@ open class CommissionServiceImpl : CommissionService {
     }
 
     override fun update(commission: Commission): Commission {
-        if (commission.id != null && commissionDAO.existsById(commission.id!!)) return commissionDAO.save(commission)
+        if (commission.getId() != null && commissionDAO.existsById(commission.getId()!!)) return commissionDAO.save(commission)
          else throw NoSuchElementException("Commission does not exist")
     }
 

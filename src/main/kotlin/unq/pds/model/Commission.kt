@@ -12,7 +12,7 @@ class Commission(
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    var id: Long? = null
+    private var id: Long? = null
 
     @ManyToMany(fetch = FetchType.EAGER)
     var students: MutableSet<Student> = mutableSetOf()
@@ -58,6 +58,8 @@ class Commission(
     fun getFourMonthPeriod() = fourMonthPeriod
 
     fun getMatter() = matter
+
+    fun getId() = id
 
     init { this.validateCreation() }
 

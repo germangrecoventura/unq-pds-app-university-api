@@ -20,7 +20,7 @@ open class GroupServiceImpl : GroupService {
     }
 
     override fun update(group: Group): Group {
-        if (group.id != null && groupDAO.existsById(group.id!!)) return groupDAO.save(group)
+        if (group.getId() != null && groupDAO.existsById(group.getId()!!)) return groupDAO.save(group)
          else throw NoSuchElementException("Group does not exists")
     }
 

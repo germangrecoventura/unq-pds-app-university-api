@@ -22,9 +22,9 @@ open class MatterServiceImpl : MatterService {
 
     override fun update(matter: Matter): Matter {
         val matterWithNameRegistered = matterDAO.findByName(matter.name)
-        if (matterWithNameRegistered.isPresent && matterWithNameRegistered.get().id != matter.id)
+        if (matterWithNameRegistered.isPresent && matterWithNameRegistered.get().getId() != matter.getId())
             throw AlreadyRegisteredException("matter")
-        if (matter.id != null && matterDAO.existsById(matter.id!!)) return matterDAO.save(matter)
+        if (matter.getId() != null && matterDAO.existsById(matter.getId()!!)) return matterDAO.save(matter)
          else throw NoSuchElementException("Matter does not exists")
     }
 

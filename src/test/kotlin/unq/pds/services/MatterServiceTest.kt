@@ -14,7 +14,7 @@ class MatterServiceTest {
     @Test
     fun `should be create a matter when it has valid credentials`() {
         val matter = matterService.save(aMatter().build())
-        Assertions.assertNotNull(matter.id)
+        Assertions.assertNotNull(matter.getId())
     }
 
     @Test
@@ -30,7 +30,7 @@ class MatterServiceTest {
     @Test
     fun `should recover a matter when it exists`() {
         val matter = matterService.save(aMatter().build())
-        val recoverMatter = matterService.read(matter.id!!)
+        val recoverMatter = matterService.read(matter.getId()!!)
         Assertions.assertEquals(matter.name, recoverMatter.name)
     }
 
@@ -75,7 +75,7 @@ class MatterServiceTest {
     @Test
     fun `should delete a matter when it exists`() {
         val matter = matterService.save(aMatter().build())
-        matterService.delete(matter.id!!)
+        matterService.delete(matter.getId()!!)
         Assertions.assertEquals(0, matterService.count())
     }
 
@@ -92,7 +92,7 @@ class MatterServiceTest {
     fun `should return a matter when searched with a name registered`() {
         val matter = matterService.save(aMatter().build())
         val matterWithName = matterService.findByName(matter.name)
-        Assertions.assertEquals(matter.id, matterWithName.id)
+        Assertions.assertEquals(matter.getId(), matterWithName.getId())
         Assertions.assertEquals(matter.name, matterWithName.name)
     }
 

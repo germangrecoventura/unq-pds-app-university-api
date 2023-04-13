@@ -14,14 +14,14 @@ class CommissionServiceTest {
     @Test
     fun `should be create a commission when it has valid credentials`() {
         val commission = commissionService.save(aCommission().build())
-        Assertions.assertNotNull(commission.id)
+        Assertions.assertNotNull(commission.getId())
     }
 
     @Test
     fun `should recover a commission when it exists`() {
         val commission = commissionService.save(aCommission().build())
-        val recoverCommission = commissionService.read(commission.id!!)
-        Assertions.assertEquals(commission.id, recoverCommission.id)
+        val recoverCommission = commissionService.read(commission.getId()!!)
+        Assertions.assertEquals(commission.getId(), recoverCommission.getId())
         Assertions.assertEquals(commission.getYear(), recoverCommission.getYear())
         Assertions.assertEquals(commission.getFourMonthPeriod(), recoverCommission.getFourMonthPeriod())
         Assertions.assertEquals(commission.getMatter().name, recoverCommission.getMatter().name)
@@ -57,7 +57,7 @@ class CommissionServiceTest {
     @Test
     fun `should delete a commission when it exists`() {
         val commission = commissionService.save(aCommission().build())
-        commissionService.delete(commission.id!!)
+        commissionService.delete(commission.getId()!!)
         Assertions.assertEquals(0, commissionService.count())
     }
 
