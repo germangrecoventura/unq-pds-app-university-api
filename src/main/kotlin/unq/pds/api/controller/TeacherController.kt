@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.TeacherCreateRequestDTO
 import unq.pds.model.Teacher
+import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.services.TeacherService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -152,15 +153,20 @@ class TeacherController {
         fun updateTeacher(@RequestBody teacher: Teacher): ResponseEntity<Any> {
             return try {
                 ResponseEntity(teacherService.update(teacher), HttpStatus.OK)
-            } catch (e: Exception) {
+            } catch (e: AlreadyRegisteredException) {
                 ResponseEntity(
                     "{\n" +
-                            "  \"teacher\": \"Not found teacher with id\"\n" +
+                            "  \"message\": \"${e.message}\"\n" +
                             "}", HttpStatus.BAD_REQUEST
+                )
+            } catch (e: NoSuchElementException) {
+                ResponseEntity(
+                    "{\n" +
+                            "  \"teacher\": \"Not found teacher with id ${teacher.getId()}\"\n" +
+                            "}", HttpStatus.NOT_FOUND
                 )
             }
         }
-
 
         @DeleteMapping
         @Operation(
