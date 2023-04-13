@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import unq.pds.api.dtos.ErrorDTO
 import unq.pds.api.dtos.TeacherCreateRequestDTO
 import unq.pds.model.Teacher
 import unq.pds.model.exceptions.AlreadyRegisteredException
@@ -100,12 +101,8 @@ class TeacherController {
         fun getTeacher(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
             return try {
                 ResponseEntity(teacherService.findById(id), HttpStatus.OK)
-            } catch (e: Exception) {
-                ResponseEntity(
-                    "{\n" +
-                            "  \"teacher\": \"Not found teacher with id\"\n" +
-                            "}", HttpStatus.NOT_FOUND
-                )
+            } catch (e: NoSuchElementException) {
+                ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
             }
         }
 
@@ -160,11 +157,7 @@ class TeacherController {
                             "}", HttpStatus.BAD_REQUEST
                 )
             } catch (e: NoSuchElementException) {
-                ResponseEntity(
-                    "{\n" +
-                            "  \"teacher\": \"Not found teacher with id ${teacher.getId()}\"\n" +
-                            "}", HttpStatus.NOT_FOUND
-                )
+                ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
             }
         }
 
@@ -219,12 +212,8 @@ class TeacherController {
                             "  \"message\": \"Teacher has been deleted successfully\"\n" +
                             "}", HttpStatus.OK
                 )
-            } catch (e: Exception) {
-                ResponseEntity(
-                    "{\n" +
-                            "  \"teacher\": \"Not found teacher with id\"\n" +
-                            "}", HttpStatus.NOT_FOUND
-                )
+            } catch (e: NoSuchElementException) {
+                ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
             }
         }
     }
