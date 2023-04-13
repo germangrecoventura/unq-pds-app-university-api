@@ -24,9 +24,9 @@ class Group(
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
     @Schema(example = "1")
-    var id: Long? = null
+    private var id: Long? = null
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JsonProperty
     var members: MutableSet<Student> = mutableSetOf()
 
@@ -43,6 +43,8 @@ class Group(
         if (!isMember(member)) throw NoSuchElementException("The member is not in the group")
         members.remove(member)
     }
+
+    fun getId() = id
 
     init { this.validateCreation() }
 

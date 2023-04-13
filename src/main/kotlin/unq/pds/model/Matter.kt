@@ -26,7 +26,9 @@ class Matter(
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
     @Schema(example = "1")
-    var id: Long? = null
+    private var id: Long? = null
+
+    fun getId() = id
 
     init { this.validateCreation() }
 
