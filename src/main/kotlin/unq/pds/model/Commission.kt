@@ -1,26 +1,34 @@
 package unq.pds.model
 
+import com.fasterxml.jackson.annotation.*
+import io.swagger.v3.oas.annotations.media.Schema
 import javax.management.InvalidAttributeValueException
 import javax.persistence.*
 
 @Entity
 @Table(name = "commission")
+@JsonPropertyOrder("id", "year", "fourMonthPeriod", "matter", "students", "teachers", "groupsStudents")
 class Commission(
-    @Column(nullable = false) private var year: Int,
-    @Column(nullable = false) private var fourMonthPeriod: FourMonthPeriod,
-    @ManyToOne private var matter: Matter
+    @Column(nullable = false) @JsonProperty @field:Schema(example = "2023") private var year: Int,
+    @Column(nullable = false) @JsonProperty @field:Schema(example = "FIRST_PERIOD") private var fourMonthPeriod: FourMonthPeriod,
+    @ManyToOne @JsonProperty private var matter: Matter
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty
+    @Schema(example = "1")
     private var id: Long? = null
 
     @ManyToMany(fetch = FetchType.EAGER)
+    @JsonProperty
     var students: MutableSet<Student> = mutableSetOf()
 
     @ManyToMany(fetch = FetchType.EAGER)
+    @JsonProperty
     var teachers: MutableSet<Teacher> = mutableSetOf()
 
     @ManyToMany(fetch = FetchType.EAGER)
+    @JsonProperty
     var groupsStudents: MutableSet<Group> = mutableSetOf()
 
     fun addStudent(student: Student) {
