@@ -51,7 +51,7 @@ class Group(
     }
 
     private fun validateName(name: String) {
-        if (name.isBlank()) throw InvalidAttributeValueException("Name cannot be empty")
+        if (name.isNullOrBlank()) throw InvalidAttributeValueException("Name cannot be empty")
     }
 
     private fun isMember(member: Student): Boolean {
