@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.model.Student
+import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.StudentService
 
@@ -17,7 +18,7 @@ open class StudentServiceImpl : StudentService {
 
     override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
         if (studentDAO.findByEmail(studentCreateRequestDTO.email!!).isPresent) {
-            throw RuntimeException("The email is already registered")
+            throw AlreadyRegisteredException("email")
         }
 
         val student = Student(
@@ -32,7 +33,7 @@ open class StudentServiceImpl : StudentService {
         var studentRecovery = findById(student.getId()!!)
         var studentWithEmail = studentDAO.findByEmail(student.getEmail()!!)
         if (studentWithEmail.isPresent && studentRecovery.getId() != studentWithEmail.get().getId()) {
-            throw RuntimeException("The email is already registered")
+            throw AlreadyRegisteredException("email")
         }
 
         studentRecovery.setFirstName(student.getFirstName())
@@ -45,7 +46,7 @@ open class StudentServiceImpl : StudentService {
         try {
             studentDAO.deleteById(id)
         } catch (e: RuntimeException) {
-            throw RuntimeException("The student with id $id is not registered")
+            throw NoSuchElementException("The student with id $id is not registered")
         }
     }
 
@@ -58,7 +59,8 @@ open class StudentServiceImpl : StudentService {
     }
 
     override fun findByEmail(email: String): Student {
-        return studentDAO.findByEmail(email).orElseThrow { RuntimeException("Not found the student with email $email") }
+        return studentDAO.findByEmail(email)
+            .orElseThrow { NoSuchElementException("Not found the student with email $email") }
     }
 
     override fun clearStudents() {
