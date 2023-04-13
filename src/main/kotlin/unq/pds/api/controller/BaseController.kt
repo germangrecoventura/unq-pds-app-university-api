@@ -7,8 +7,7 @@ import org.springframework.web.bind.*
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import unq.pds.api.dtos.ErrorDTO
-import unq.pds.model.exceptions.EmailAlreadyRegisteredException
-import unq.pds.model.exceptions.MatterNameAlreadyRegisteredException
+import unq.pds.model.exceptions.AlreadyRegisteredException
 import java.util.function.Consumer
 import javax.management.InvalidAttributeValueException
 
@@ -27,9 +26,9 @@ class BaseController {
         return errors
     }
 
-    @ExceptionHandler(EmailAlreadyRegisteredException::class)
+    @ExceptionHandler(AlreadyRegisteredException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleEmailAddressAlreadyRegisteredException(ex: EmailAlreadyRegisteredException): ResponseEntity<ErrorDTO> {
+    fun handleAlreadyRegisteredException(ex: AlreadyRegisteredException): ResponseEntity<ErrorDTO> {
         return ResponseEntity.badRequest().body(ErrorDTO(ex.message))
     }
 
@@ -56,12 +55,6 @@ class BaseController {
     fun handleMethodArgumentTypeMismatchException(ex: MethodArgumentTypeMismatchException): ResponseEntity<ErrorDTO> {
         val errorMessage = "Required request parameter '" + ex.name + "' for method parameter type " + ex.requiredType + " is not present"
         return ResponseEntity.badRequest().body(ErrorDTO(errorMessage))
-    }
-
-    @ExceptionHandler(MatterNameAlreadyRegisteredException::class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleMatterNameAlreadyRegisteredException(ex: MatterNameAlreadyRegisteredException): ResponseEntity<ErrorDTO> {
-        return ResponseEntity.badRequest().body(ErrorDTO(ex.message))
     }
 
     @ExceptionHandler(InvalidAttributeValueException::class)
