@@ -8,7 +8,7 @@ import javax.persistence.*
 class Commission(
     @Column(nullable = false) private var year: Int,
     @Column(nullable = false) private var fourMonthPeriod: FourMonthPeriod,
-    @Column(nullable = false) private var matter: Matter
+    @ManyToOne private var matter: Matter
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -16,6 +16,9 @@ class Commission(
 
     @ManyToMany
     var students: MutableSet<Student> = mutableSetOf()
+
+    @ManyToMany
+    var teachers: MutableSet<Teacher> = mutableSetOf()
 
     @ManyToMany
     var groupsStudents: MutableSet<Group> = mutableSetOf()
