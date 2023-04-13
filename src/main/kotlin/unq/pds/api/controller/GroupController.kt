@@ -40,7 +40,7 @@ class GroupController(private val groupService: GroupService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"string\"\n" +
+                                "  \"name\": \"Name cannot be empty\"\n" +
                                 "}"
                     )]
                 )]
@@ -201,13 +201,99 @@ class GroupController(private val groupService: GroupService) {
         }
     }
 
-    @PutMapping
-    fun addMember(@NotBlank @RequestParam groupId: Long, @NotBlank @RequestParam studentId: Long): ResponseEntity<Any> {
-        return ResponseEntity(groupService.addMember(groupId, studentId), HttpStatus.OK)
+    @PutMapping("/addMember/{groupId}/{studentId}")
+    @Operation(
+        summary = "Add a member to a group",
+        description = "Add a member to a group",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = Group::class),
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            )]
+    )
+    fun addMember(@NotBlank @PathVariable groupId: Long, @NotBlank @PathVariable studentId: Long): ResponseEntity<Any> {
+        return try {
+            ResponseEntity(groupService.addMember(groupId, studentId), HttpStatus.OK)
+        } catch (e: NoSuchElementException) {
+            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+        }
     }
 
-    @PutMapping
-    fun removeMember(@NotBlank @RequestParam groupId: Long, @NotBlank @RequestParam studentId: Long): ResponseEntity<Any> {
-        return ResponseEntity(groupService.removeMember(groupId, studentId), HttpStatus.OK)
+    @PutMapping("/removeMember/{groupId}/{studentId}")
+    @Operation(
+        summary = "Remove a member of a group",
+        description = "Remove a member of a group",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = Group::class),
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            )]
+    )
+    fun removeMember(@NotBlank @PathVariable groupId: Long, @NotBlank @PathVariable studentId: Long): ResponseEntity<Any> {
+        return try {
+            ResponseEntity(groupService.removeMember(groupId, studentId), HttpStatus.OK)
+        } catch (e: NoSuchElementException) {
+            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+        }
     }
 }

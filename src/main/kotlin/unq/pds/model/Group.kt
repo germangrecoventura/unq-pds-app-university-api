@@ -1,14 +1,19 @@
 package unq.pds.model
 
+import com.fasterxml.jackson.annotation.*
+import io.swagger.v3.oas.annotations.media.Schema
 import javax.management.InvalidAttributeValueException
 import javax.persistence.*
 
 @Entity
 @Table(name = "grupo")
+@JsonPropertyOrder("id", "name", "members", "repository")
 class Group(
     name: String
 ) {
     @Column(nullable = false)
+    @JsonProperty
+    @Schema(example = "Group 1")
     var name = name
         set(value) {
             this.validateName(value)
@@ -17,12 +22,16 @@ class Group(
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty
+    @Schema(example = "1")
     var id: Long? = null
 
     @ManyToMany
+    @JsonProperty
     var members: MutableSet<Student> = mutableSetOf()
 
     @Column(nullable = true)
+    @JsonProperty
     var repository: String? = null
 
     fun addMember(member: Student) {

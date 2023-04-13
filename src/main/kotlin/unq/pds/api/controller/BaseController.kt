@@ -36,11 +36,12 @@ class BaseController {
     @ExceptionHandler(HttpMessageNotReadableException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleHttpMessageNotReadableException(ex: HttpMessageNotReadableException): ResponseEntity<ErrorDTO> {
-        val messageTotal = ex.message!!.split("problem")
-        var finalMessage = messageTotal[1].substring(2, 50)
+        val messageTotal = ex.message!!.split("value")
+        var finalMessage = messageTotal[2]
         while (finalMessage.contains(";".single())) {
             finalMessage = finalMessage.dropLast(1)
         }
+        finalMessage = "Value$finalMessage"
         return ResponseEntity.badRequest().body(ErrorDTO(finalMessage))
     }
 
@@ -68,4 +69,11 @@ class BaseController {
     fun handleInvalidAttributeValueException(ex: InvalidAttributeValueException): ResponseEntity<ErrorDTO> {
         return ResponseEntity.badRequest().body(ErrorDTO(ex.message!!))
     }
+
+    @ExceptionHandler(CloneNotSupportedException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleCloneNotSupportedException(ex: CloneNotSupportedException): ResponseEntity<ErrorDTO> {
+        return ResponseEntity.badRequest().body(ErrorDTO(ex.message!!))
+    }
+
 }
