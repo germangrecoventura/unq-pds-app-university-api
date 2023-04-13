@@ -104,7 +104,7 @@ class TeacherController {
                 ResponseEntity(
                     "{\n" +
                             "  \"teacher\": \"Not found teacher with id\"\n" +
-                            "}", HttpStatus.BAD_REQUEST
+                            "}", HttpStatus.NOT_FOUND
                 )
             }
         }
@@ -223,7 +223,7 @@ class TeacherController {
                 ResponseEntity(
                     "{\n" +
                             "  \"teacher\": \"Not found teacher with id\"\n" +
-                            "}", HttpStatus.BAD_REQUEST
+                            "}", HttpStatus.NOT_FOUND
                 )
             }
         }
