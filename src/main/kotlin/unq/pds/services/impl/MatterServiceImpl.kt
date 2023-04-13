@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.model.Matter
-import unq.pds.model.exceptions.MatterNameAlreadyRegisteredException
+import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.persistence.MatterDAO
 import unq.pds.services.MatterService
 
@@ -16,14 +16,14 @@ open class MatterServiceImpl : MatterService {
     private lateinit var matterDAO: MatterDAO
 
     override fun save(matter: Matter): Matter {
-        if (matterDAO.findByName(matter.name).isPresent) throw MatterNameAlreadyRegisteredException()
+        if (matterDAO.findByName(matter.name).isPresent) throw AlreadyRegisteredException("matter")
         return matterDAO.save(matter)
     }
 
     override fun update(matter: Matter): Matter {
         val matterWithNameRegistered = matterDAO.findByName(matter.name)
         if (matterWithNameRegistered.isPresent && matterWithNameRegistered.get().id != matter.id)
-            throw MatterNameAlreadyRegisteredException()
+            throw AlreadyRegisteredException("matter")
         if (matter.id != null && matterDAO.existsById(matter.id!!)) return matterDAO.save(matter)
          else throw NoSuchElementException("Matter does not exists")
     }

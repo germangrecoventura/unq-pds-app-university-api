@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.impl.StudentServiceImpl
+import javax.management.InvalidAttributeValueException
 
 @SpringBootTest
 class StudentServiceTest {
@@ -30,36 +30,36 @@ class StudentServiceTest {
     @Test
     fun `should throw an exception if firstname is empty`() {
         var request = aStudentDTO().withFirstName("").build()
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { studentService.save(request) }
 
         Assertions.assertEquals(
             "The firstname cannot be empty",
-            thrown.message
+            thrown!!.message
         )
     }
 
     @Test
     fun `should throw an exception if the firstname has any special characters`() {
         var request = aStudentDTO().withFirstName("J@").build()
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { studentService.save(request) }
 
         Assertions.assertEquals(
             "The firstname can not contain special characters",
-            thrown.message
+            thrown!!.message
         )
     }
 
     @Test
     fun `should throw an exception if the firstname has any number`() {
         var request = aStudentDTO().withFirstName("Jav1er").build()
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { studentService.save(request) }
 
         Assertions.assertEquals(
             "The firstname can not contain numbers",
-            thrown.message
+            thrown!!.message
         )
     }
 
@@ -73,12 +73,12 @@ class StudentServiceTest {
     @Test
     fun `should throw an exception if lastname is empty`() {
         var request = aStudentDTO().withLastName("").build()
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { studentService.save(request) }
 
         Assertions.assertEquals(
             "The lastname cannot be empty",
-            thrown.message
+            thrown!!.message
         )
     }
 
@@ -86,12 +86,12 @@ class StudentServiceTest {
     fun `should throw an exception if the lastname has any special characters`() {
         var request = aStudentDTO().withLastName("Gr#co").build()
 
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { studentService.save(request) }
 
         Assertions.assertEquals(
             "The lastname can not contain special characters",
-            thrown.message
+            thrown!!.message
         )
 
     }
@@ -99,12 +99,12 @@ class StudentServiceTest {
     @Test
     fun `should throw an exception if the lastname has any number`() {
         var request = aStudentDTO().withLastName("Gr3c0").build()
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { studentService.save(request) }
 
         Assertions.assertEquals(
             "The lastname can not contain numbers",
-            thrown.message
+            thrown!!.message
         )
     }
 
@@ -118,12 +118,12 @@ class StudentServiceTest {
     @Test
     fun `should throw an exception if email is empty`() {
         var request = aStudentDTO().withEmail("").build()
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { studentService.save(request) }
 
         Assertions.assertEquals(
             "The email cannot be empty",
-            thrown.message
+            thrown!!.message
         )
     }
 
@@ -145,12 +145,12 @@ class StudentServiceTest {
     @Test
     fun `should throw an exception when the email is not valid`() {
         var request = aStudentDTO().withEmail("juanPerezgmail.com").build()
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.save(request) }
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { studentService.save(request) }
 
         Assertions.assertEquals(
             "The email is not valid",
-            thrown.message
+            thrown!!.message
         )
     }
 
@@ -208,8 +208,8 @@ class StudentServiceTest {
         var student = studentService.save(aStudentDTO().build())
         student.setId(-5)
 
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.update(student) }
+        val thrown: NoSuchElementException =
+            Assertions.assertThrows(NoSuchElementException::class.java) { studentService.update(student) }
 
 
         Assertions.assertEquals(
@@ -221,7 +221,7 @@ class StudentServiceTest {
 
     @Test
     fun `should delete a student if it exists`() {
-        var student = studentService.save(StudentCreateRequestDTO("German", "Greco Ventura", "prueba@gmail.com"))
+        var student = studentService.save(aStudentDTO().build())
         student.getId()?.let { studentService.deleteById(it) }
         Assertions.assertTrue(studentService.count() == 0)
     }
@@ -229,8 +229,8 @@ class StudentServiceTest {
 
     @Test
     fun `should throw an exception when deleting a non-existent student`() {
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.deleteById(-1) }
+        val thrown: NoSuchElementException =
+            Assertions.assertThrows(NoSuchElementException::class.java) { studentService.deleteById(-1) }
 
         Assertions.assertEquals(
             "The student with id -1 is not registered",

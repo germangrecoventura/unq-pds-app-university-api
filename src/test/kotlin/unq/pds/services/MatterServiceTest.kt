@@ -4,7 +4,7 @@ import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
-import unq.pds.model.exceptions.MatterNameAlreadyRegisteredException
+import unq.pds.model.exceptions.AlreadyRegisteredException
 
 @SpringBootTest
 class MatterServiceTest {
@@ -22,8 +22,8 @@ class MatterServiceTest {
         matterService.save(aMatter().build())
         try {
             matterService.save(aMatter().build())
-        } catch (e: MatterNameAlreadyRegisteredException) {
-            Assertions.assertEquals("The matter name is already registered", e.message)
+        } catch (e: AlreadyRegisteredException) {
+            Assertions.assertEquals("The matter is already registered", e.message)
         }
     }
 
@@ -67,8 +67,8 @@ class MatterServiceTest {
         matterToUpdate.name = "Practica de Desarrollo de Software"
         try {
             matterService.update(matterToUpdate)
-        } catch (e:MatterNameAlreadyRegisteredException) {
-            Assertions.assertEquals("The matter name is already registered", e.message)
+        } catch (e:AlreadyRegisteredException) {
+            Assertions.assertEquals("The matter is already registered", e.message)
         }
     }
 

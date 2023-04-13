@@ -75,5 +75,4 @@ class BaseController {
     fun handleCloneNotSupportedException(ex: CloneNotSupportedException): ResponseEntity<ErrorDTO> {
         return ResponseEntity.badRequest().body(ErrorDTO(ex.message!!))
     }
-
 }
