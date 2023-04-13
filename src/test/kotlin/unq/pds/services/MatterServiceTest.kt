@@ -30,14 +30,14 @@ class MatterServiceTest {
     @Test
     fun `should recover a matter when it exists`() {
         val matter = matterService.save(aMatter().build())
-        val recoverMatter = matterService.recover(matter.id!!)
+        val recoverMatter = matterService.read(matter.id!!)
         Assertions.assertEquals(matter.name, recoverMatter.name)
     }
 
     @Test
     fun `should throw an exception when trying to recover a matter with an invalid id`() {
         try {
-            matterService.recover(-1)
+            matterService.read(-1)
         } catch (e:NoSuchElementException) {
             Assertions.assertEquals("There is no matter with that id", e.message)
         }
