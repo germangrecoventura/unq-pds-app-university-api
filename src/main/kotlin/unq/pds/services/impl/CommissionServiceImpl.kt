@@ -84,6 +84,10 @@ open class CommissionServiceImpl : CommissionService {
         return this.update(commission)
     }
 
+    override fun readAll(): List<Commission> {
+        return commissionDAO.findAll().toList()
+    }
+
     override fun count(): Int {
         return commissionDAO.count().toInt()
     }

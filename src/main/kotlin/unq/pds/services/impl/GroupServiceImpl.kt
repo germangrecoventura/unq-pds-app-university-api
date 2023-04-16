@@ -49,6 +49,10 @@ open class GroupServiceImpl : GroupService {
         return this.update(group)
     }
 
+    override fun readAll(): List<Group> {
+        return groupDAO.findAll().toList()
+    }
+
     override fun count(): Int {
         return groupDAO.count().toInt()
     }

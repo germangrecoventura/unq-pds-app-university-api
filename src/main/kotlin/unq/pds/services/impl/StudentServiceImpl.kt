@@ -63,6 +63,10 @@ open class StudentServiceImpl : StudentService {
             .orElseThrow { NoSuchElementException("Not found the student with email $email") }
     }
 
+    override fun readAll(): List<Student> {
+        return studentDAO.findAll().toList()
+    }
+
     override fun clearStudents() {
         studentDAO.deleteAll()
     }

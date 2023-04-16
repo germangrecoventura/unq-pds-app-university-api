@@ -41,6 +41,10 @@ open class MatterServiceImpl : MatterService {
         return matterDAO.findByName(name).orElseThrow { NoSuchElementException("There is no matter with that name") }
     }
 
+    override fun readAll(): List<Matter> {
+        return matterDAO.findAll().toList()
+    }
+
     override fun count(): Int {
         return matterDAO.count().toInt()
     }

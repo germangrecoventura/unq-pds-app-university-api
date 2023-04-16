@@ -61,6 +61,10 @@ open class TeacherServiceImpl : TeacherService {
             .orElseThrow { NoSuchElementException("Not found the teacher with email $email") }
     }
 
+    override fun readAll(): List<Teacher> {
+        return teacherDAO.findAll().toList()
+    }
+
     override fun clearTeachers() {
         teacherDAO.deleteAll()
     }
