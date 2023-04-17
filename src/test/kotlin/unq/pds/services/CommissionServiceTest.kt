@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
 import unq.pds.model.builder.GroupBuilder.Companion.aGroup
+import unq.pds.model.builder.MatterBuilder.Companion.aMatter
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
 
@@ -323,6 +324,22 @@ class CommissionServiceTest {
         } catch (e: NoSuchElementException) {
             Assertions.assertEquals("There is no commission with that id", e.message)
         }
+    }
+
+    @Test
+    fun `should recover an empty list of commissions when recover all and there is no persistence`() {
+        Assertions.assertEquals(0, commissionService.readAll().size)
+    }
+
+    @Test
+    fun `should recover a list with two commissions when recover all and there are exactly two persisted`() {
+        commissionService.save(aCommission().build())
+        commissionService.save(aCommission().withMatter(aMatter().withName("Desarrollo de aplicaciones").build()).build())
+        val commissions = commissionService.readAll()
+
+        Assertions.assertEquals(2, commissions.size)
+        Assertions.assertTrue(commissions.any { it.getMatter().name == "Practica de Desarrollo de Software" })
+        Assertions.assertTrue(commissions.any { it.getMatter().name == "Desarrollo de aplicaciones" })
     }
 
     @AfterEach

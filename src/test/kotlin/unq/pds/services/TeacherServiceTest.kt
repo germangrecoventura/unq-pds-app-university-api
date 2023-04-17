@@ -276,6 +276,22 @@ class TeacherServiceTest {
         )
     }
 
+    @Test
+    fun `should recover an empty list of teachers when recover all and there is no persistence`() {
+        Assertions.assertEquals(0, teacherService.readAll().size)
+    }
+
+    @Test
+    fun `should recover a list with two teachers when recover all and there are exactly two persisted`() {
+        teacherService.save(aTeacherDTO().build())
+        teacherService.save(aTeacherDTO().withEmail("germanF@gmail.com").build())
+        val teachers = teacherService.readAll()
+
+        Assertions.assertEquals(2, teachers.size)
+        Assertions.assertTrue(teachers.any { it.getEmail() == "german@gmail.com" })
+        Assertions.assertTrue(teachers.any { it.getEmail() == "germanF@gmail.com" })
+    }
+
     @AfterEach
     fun tearDown() {
         teacherService.clearTeachers()

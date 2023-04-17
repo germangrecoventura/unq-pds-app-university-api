@@ -105,6 +105,22 @@ class MatterServiceTest {
         }
     }
 
+    @Test
+    fun `should recover an empty list of matters when recover all and there is no persistence`() {
+        Assertions.assertEquals(0, matterService.readAll().size)
+    }
+
+    @Test
+    fun `should recover a list with two matters when recover all and there are exactly two persisted`() {
+        matterService.save(aMatter().build())
+        matterService.save(aMatter().withName("Desarrollo de aplicaciones").build())
+        val matters = matterService.readAll()
+
+        Assertions.assertEquals(2, matters.size)
+        Assertions.assertTrue(matters.any { it.name == "Practica de Desarrollo de Software" })
+        Assertions.assertTrue(matters.any { it.name == "Desarrollo de aplicaciones" })
+    }
+
     @AfterEach
     fun tearDown() {
         matterService.clearMatters()
