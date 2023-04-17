@@ -228,5 +228,10 @@ class StudentController {
                 )
             }
         }
+
+        @GetMapping("/getAll")
+        fun getAll(): ResponseEntity<List<Student>> {
+            return ResponseEntity(studentService.readAll(), HttpStatus.OK)
+        }
     }
 }

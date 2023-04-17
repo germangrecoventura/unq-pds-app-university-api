@@ -216,5 +216,10 @@ class TeacherController {
                 ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
             }
         }
+
+        @GetMapping("/getAll")
+        fun getAll(): ResponseEntity<List<Teacher>> {
+            return ResponseEntity(teacherService.readAll(), HttpStatus.OK)
+        }
     }
 }

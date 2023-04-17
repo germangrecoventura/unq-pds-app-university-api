@@ -200,4 +200,9 @@ class MatterController(private val matterService: MatterService) {
             ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
+
+    @GetMapping("/getAll")
+    fun getAll(): ResponseEntity<List<Matter>> {
+        return ResponseEntity(matterService.readAll(), HttpStatus.OK)
+    }
 }
