@@ -202,6 +202,23 @@ class MatterController(private val matterService: MatterService) {
     }
 
     @GetMapping("/getAll")
+    @Operation(
+        summary = "Get all matters",
+        description = "Get all matters",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = Matter::class)),
+                    )
+                ]
+            )]
+    )
     fun getAll(): ResponseEntity<List<Matter>> {
         return ResponseEntity(matterService.readAll(), HttpStatus.OK)
     }
