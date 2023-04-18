@@ -488,4 +488,26 @@ class CommissionController(private val commissionService: CommissionService) {
             ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
+
+    @GetMapping("/getAll")
+    @Operation(
+        summary = "Get all commissions",
+        description = "Get all commissions",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = Commission::class)),
+                    )
+                ]
+            )]
+    )
+    fun getAll(): ResponseEntity<List<Commission>> {
+        return ResponseEntity(commissionService.readAll(), HttpStatus.OK)
+    }
 }

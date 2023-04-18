@@ -151,6 +151,22 @@ class GroupServiceTest {
         }
     }
 
+    @Test
+    fun `should recover an empty list of groups when recover all and there is no persistence`() {
+        Assertions.assertEquals(0, groupService.readAll().size)
+    }
+
+    @Test
+    fun `should recover a list with two groups when recover all and there are exactly two persisted`() {
+        groupService.save(aGroup().build())
+        groupService.save(aGroup().withName("The group").build())
+        val groups = groupService.readAll()
+
+        Assertions.assertEquals(2, groups.size)
+        Assertions.assertTrue(groups.any { it.name == "The programmers" })
+        Assertions.assertTrue(groups.any { it.name == "The group" })
+    }
+
     @AfterEach
     fun tearDown() {
         groupService.clearGroups()

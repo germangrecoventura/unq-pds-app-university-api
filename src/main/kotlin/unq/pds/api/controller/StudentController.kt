@@ -1,6 +1,7 @@
 package unq.pds.api.controller
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
@@ -227,6 +228,28 @@ class StudentController {
                             "}", HttpStatus.NOT_FOUND
                 )
             }
+        }
+
+        @GetMapping("/getAll")
+        @Operation(
+            summary = "Get all students",
+            description = "Get all students",
+        )
+        @ApiResponses(
+            value = [
+                ApiResponse(
+                    responseCode = "200",
+                    description = "Success",
+                    content = [
+                        Content(
+                            mediaType = "application/json",
+                            array = ArraySchema(schema = Schema(implementation = Student::class)),
+                        )
+                    ]
+                )]
+        )
+        fun getAll(): ResponseEntity<List<Student>> {
+            return ResponseEntity(studentService.readAll(), HttpStatus.OK)
         }
     }
 }

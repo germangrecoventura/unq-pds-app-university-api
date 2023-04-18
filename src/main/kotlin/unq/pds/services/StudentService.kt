@@ -10,5 +10,6 @@ interface StudentService {
     fun count(): Int
     fun findById(id: Long): Student
     fun findByEmail(email: String): Student
+    fun readAll(): List<Student>
     fun clearStudents()
 }

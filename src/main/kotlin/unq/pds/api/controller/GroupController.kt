@@ -296,4 +296,26 @@ class GroupController(private val groupService: GroupService) {
             ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
+
+    @GetMapping("/getAll")
+    @Operation(
+        summary = "Get all groups",
+        description = "Get all groups",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = Group::class)),
+                    )
+                ]
+            )]
+    )
+    fun getAll(): ResponseEntity<List<Group>> {
+        return ResponseEntity(groupService.readAll(), HttpStatus.OK)
+    }
 }
