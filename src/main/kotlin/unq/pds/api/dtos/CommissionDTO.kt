@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import unq.pds.model.Commission
 import unq.pds.model.FourMonthPeriod
 import unq.pds.model.Matter
+import javax.validation.constraints.NotBlank
+import javax.validation.constraints.Pattern
 
 class CommissionDTO {
 
@@ -13,7 +15,10 @@ class CommissionDTO {
     @Schema(example = "FIRST_PERIOD")
     var fourMonthPeriod: FourMonthPeriod? = null
 
-    var matter: MatterDTO? = null
+    @NotBlank(message = "Name cannot be empty")
+    @Pattern(regexp = "[a-zA-Z0-9 ]+")
+    @Schema(example = "Matematica")
+    var matterName: String? = null
 
-    fun fromDTOToModel() = Commission(year!!, fourMonthPeriod!!, Matter(matter!!.name!!))
+    fun fromDTOToModel() = Commission(year!!, fourMonthPeriod!!, Matter(matterName!!))
 }
