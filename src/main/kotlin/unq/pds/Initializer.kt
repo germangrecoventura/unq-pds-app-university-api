@@ -2,8 +2,10 @@ package unq.pds
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import unq.pds.model.builder.MatterBuilder.Companion.aMatter
 import unq.pds.services.*
 import unq.pds.services.builder.BuilderStudentDTO
+import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
 
 @Component
 class Initializer {
@@ -32,6 +34,8 @@ class Initializer {
 
     fun loadData() {
         loadStudents()
+        loadTeachers()
+        loadMatters()
     }
 
 
@@ -44,6 +48,31 @@ class Initializer {
         val mutListIterator = students.listIterator()
         while (mutListIterator.hasNext()) {
             studentService.save(mutListIterator.next())
+        }
+    }
+
+    private fun loadTeachers() {
+        val teachers = mutableListOf(
+            aTeacherDTO().withFirstName("Maximiliano").withLastName("Rugna")
+                .withEmail("maxi@gmail.com").build(),
+            aTeacherDTO().withFirstName("Gustavo").withLastName("Pilla")
+                .withEmail("gustavo@gmail.com").build(),
+        )
+        val mutListIterator = teachers.listIterator()
+        while (mutListIterator.hasNext()) {
+            teacherService.save(mutListIterator.next())
+        }
+    }
+
+    private fun loadMatters() {
+        val matters = mutableListOf(
+            aMatter().withName("Math").build(),
+            aMatter().withName("Software development practice").build(),
+            aMatter().withName("Applications development").build()
+        )
+        val mutListIterator = matters.listIterator()
+        while (mutListIterator.hasNext()) {
+            matterService.save(mutListIterator.next())
         }
     }
 }

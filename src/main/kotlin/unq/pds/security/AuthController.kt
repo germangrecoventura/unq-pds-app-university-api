@@ -10,13 +10,14 @@ import unq.pds.services.StudentService
 import java.util.*
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletResponse
+import javax.validation.Valid
 
 @RestController
 @CrossOrigin
 class AuthController(private val studentService: StudentService) {
 
     @PostMapping("/login")
-    fun login(@RequestBody body: LoginDTO, response: HttpServletResponse): ResponseEntity<Any> {
+    fun login(@Valid @RequestBody body: LoginDTO, response: HttpServletResponse): ResponseEntity<Any> {
         try {
             val student = studentService.findByEmail(body.email!!)
             if (!student.comparePassword(body.password!!)) {
