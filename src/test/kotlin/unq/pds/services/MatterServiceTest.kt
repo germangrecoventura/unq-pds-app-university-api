@@ -3,6 +3,7 @@ package unq.pds.services
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import unq.pds.Initializer
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
 import unq.pds.model.exceptions.AlreadyRegisteredException
 
@@ -10,6 +11,12 @@ import unq.pds.model.exceptions.AlreadyRegisteredException
 class MatterServiceTest {
 
     @Autowired lateinit var matterService: MatterService
+    @Autowired lateinit var initializer: Initializer
+
+    @BeforeEach
+    fun tearDown() {
+        initializer.cleanDataBase()
+    }
 
     @Test
     fun `should be create a matter when it has valid credentials`() {
@@ -119,10 +126,5 @@ class MatterServiceTest {
         Assertions.assertEquals(2, matters.size)
         Assertions.assertTrue(matters.any { it.name == "Practica de Desarrollo de Software" })
         Assertions.assertTrue(matters.any { it.name == "Desarrollo de aplicaciones" })
-    }
-
-    @AfterEach
-    fun tearDown() {
-        matterService.clearMatters()
     }
 }

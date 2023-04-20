@@ -3,6 +3,7 @@ package unq.pds.services
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import unq.pds.Initializer
 import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
 import unq.pds.model.builder.GroupBuilder.Companion.aGroup
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
@@ -17,6 +18,12 @@ class CommissionServiceTest {
     @Autowired lateinit var studentService: StudentService
     @Autowired lateinit var teacherService: TeacherService
     @Autowired lateinit var groupService: GroupService
+    @Autowired lateinit var initializer: Initializer
+
+    @BeforeEach
+    fun tearDown() {
+        initializer.cleanDataBase()
+    }
 
     @Test
     fun `should be create a commission when it has valid credentials`() {
@@ -364,14 +371,5 @@ class CommissionServiceTest {
         Assertions.assertEquals(2, commissions.size)
         Assertions.assertTrue(commissions.any { it.getMatter().name == "Practica de Desarrollo de Software" })
         Assertions.assertTrue(commissions.any { it.getMatter().name == "Desarrollo de aplicaciones" })
-    }
-
-    @AfterEach
-    fun tearDown() {
-        commissionService.clearCommissions()
-        groupService.clearGroups()
-        matterService.clearMatters()
-        studentService.clearStudents()
-        teacherService.clearTeachers()
     }
 }

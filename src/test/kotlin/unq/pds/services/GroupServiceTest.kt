@@ -3,6 +3,7 @@ package unq.pds.services
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import unq.pds.Initializer
 import unq.pds.model.builder.GroupBuilder.Companion.aGroup
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 
@@ -11,6 +12,12 @@ class GroupServiceTest {
 
     @Autowired lateinit var groupService: GroupService
     @Autowired lateinit var studentService: StudentService
+    @Autowired lateinit var initializer: Initializer
+
+    @BeforeEach
+    fun tearDown() {
+        initializer.cleanDataBase()
+    }
 
     @Test
     fun `should be create a group when it has valid credentials`() {
@@ -165,11 +172,5 @@ class GroupServiceTest {
         Assertions.assertEquals(2, groups.size)
         Assertions.assertTrue(groups.any { it.name == "The programmers" })
         Assertions.assertTrue(groups.any { it.name == "The group" })
-    }
-
-    @AfterEach
-    fun tearDown() {
-        groupService.clearGroups()
-        studentService.clearStudents()
     }
 }

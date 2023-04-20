@@ -1,18 +1,25 @@
 package unq.pds.services
 
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import unq.pds.Initializer
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
 import unq.pds.services.impl.TeacherServiceImpl
 import javax.management.InvalidAttributeValueException
 
 @SpringBootTest
 class TeacherServiceTest {
-    @Autowired
-    lateinit var teacherService: TeacherServiceImpl
+
+    @Autowired lateinit var teacherService: TeacherServiceImpl
+    @Autowired lateinit var initializer: Initializer
+
+    @BeforeEach
+    fun tearDown() {
+        initializer.cleanDataBase()
+    }
 
     @Test
     fun `should be create a teacher when when it has valid credentials`() {
@@ -290,10 +297,5 @@ class TeacherServiceTest {
         Assertions.assertEquals(2, teachers.size)
         Assertions.assertTrue(teachers.any { it.getEmail() == "german@gmail.com" })
         Assertions.assertTrue(teachers.any { it.getEmail() == "germanF@gmail.com" })
-    }
-
-    @AfterEach
-    fun tearDown() {
-        teacherService.clearTeachers()
     }
 }
