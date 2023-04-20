@@ -345,9 +345,9 @@ class CommissionServiceTest {
     @AfterEach
     fun tearDown() {
         commissionService.clearCommissions()
+        groupService.clearGroups()
         matterService.clearMatters()
         studentService.clearStudents()
         teacherService.clearTeachers()
-        groupService.clearGroups()
     }
 }
