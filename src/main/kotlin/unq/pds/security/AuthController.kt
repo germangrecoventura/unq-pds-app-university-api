@@ -35,7 +35,7 @@ class AuthController(private val studentService: StudentService) {
             response.addCookie(cookie)
             return ResponseEntity("You are logged in correctly", HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            return ResponseEntity(e.message!!, HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(ErrorDTO(e.message!!), HttpStatus.UNAUTHORIZED)
         }
     }
 
