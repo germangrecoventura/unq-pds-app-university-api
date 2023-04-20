@@ -1,8 +1,10 @@
 package unq.pds.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import io.swagger.v3.oas.annotations.media.Schema
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import unq.pds.api.Validator
 import javax.management.InvalidAttributeValueException
 import javax.persistence.*
@@ -85,5 +87,14 @@ class Teacher(
     fun setEmail(emailAddress: String?) {
         validateEmail(emailAddress)
         email = emailAddress!!
+    }
+
+    @JsonIgnore
+    fun getPassword(): String? {
+        return BCryptPasswordEncoder().encode("funciona")
+    }
+
+    fun comparePassword(password: String): Boolean {
+        return BCryptPasswordEncoder().matches(password, getPassword())
     }
 }
