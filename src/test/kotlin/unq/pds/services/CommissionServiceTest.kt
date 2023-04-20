@@ -20,12 +20,14 @@ class CommissionServiceTest {
 
     @Test
     fun `should be create a commission when it has valid credentials`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         Assertions.assertNotNull(commission.getId())
     }
 
     @Test
     fun `should recover a commission when it exists`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val recoverCommission = commissionService.read(commission.getId()!!)
         Assertions.assertEquals(commission.getId(), recoverCommission.getId())
@@ -45,6 +47,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should update a commission when it exists`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val updatedCommission = commissionService.update(commission)
         Assertions.assertEquals(commission.getYear(), updatedCommission.getYear())
@@ -63,6 +66,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should delete a commission when it exists`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         commissionService.delete(commission.getId()!!)
         Assertions.assertEquals(0, commissionService.count())
@@ -79,6 +83,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should add a student to a commission when it was not previously added and both exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val student = studentService.save(aStudentDTO().build())
         Assertions.assertEquals(0, commission.students.size)
@@ -88,6 +93,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to add the same student to a commission twice and both exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val student = studentService.save(aStudentDTO().build())
         commissionService.addStudent(commission.getId()!!, student.getId()!!)
@@ -100,6 +106,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to add a student to a commission and the student does not exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         try {
             commissionService.addStudent(commission.getId()!!, -1)
@@ -120,6 +127,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should remove a student from a commission when it was previously added and both exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val student = studentService.save(aStudentDTO().build())
         Assertions.assertEquals(0, commission.students.size)
@@ -131,6 +139,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to remove a student who does not belong to a commission and both exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val student = studentService.save(aStudentDTO().build())
         try {
@@ -142,6 +151,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to remove a student of a commission and the student does not exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         try {
             commissionService.removeStudent(commission.getId()!!, -1)
@@ -162,6 +172,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should add a teacher to a commission when it was not previously added and both exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val teacher = teacherService.save(aTeacherDTO().build())
         Assertions.assertEquals(0, commission.teachers.size)
@@ -171,6 +182,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to add the same teacher to a commission twice and both exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val teacher = teacherService.save(aTeacherDTO().build())
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
@@ -183,6 +195,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to add a teacher to a commission and the teacher does not exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         try {
             commissionService.addTeacher(commission.getId()!!, -1)
@@ -203,6 +216,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should remove a teacher from a commission when it was previously added and both exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val teacher = teacherService.save(aTeacherDTO().build())
         Assertions.assertEquals(0, commission.teachers.size)
@@ -214,6 +228,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to remove a teacher who does not belong to a commission and both exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val teacher = teacherService.save(aTeacherDTO().build())
         try {
@@ -225,6 +240,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to remove a teacher of a commission and the teacher does not exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         try {
             commissionService.removeTeacher(commission.getId()!!, -1)
@@ -245,6 +261,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should add a group to a commission when it was not previously added and both exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val group = groupService.save(aGroup().build())
         Assertions.assertEquals(0, commission.groupsStudents.size)
@@ -254,6 +271,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to add the same group to a commission twice and both exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val group = groupService.save(aGroup().build())
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
@@ -266,6 +284,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to add a group to a commission and the group does not exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         try {
             commissionService.addGroup(commission.getId()!!, -1)
@@ -286,6 +305,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should remove a group from a commission when it was previously added and both exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val group = groupService.save(aGroup().build())
         Assertions.assertEquals(0, commission.groupsStudents.size)
@@ -297,6 +317,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to remove a group who does not belong to a commission and both exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val group = groupService.save(aGroup().build())
         try {
@@ -308,6 +329,7 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to remove a group of a commission and the group does not exist`() {
+        matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         try {
             commissionService.removeGroup(commission.getId()!!, -1)
@@ -333,6 +355,8 @@ class CommissionServiceTest {
 
     @Test
     fun `should recover a list with two commissions when recover all and there are exactly two persisted`() {
+        matterService.save(aMatter().build())
+        matterService.save(aMatter().withName("Desarrollo de aplicaciones").build())
         commissionService.save(aCommission().build())
         commissionService.save(aCommission().withMatter(aMatter().withName("Desarrollo de aplicaciones").build()).build())
         val commissions = commissionService.readAll()
