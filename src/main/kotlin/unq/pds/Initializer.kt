@@ -2,6 +2,9 @@ package unq.pds
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import unq.pds.model.Matter
+import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
+import unq.pds.model.builder.GroupBuilder.Companion.aGroup
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
 import unq.pds.services.*
 import unq.pds.services.builder.BuilderStudentDTO
@@ -19,23 +22,25 @@ class Initializer {
     lateinit var matterService: MatterService
 
     @Autowired
-    lateinit var groupsService: GroupService
+    lateinit var groupService: GroupService
 
     @Autowired
     lateinit var commissionService: CommissionService
 
     fun cleanDataBase() {
+        commissionService.clearCommissions()
+        groupService.clearGroups()
         studentService.clearStudents()
         teacherService.clearTeachers()
         matterService.clearMatters()
-        groupsService.clearGroups()
-        commissionService.clearCommissions()
     }
 
     fun loadData() {
         loadStudents()
         loadTeachers()
         loadMatters()
+        loadGroups()
+        loadCommissions()
     }
 
 
@@ -73,6 +78,28 @@ class Initializer {
         val mutListIterator = matters.listIterator()
         while (mutListIterator.hasNext()) {
             matterService.save(mutListIterator.next())
+        }
+    }
+
+    private fun loadGroups() {
+        val groups = mutableListOf(
+            aGroup().build(),
+            aGroup().withName("The developers").build()
+        )
+        val mutListIterator = groups.listIterator()
+        while (mutListIterator.hasNext()) {
+            groupService.save(mutListIterator.next())
+        }
+    }
+
+    private fun loadCommissions() {
+        val commissions = mutableListOf(
+            aCommission().withMatter(Matter("Math")).build(),
+            aCommission().withMatter(Matter("Software development practice")).build()
+        )
+        val mutListIterator = commissions.listIterator()
+        while (mutListIterator.hasNext()) {
+            commissionService.save(mutListIterator.next())
         }
     }
 }
