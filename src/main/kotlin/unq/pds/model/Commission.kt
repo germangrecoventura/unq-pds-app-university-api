@@ -69,6 +69,10 @@ class Commission(
 
     fun getId() = id
 
+    fun setMatter(newMatter: Matter) {
+        matter = newMatter
+    }
+
     init { this.validateCreation() }
 
     private fun validateCreation() {

@@ -44,10 +44,25 @@ class CommissionController(private val commissionService: CommissionService) {
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"There is no matter with that name\"\n" +
+                                "}"
+                    )]
+                )]
             )]
     )
-    fun createCommission(@RequestBody @Valid commission: CommissionDTO): ResponseEntity<Commission> {
-        return ResponseEntity(commissionService.save(commission.fromDTOToModel()), HttpStatus.OK)
+    fun createCommission(@RequestBody @Valid commission: CommissionDTO): ResponseEntity<Any> {
+        return try {
+            ResponseEntity(commissionService.save(commission.fromDTOToModel()), HttpStatus.OK)
+        } catch (e: NoSuchElementException) {
+            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+        }
     }
 
     @GetMapping

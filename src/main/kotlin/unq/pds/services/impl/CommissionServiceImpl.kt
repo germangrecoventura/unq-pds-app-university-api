@@ -18,7 +18,7 @@ open class CommissionServiceImpl : CommissionService {
     @Autowired private lateinit var groupService: GroupService
 
     override fun save(commission: Commission): Commission {
-        matterService.save(commission.getMatter())
+        commission.setMatter(matterService.findByName(commission.getMatter().name))
         return commissionDAO.save(commission)
     }
 
