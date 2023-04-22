@@ -27,12 +27,16 @@ class Initializer {
     @Autowired
     lateinit var commissionService: CommissionService
 
+    @Autowired
+    lateinit var repositoryService: RepositoryService
+
     fun cleanDataBase() {
         commissionService.clearCommissions()
         groupService.clearGroups()
         studentService.clearStudents()
         teacherService.clearTeachers()
         matterService.clearMatters()
+        repositoryService.clearRepositories()
     }
 
     fun loadData() {
