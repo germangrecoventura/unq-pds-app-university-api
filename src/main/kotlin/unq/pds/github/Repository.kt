@@ -6,7 +6,7 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "repository")
-class Repository(id: Long, name: String,created: String) {
+class Repository(id: Long, name: String, created: String) {
     @Id
     var id: Long = id
         set(value) {
@@ -24,8 +24,8 @@ class Repository(id: Long, name: String,created: String) {
     @Column
     var created = created
 
-    @OneToMany
-    var issues: MutableSet<Issue> = mutableSetOf()
+    @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+    var issues: MutableList<Issue> = mutableListOf()
     /*var commits: MutableSet<String> = mutableSetOf()
     var branches: MutableSet<String> = mutableSetOf()
     var tags: MutableSet<String> = mutableSetOf()
@@ -47,14 +47,5 @@ class Repository(id: Long, name: String,created: String) {
     private fun validateCreation() {
         validateId(id)
         validateName(name)
-    }
-
-    @Entity
-    class Issue {
-        @Id
-        var id: Int = 5
-        var title: String = "unq-pds-app-university-api"
-        var url = "url"
-        var status = "ESTADO"
     }
 }

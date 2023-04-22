@@ -13,7 +13,7 @@ import javax.management.InvalidAttributeValueException
 class GithubApi {
     private var restTemplate: RestTemplate = RestTemplate()
 
-    fun getRepositoryIssues(createdRepository: String, nameRepository: String): MutableSet<Repository.Issue>? {
+    fun getRepositoryIssues(createdRepository: String, nameRepository: String): MutableList<Issue>? {
         /*val url = "https://api.github.com/repos/germangrecoventura/unq-pds-app-university-api/issues?state=all&direction=asc"*/
         if (createdRepository.isNullOrBlank()) throw InvalidAttributeValueException("Created repository cannot be empty")
         if (nameRepository.isNullOrBlank()) throw InvalidAttributeValueException("Name repository cannot be empty")
@@ -24,7 +24,7 @@ class GithubApi {
         val url = "https://api.github.com/repos/$createdRepository/$nameRepository/issues?state=all&direction=asc"
         val headers = HttpHeaders()
         headers.set("Accept", "application/vnd.github+json")
-        headers.set("Authorization", "Bearer ${"ACA VA EL TOKEN"}")
+        headers.set("Authorization", "Bearer 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")
         val request: HttpEntity<*> = HttpEntity<Any?>(headers)
         val response: ResponseEntity<Array<Any>> = restTemplate.exchange(
             url, HttpMethod.GET, request,
@@ -32,16 +32,16 @@ class GithubApi {
         )
 
         val objects: Array<Any>? = response.body
-        val list = mutableSetOf<Repository.Issue>()
+        val list = mutableListOf<Issue>()
         for (i in objects!!.indices) {
             println(objects[i])
             val ele = objects[i] as LinkedHashMap<String, String>
-            val issue = Repository.Issue()
+            val issue = Issue()
             issue.id = ele["id"] as Int
             issue.title = ele["title"]!!
             issue.url = ele["url"]!!
             issue.status = ele["state"]!!
-            list.plus(issue)
+            list.add(issue)
         }
         return list
     }
