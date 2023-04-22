@@ -50,7 +50,7 @@ class RepositoryServiceTest {
             Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
 
         Assertions.assertEquals(
-            "Name cannot be empty",
+            "Name repository cannot be empty",
             thrown!!.message
         )
     }
@@ -62,7 +62,7 @@ class RepositoryServiceTest {
             Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
 
         Assertions.assertEquals(
-            "The name cannot contain special characters except - and _",
+            "The name repository cannot contain special characters except - and _",
             thrown!!.message
         )
     }
@@ -90,7 +90,7 @@ class RepositoryServiceTest {
             Assertions.assertThrows(CloneNotSupportedException::class.java) { repositoryService.save(request) }
 
         Assertions.assertEquals(
-            "The name App_university is already registered",
+            "The name unq-pds-app-university-api is already registered",
             thrown!!.message
         )
     }
@@ -160,4 +160,6 @@ class RepositoryServiceTest {
             thrown.message
         )
     }
+
+    //TODO FALTA HACER UN TEST DEL CASO QUE CUANDO NO SE ENCUENTRA EL REPO O EL TOKEN DE GITHUB
 }

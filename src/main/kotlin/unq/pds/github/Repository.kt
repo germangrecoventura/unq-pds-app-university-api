@@ -2,15 +2,11 @@ package unq.pds.github
 
 import unq.pds.api.Validator
 import javax.management.InvalidAttributeValueException
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.OneToMany
-import javax.persistence.Table
+import javax.persistence.*
 
 @Entity
 @Table(name = "repository")
-class Repository(id: Long, name: String) {
+class Repository(id: Long, name: String,created: String) {
     @Id
     var id: Long = id
         set(value) {
@@ -25,6 +21,9 @@ class Repository(id: Long, name: String) {
             field = value
         }
 
+    @Column
+    var created = created
+
     @OneToMany
     var issues: MutableSet<Issue> = mutableSetOf()
     /*var commits: MutableSet<String> = mutableSetOf()
@@ -38,7 +37,7 @@ class Repository(id: Long, name: String) {
 
     private fun validateName(name: String) {
         if (name.isNullOrBlank()) throw InvalidAttributeValueException("Name cannot be empty")
-        if(Validator.containsSpecialCharacterGithub(name)) throw InvalidAttributeValueException("The name cannot contain special characters except - and _")
+        if (Validator.containsSpecialCharacterGithub(name)) throw InvalidAttributeValueException("The name cannot contain special characters except - and _")
     }
 
     init {
@@ -52,9 +51,10 @@ class Repository(id: Long, name: String) {
 
     @Entity
     class Issue {
-
-
         @Id
-        var id: Long = 5
+        var id: Int = 5
+        var title: String = "unq-pds-app-university-api"
+        var url = "url"
+        var status = "ESTADO"
     }
 }

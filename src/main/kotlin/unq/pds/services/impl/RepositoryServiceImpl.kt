@@ -4,11 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.RepositoryDTO
+import unq.pds.github.GithubApi
 import unq.pds.github.Repository
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.persistence.RepositoryDAO
 import unq.pds.services.RepositoryService
 import java.util.*
+
 
 @Service
 @Transactional
@@ -17,10 +19,20 @@ open class RepositoryServiceImpl : RepositoryService {
     @Autowired
     private lateinit var repositoryDAO: RepositoryDAO
 
+    @Autowired
+    private lateinit var githubApi: GithubApi
     override fun save(repositoryDTO: RepositoryDTO): Repository {
         if (repositoryDAO.existsById(repositoryDTO.id)) throw AlreadyRegisteredException("repository")
         if (repositoryDAO.findByName(repositoryDTO.name!!).isPresent) throw CloneNotSupportedException("The name ${repositoryDTO.name} is already registered")
-        return repositoryDAO.save(repositoryDTO.fromDTOToModel())
+
+        val issues = githubApi.getRepositoryIssues(repositoryDTO.created!!, repositoryDTO.name!!)
+        val repository = Repository(repositoryDTO.id!!, repositoryDTO.name!!, repositoryDTO.created!!)
+        repository.issues = issues!!
+
+
+
+
+        return repositoryDAO.save(repository)
     }
 
     override fun update(repository: Repository): Repository {

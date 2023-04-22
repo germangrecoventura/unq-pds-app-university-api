@@ -13,5 +13,8 @@ class RepositoryDTO {
     @Pattern(regexp = "[a-zA-Z0-9]+[_-]", message = "The name cannot contain special characters except - and _")
     var name: String? = null
 
-    fun fromDTOToModel() = Repository(id!!, name!!)
+    @NotBlank(message = "Name cannot be empty")
+    var created: String? = null
+
+    fun fromDTOToModel() = Repository(id!!, name!!,created!!)
 }
