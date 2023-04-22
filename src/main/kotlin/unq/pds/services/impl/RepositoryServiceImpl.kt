@@ -26,8 +26,10 @@ open class RepositoryServiceImpl : RepositoryService {
         if (repositoryDAO.findByName(repositoryDTO.name!!).isPresent) throw CloneNotSupportedException("The name ${repositoryDTO.name} is already registered")
 
         val issues = githubApi.getRepositoryIssues(repositoryDTO.created!!, repositoryDTO.name!!)
+        val pullRequests = githubApi.getRepositoryPulls(repositoryDTO.created!!, repositoryDTO.name!!)
         val repository = Repository(repositoryDTO.id!!, repositoryDTO.name!!, repositoryDTO.created!!)
         repository.issues = issues!!
+        repository.pullRequests = pullRequests!!
 
 
 

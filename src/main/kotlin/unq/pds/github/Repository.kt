@@ -24,12 +24,13 @@ class Repository(id: Long, name: String, created: String) {
     @Column
     var created = created
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+    @OneToMany(cascade = [CascadeType.ALL])
     var issues: MutableList<Issue> = mutableListOf()
     /*var commits: MutableSet<String> = mutableSetOf()
     var branches: MutableSet<String> = mutableSetOf()
-    var tags: MutableSet<String> = mutableSetOf()
-    var prs: MutableSet<String> = mutableSetOf()*/
+    var tags: MutableSet<String> = mutableSetOf()*/
+    @OneToMany(cascade = [CascadeType.ALL])
+    var pullRequests: MutableList<PullRequest> = mutableListOf()
 
     private fun validateId(id: Long) {
         if (id.toString().isNullOrBlank()) throw InvalidAttributeValueException("Id cannot be empty")
