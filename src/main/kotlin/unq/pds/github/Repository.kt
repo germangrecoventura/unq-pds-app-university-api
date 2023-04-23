@@ -28,7 +28,10 @@ class Repository(id: Long, name: String, created: String) {
     var issues: MutableList<Issue> = mutableListOf()
     /*var commits: MutableSet<String> = mutableSetOf()
     var branches: MutableSet<String> = mutableSetOf()
-    var tags: MutableSet<String> = mutableSetOf()*/
+
+     */
+    @OneToMany(cascade = [CascadeType.ALL])
+    var tags: MutableList<Tag> = mutableListOf()
     @OneToMany(cascade = [CascadeType.ALL])
     var pullRequests: MutableList<PullRequest> = mutableListOf()
 

@@ -27,7 +27,7 @@ class RepositoryServiceTest {
     }
 
     @Test
-    fun `should be create a group when it has valid credentials`() {
+    fun `should be create a repository when it has valid credentials`() {
         assertDoesNotThrow { repositoryService.save(aRepositoryDTO().build()) }
     }
 

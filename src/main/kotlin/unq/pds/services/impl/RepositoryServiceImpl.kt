@@ -27,9 +27,11 @@ open class RepositoryServiceImpl : RepositoryService {
 
         val issues = githubApi.getRepositoryIssues(repositoryDTO.created!!, repositoryDTO.name!!)
         val pullRequests = githubApi.getRepositoryPulls(repositoryDTO.created!!, repositoryDTO.name!!)
+        val tags = githubApi.getRepositoryTags(repositoryDTO.created!!, repositoryDTO.name!!)
         val repository = Repository(repositoryDTO.id!!, repositoryDTO.name!!, repositoryDTO.created!!)
         repository.issues = issues!!
         repository.pullRequests = pullRequests!!
+        repository.tags = tags!!
 
 
 
