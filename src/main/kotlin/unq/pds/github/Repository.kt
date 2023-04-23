@@ -27,7 +27,9 @@ class Repository(id: Long, name: String, created: String) {
     @OneToMany(cascade = [CascadeType.ALL])
     var issues: MutableList<Issue> = mutableListOf()
 
-    /*var commits: MutableList<String> = mutableListOf()*/
+    @OneToMany(cascade = [CascadeType.ALL])
+    var commits: MutableList<Commit> = mutableListOf()
+
     @OneToMany(cascade = [CascadeType.ALL])
     var branches: MutableList<Branch> = mutableListOf()
 

@@ -29,14 +29,14 @@ open class RepositoryServiceImpl : RepositoryService {
         val pullRequests = githubApi.getRepositoryPulls(repositoryDTO.created!!, repositoryDTO.name!!)
         val tags = githubApi.getRepositoryTags(repositoryDTO.created!!, repositoryDTO.name!!)
         val branches = githubApi.getRepositoryBranches(repositoryDTO.created!!, repositoryDTO.name!!)
+        val commits = githubApi.getRepositoryCommits(repositoryDTO.created!!, repositoryDTO.name!!)
+
         val repository = Repository(repositoryDTO.id!!, repositoryDTO.name!!, repositoryDTO.created!!)
         repository.issues = issues!!
         repository.pullRequests = pullRequests!!
         repository.tags = tags!!
         repository.branches = branches!!
-
-
-
+        repository.commits = commits!!
 
         return repositoryDAO.save(repository)
     }
