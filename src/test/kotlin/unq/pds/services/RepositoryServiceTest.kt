@@ -32,12 +32,6 @@ class RepositoryServiceTest {
     }
 
     @Test
-    fun `should throw an exception if id is null`() {
-        var request = aRepositoryDTO().withId(null).build()
-        Assertions.assertThrows(RuntimeException::class.java) { repositoryService.save(request) }
-    }
-
-    @Test
     fun `should throw an exception if name is null`() {
         var request = aRepositoryDTO().withName(null).build()
         Assertions.assertThrows(RuntimeException::class.java) { repositoryService.save(request) }
@@ -70,27 +64,13 @@ class RepositoryServiceTest {
     @Test
     fun `should throw an exception if a save repository with an existing ID is added`() {
 
-        repositoryService.save(aRepositoryDTO().withId(4).build())
-        val request = aRepositoryDTO().withId(4).withName("Backend").build()
+        repositoryService.save(aRepositoryDTO().build())
+        val request = aRepositoryDTO().build()
         val thrown: AlreadyRegisteredException? =
             Assertions.assertThrows(AlreadyRegisteredException::class.java) { repositoryService.save(request) }
 
         Assertions.assertEquals(
             "The repository is already registered",
-            thrown!!.message
-        )
-    }
-
-    @Test
-    fun `should throw an exception if a save repository with an existing name is added`() {
-
-        repositoryService.save(aRepositoryDTO().withId(4).build())
-        val request = aRepositoryDTO().withId(5).build()
-        val thrown: CloneNotSupportedException? =
-            Assertions.assertThrows(CloneNotSupportedException::class.java) { repositoryService.save(request) }
-
-        Assertions.assertEquals(
-            "The name unq-pds-app-university-api is already registered",
             thrown!!.message
         )
     }
@@ -156,5 +136,15 @@ class RepositoryServiceTest {
         )
     }
 
-    //TODO FALTA HACER UN TEST DEL CASO QUE CUANDO NO SE ENCUENTRA EL REPO O EL TOKEN DE GITHUB
+    @Test
+    fun `should throw exception when repository not found`() {
+        var request = aRepositoryDTO().withName("joselito").build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
+
+        Assertions.assertEquals(
+            "Owner or repository not found",
+            thrown!!.message
+        )
+    }
 }

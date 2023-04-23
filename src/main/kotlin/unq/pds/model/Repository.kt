@@ -6,7 +6,7 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "repository")
-class Repository(id: Long, name: String, created: String) {
+class Repository(id: Long, name: String, owner: String) {
     @Id
     var id: Long = id
         set(value) {
@@ -14,7 +14,7 @@ class Repository(id: Long, name: String, created: String) {
             field = value
         }
 
-    @Column(unique = true)
+    @Column
     var name = name
         set(value) {
             this.validateName(value)
@@ -22,7 +22,7 @@ class Repository(id: Long, name: String, created: String) {
         }
 
     @Column
-    var created = created
+    var owner = owner
 
     @OneToMany(cascade = [CascadeType.ALL])
     var issues: MutableList<Issue> = mutableListOf()

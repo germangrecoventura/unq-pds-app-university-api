@@ -22,16 +22,16 @@ open class RepositoryServiceImpl : RepositoryService {
     @Autowired
     private lateinit var githubApi: GithubApi
     override fun save(repositoryDTO: RepositoryDTO): Repository {
-        if (repositoryDAO.existsById(repositoryDTO.id)) throw AlreadyRegisteredException("repository")
-        if (repositoryDAO.findByName(repositoryDTO.name!!).isPresent) throw CloneNotSupportedException("The name ${repositoryDTO.name} is already registered")
+        val repositoryId = githubApi.getRepository(repositoryDTO.owner!!,repositoryDTO.name!!)
+        if (repositoryDAO.existsById(repositoryId as Long)) throw AlreadyRegisteredException("repository")
 
-        val issues = githubApi.getRepositoryIssues(repositoryDTO.created!!, repositoryDTO.name!!)
-        val pullRequests = githubApi.getRepositoryPulls(repositoryDTO.created!!, repositoryDTO.name!!)
-        val tags = githubApi.getRepositoryTags(repositoryDTO.created!!, repositoryDTO.name!!)
-        val branches = githubApi.getRepositoryBranches(repositoryDTO.created!!, repositoryDTO.name!!)
-        val commits = githubApi.getRepositoryCommits(repositoryDTO.created!!, repositoryDTO.name!!)
+        val issues = githubApi.getRepositoryIssues(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val pullRequests = githubApi.getRepositoryPulls(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val tags = githubApi.getRepositoryTags(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val branches = githubApi.getRepositoryBranches(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val commits = githubApi.getRepositoryCommits(repositoryDTO.owner!!, repositoryDTO.name!!)
 
-        val repository = Repository(repositoryDTO.id!!, repositoryDTO.name!!, repositoryDTO.created!!)
+        val repository = Repository(repositoryId as Long, repositoryDTO.name!!, repositoryDTO.owner!!)
         repository.issues = issues!!
         repository.pullRequests = pullRequests!!
         repository.tags = tags!!

@@ -1,10 +1,8 @@
 package unq.pds.api
 
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
-import org.springframework.http.ResponseEntity
+import org.springframework.http.*
 import org.springframework.stereotype.Component
+import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
 import unq.pds.model.*
 import javax.management.InvalidAttributeValueException
@@ -114,6 +112,26 @@ class GithubApi {
             list.add(commit)
         }
         return list
+    }
+
+
+    fun getRepository(ownerRepository: String, nameRepository: String): Any {
+        try {
+            val token = System.getenv("TOKEN")
+            validation(ownerRepository, nameRepository)
+            val url = "https://api.github.com/repos/$ownerRepository/$nameRepository"
+            val headers = HttpHeaders()
+            headers.set("Accept", "application/vnd.github+json")
+            headers.set("Authorization", "Bearer $token")
+            val request: HttpEntity<*> = HttpEntity<Any?>(headers)
+            val repository = restTemplate.exchange(
+                url, HttpMethod.GET, request,
+                String::class.java
+            )
+            return repository.body.substring(6, 15).toLong()
+        } catch (e: HttpClientErrorException.NotFound) {
+            return throw InvalidAttributeValueException("Owner or repository not found")
+        }
     }
 
     private fun validation(ownerRepository: String, nameRepository: String) {
