@@ -1,5 +1,6 @@
-package unq.pds.github
+package unq.pds.model
 
+import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
 import javax.persistence.Table
@@ -9,7 +10,10 @@ import javax.persistence.Table
 class Issue {
     @Id
     var id: Int = 5
-    var title: String = "unq-pds-app-university-api"
-    var url = "url"
-    var status = "ESTADO"
+    @Column
+    var title: String = ""
+    @Column
+    var url = ""
+    @Column
+    var status = ""
 }

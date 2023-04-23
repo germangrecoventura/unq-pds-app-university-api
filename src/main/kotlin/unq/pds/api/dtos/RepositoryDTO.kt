@@ -1,6 +1,6 @@
 package unq.pds.api.dtos
 
-import unq.pds.github.Repository
+import unq.pds.model.Repository
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Pattern
 

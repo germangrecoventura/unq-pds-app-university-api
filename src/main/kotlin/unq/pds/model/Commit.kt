@@ -1,5 +1,6 @@
-package unq.pds.github
+package unq.pds.model
 
+import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
 import javax.persistence.Table
@@ -9,6 +10,8 @@ import javax.persistence.Table
 class Commit {
     @Id
     var nodeId: String = ""
+    @Column
     var name: String = ""
+    @Column
     var url: String = ""
 }

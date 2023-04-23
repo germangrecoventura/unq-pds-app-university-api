@@ -1,4 +1,4 @@
-package unq.pds.github
+package unq.pds.model
 
 import unq.pds.api.Validator
 import javax.management.InvalidAttributeValueException

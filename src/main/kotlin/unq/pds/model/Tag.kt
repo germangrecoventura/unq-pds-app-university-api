@@ -1,4 +1,4 @@
-package unq.pds.github
+package unq.pds.model
 
 import javax.persistence.Entity
 import javax.persistence.Id

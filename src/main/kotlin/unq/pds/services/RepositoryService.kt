@@ -1,7 +1,7 @@
 package unq.pds.services
 
 import unq.pds.api.dtos.RepositoryDTO
-import unq.pds.github.Repository
+import unq.pds.model.Repository
 import java.util.*
 
 interface RepositoryService {

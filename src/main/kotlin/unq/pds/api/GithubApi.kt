@@ -1,4 +1,4 @@
-package unq.pds.github
+package unq.pds.api
 
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -6,7 +6,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
-import unq.pds.api.Validator
+import unq.pds.model.*
 import javax.management.InvalidAttributeValueException
 
 @Component

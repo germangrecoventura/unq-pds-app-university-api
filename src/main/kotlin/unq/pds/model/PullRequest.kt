@@ -1,5 +1,6 @@
-package unq.pds.github
+package unq.pds.model
 
+import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
 import javax.persistence.Table
@@ -9,6 +10,8 @@ import javax.persistence.Table
 class PullRequest {
     @Id
     var id: Int = 5
-    var url = "url"
-    var status = "ESTADO"
+    @Column
+    var url = ""
+    @Column
+    var status = ""
 }

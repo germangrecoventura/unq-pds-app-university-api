@@ -1,6 +1,6 @@
 package unq.pds.model.builder
 
-import unq.pds.github.Repository
+import unq.pds.model.Repository
 
 
 class BuilderRepository {

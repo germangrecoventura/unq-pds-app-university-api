@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.RepositoryDTO
-import unq.pds.github.GithubApi
-import unq.pds.github.Repository
+import unq.pds.api.GithubApi
+import unq.pds.model.Repository
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.persistence.RepositoryDAO
 import unq.pds.services.RepositoryService
