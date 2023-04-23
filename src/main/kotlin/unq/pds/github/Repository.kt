@@ -26,12 +26,14 @@ class Repository(id: Long, name: String, created: String) {
 
     @OneToMany(cascade = [CascadeType.ALL])
     var issues: MutableList<Issue> = mutableListOf()
-    /*var commits: MutableSet<String> = mutableSetOf()
-    var branches: MutableSet<String> = mutableSetOf()
 
-     */
+    /*var commits: MutableList<String> = mutableListOf()*/
+    @OneToMany(cascade = [CascadeType.ALL])
+    var branches: MutableList<Branch> = mutableListOf()
+
     @OneToMany(cascade = [CascadeType.ALL])
     var tags: MutableList<Tag> = mutableListOf()
+
     @OneToMany(cascade = [CascadeType.ALL])
     var pullRequests: MutableList<PullRequest> = mutableListOf()
 

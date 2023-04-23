@@ -117,11 +117,6 @@ class RepositoryServiceTest {
     }
 
 
-    //
-    //TODO UPDATE
-    //
-
-
     @Test
     fun `should return a repository when searched for by id`() {
         var repository = repositoryService.save(aRepositoryDTO().build())
