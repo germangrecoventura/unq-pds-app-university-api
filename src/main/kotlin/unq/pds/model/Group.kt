@@ -6,7 +6,7 @@ import javax.management.InvalidAttributeValueException
 import javax.persistence.*
 
 @Entity
-@Table(name = "grupo")
+@Table(name = "groupApp")
 @JsonPropertyOrder("id", "name", "members", "repository")
 class Group(
     name: String

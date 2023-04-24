@@ -5,7 +5,7 @@ import javax.persistence.*
 @Entity
 @Table(name = "Project")
 class Project(
-    @OneToMany var repository: Repository
+    @ManyToOne var repository: Repository
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
