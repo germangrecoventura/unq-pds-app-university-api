@@ -71,7 +71,7 @@ class MatterServiceTest {
     fun `should throw an exception when trying to update a matter with a name registered`() {
         matterService.save(aMatter().build())
         val matterToUpdate = matterService.save(aMatter().withName("PDeS").build())
-        matterToUpdate.name = "Practica de Desarrollo de Software"
+        matterToUpdate.name = "Software development practice"
         try {
             matterService.update(matterToUpdate)
         } catch (e:AlreadyRegisteredException) {
@@ -120,11 +120,11 @@ class MatterServiceTest {
     @Test
     fun `should recover a list with two matters when recover all and there are exactly two persisted`() {
         matterService.save(aMatter().build())
-        matterService.save(aMatter().withName("Desarrollo de aplicaciones").build())
+        matterService.save(aMatter().withName("Applications development").build())
         val matters = matterService.readAll()
 
         Assertions.assertEquals(2, matters.size)
-        Assertions.assertTrue(matters.any { it.name == "Practica de Desarrollo de Software" })
-        Assertions.assertTrue(matters.any { it.name == "Desarrollo de aplicaciones" })
+        Assertions.assertTrue(matters.any { it.name == "Software development practice" })
+        Assertions.assertTrue(matters.any { it.name == "Applications development" })
     }
 }
