@@ -63,17 +63,9 @@ class GithubApi {
     }
 
     fun getRepositoryBranches(ownerRepository: String, nameRepository: String): MutableList<Branch>? {
-        val token = System.getenv("TOKEN")
         validation(ownerRepository, nameRepository)
         val url = "https://api.github.com/repos/$ownerRepository/$nameRepository/branches"
-        val headers = HttpHeaders()
-        headers.set("Accept", "application/vnd.github+json")
-        headers.set("Authorization", "Bearer $token")
-        val request: HttpEntity<*> = HttpEntity<Any?>(headers)
-        val response: ResponseEntity<String> = restTemplate.exchange(
-            url, HttpMethod.GET, request,
-            String::class.java
-        )
+        val response: ResponseEntity<String> = makeRequest(url)
         val mapper = ObjectMapper()
         val root: JsonNode = mapper.readTree(response.body)
         val list = mutableListOf<Branch>()
@@ -90,17 +82,9 @@ class GithubApi {
         nameRepository: String,
         operation: String
     ): ResponseEntity<String> {
-        val token = System.getenv("TOKEN")
         validation(ownerRepository, nameRepository)
         val url = "https://api.github.com/repos/$ownerRepository/$nameRepository/$operation?state=all&direction=asc"
-        val headers = HttpHeaders()
-        headers.set("Accept", "application/vnd.github+json")
-        headers.set("Authorization", "Bearer $token")
-        val request: HttpEntity<*> = HttpEntity<Any?>(headers)
-        return restTemplate.exchange(
-            url, HttpMethod.GET, request,
-            String::class.java
-        )
+        return makeRequest(url)
     }
 
     fun getRepositoryCommits(owner: String, nameRepository: String): MutableList<Commit>? {
@@ -120,23 +104,29 @@ class GithubApi {
 
     fun getRepository(ownerRepository: String, nameRepository: String): Any {
         try {
-            val token = System.getenv("TOKEN")
             validation(ownerRepository, nameRepository)
             val url = "https://api.github.com/repos/$ownerRepository/$nameRepository"
-            val headers = HttpHeaders()
-            headers.set("Accept", "application/vnd.github+json")
-            headers.set("Authorization", "Bearer $token")
-            val request: HttpEntity<*> = HttpEntity<Any?>(headers)
-            val repository = restTemplate.exchange(
-                url, HttpMethod.GET, request,
-                String::class.java
-            )
+            val repository = makeRequest(url)
             val mapper = ObjectMapper()
             val root: JsonNode = mapper.readTree(repository.body)
             return root.get("id").asLong()
         } catch (e: HttpClientErrorException.NotFound) {
             throw InvalidAttributeValueException("Owner or repository not found")
+        } catch (e: HttpClientErrorException.Unauthorized) {
+            throw RuntimeException("Not authenticated")
         }
+    }
+
+    private fun makeRequest(url: String): ResponseEntity<String> {
+        val token = System.getenv("TOKEN")
+        val headers = HttpHeaders()
+        headers.set("Accept", "application/vnd.github+json")
+        headers.set("Authorization", "Bearer $token")
+        val request: HttpEntity<*> = HttpEntity<Any?>(headers)
+        return restTemplate.exchange(
+            url, HttpMethod.GET, request,
+            String::class.java
+        )
     }
 
     private fun validation(ownerRepository: String, nameRepository: String) {
