@@ -39,8 +39,8 @@ class Initializer {
         studentService.clearStudents()
         teacherService.clearTeachers()
         matterService.clearMatters()
-        repositoryService.clearRepositories()
         projectService.clearProjects()
+        repositoryService.clearRepositories()
     }
 
     fun loadData() {
