@@ -147,4 +147,16 @@ class RepositoryServiceTest {
             thrown!!.message
         )
     }
+
+    @Test
+    fun `should throw exception when owner not found`() {
+        var request = aRepositoryDTO().withOwner("joselito").build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
+
+        Assertions.assertEquals(
+            "Owner or repository not found",
+            thrown!!.message
+        )
+    }
 }
