@@ -30,6 +30,9 @@ class Initializer {
     @Autowired
     lateinit var repositoryService: RepositoryService
 
+    @Autowired
+    lateinit var projectService: ProjectService
+
     fun cleanDataBase() {
         commissionService.clearCommissions()
         groupService.clearGroups()
@@ -37,6 +40,7 @@ class Initializer {
         teacherService.clearTeachers()
         matterService.clearMatters()
         repositoryService.clearRepositories()
+        projectService.clearProjects()
     }
 
     fun loadData() {

@@ -21,7 +21,7 @@ open class ProjectServiceImpl : ProjectService {
 
     override fun update(project: Project): Project {
         if (project.getId() != null && projectDAO.existsById(project.getId()!!)) return projectDAO.save(project)
-         else throw NoSuchElementException("Project does not exists")
+         else throw NoSuchElementException("Project does not exist")
     }
 
     override fun read(projectId: Long): Project {
