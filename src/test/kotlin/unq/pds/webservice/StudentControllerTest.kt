@@ -1,7 +1,6 @@
 package unq.pds.webservice
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -14,6 +13,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
+import unq.pds.Initializer
 import unq.pds.model.builder.BuilderStudent.Companion.aStudent
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.impl.StudentServiceImpl
@@ -30,8 +30,11 @@ class StudentControllerTest {
     lateinit var studentService: StudentServiceImpl
     private val mapper = ObjectMapper()
 
+    @Autowired lateinit var initializer: Initializer
+
     @BeforeEach
     fun setUp() {
+        initializer.cleanDataBase()
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
     }
 
@@ -204,7 +207,6 @@ class StudentControllerTest {
     @Test
     fun `should throw a 404 status when you update a student that does not exist`() {
         var student = aStudent().build()
-        student.setId(5)
         mockMvc.perform(
             MockMvcRequestBuilders.put("/students")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -225,7 +227,7 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"repositories\": \"${student.getRepositories()}\",\n" +
+                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": ${null},\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
@@ -245,7 +247,7 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"repositories\": \"${student.getRepositories()}\",\n" +
+                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${""}\",\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
@@ -265,7 +267,7 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"repositories\": \"${student.getRepositories()}\",\n" +
+                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${"G2erman"}\",\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
@@ -285,7 +287,7 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"repositories\": \"${student.getRepositories()}\",\n" +
+                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${"G@rman"}\",\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
@@ -306,7 +308,7 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"repositories\": \"${student.getRepositories()}\",\n" +
+                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": ${student.getFirstName()},\n" +
                             "  \"lastName\": \"${null}\"\n" +
                             "}"
@@ -326,7 +328,7 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"repositories\": \"${student.getRepositories()}\",\n" +
+                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${student.getFirstName()}\",\n" +
                             "  \"lastName\": \"${""}\"\n" +
                             "}"
@@ -346,7 +348,7 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"repositories\": \"${student.getRepositories()}\",\n" +
+                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${"Ger"}\",\n" +
                             "  \"lastName\": \"${"G2erman"}\"\n" +
                             "}"
@@ -366,7 +368,7 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"repositories\": \"${student.getRepositories()}\",\n" +
+                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${"Ger"}\",\n" +
                             "  \"lastName\": \"${"G@rman"}\"\n" +
                             "}"
@@ -387,7 +389,7 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${null}\",\n" +
-                            "  \"repositories\": \"${student.getRepositories()}\",\n" +
+                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": ${student.getFirstName()},\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
@@ -407,7 +409,7 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${""}\",\n" +
-                            "  \"repositories\": \"${student.getRepositories()}\",\n" +
+                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${student.getFirstName()}\",\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
@@ -427,7 +429,7 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${"germacom"}\",\n" +
-                            "  \"repositories\": \"${student.getRepositories()}\",\n" +
+                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${student.getFirstName()}\",\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
@@ -448,7 +450,7 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student2.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"repositories\": \"${student2.getRepositories()}\",\n" +
+                            "  \"projects\": \"${student2.projects}\",\n" +
                             "  \"firstName\": \"${student2.getFirstName()}\",\n" +
                             "  \"lastName\": \"${student2.getLastName()}\"\n" +
                             "}"
@@ -476,10 +478,5 @@ class StudentControllerTest {
                 .param("id", 2.toString())
         )
             .andExpect(status().isNotFound)
-    }
-
-    @AfterEach
-    fun tearDown() {
-        studentService.clearStudents()
     }
 }

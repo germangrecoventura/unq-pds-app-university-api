@@ -1,16 +1,16 @@
 package unq.pds.api.dtos
 
 import io.swagger.v3.oas.annotations.media.Schema
-import unq.pds.model.Matter
+import unq.pds.model.Project
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Pattern
 
-class MatterDTO{
+class ProjectDTO {
 
     @NotBlank(message = "Name cannot be empty")
-    @Pattern(regexp = "[a-zA-Z0-9 ]+")
-    @Schema(example = "Math")
+    @Pattern(regexp = "[a-zA-Z0-9_-]+", message = "The name cannot contain special characters except - and _")
+    @Schema(example = "unq-pds")
     var name: String? = null
 
-    fun fromDTOToModel() = Matter(name!!)
+    fun fromDTOToModel() = Project(name!!)
 }

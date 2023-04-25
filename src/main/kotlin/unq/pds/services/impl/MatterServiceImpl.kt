@@ -25,7 +25,7 @@ open class MatterServiceImpl : MatterService {
         if (matterWithNameRegistered.isPresent && matterWithNameRegistered.get().getId() != matter.getId())
             throw AlreadyRegisteredException("matter")
         if (matter.getId() != null && matterDAO.existsById(matter.getId()!!)) return matterDAO.save(matter)
-         else throw NoSuchElementException("Matter does not exists")
+         else throw NoSuchElementException("Matter does not exist")
     }
 
     override fun read(matterId: Long): Matter {

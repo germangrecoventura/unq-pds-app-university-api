@@ -11,7 +11,7 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "student")
-@JsonPropertyOrder("id", "firstName", "lastName", "email", "repositories")
+@JsonPropertyOrder("id", "firstName", "lastName", "email", "projects")
 class Student(
     @Column(nullable = false) @JsonProperty @field:Schema(example = "German") private var firstName: String,
     @Column(nullable = false) @JsonProperty @field:Schema(example = "Greco") private var lastName: String,
@@ -19,17 +19,7 @@ class Student(
         nullable = false,
         unique = true
     ) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String
-) {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonProperty
-    @Schema(example = "1")
-    private var id: Long? = null
-
-    @Column(nullable = true)
-    @JsonProperty
-    @Schema(example = "")
-    private var repositories: String? = null
+): ProjectOwner() {
 
     init {
         validateCreate()
@@ -62,10 +52,6 @@ class Student(
         }
     }
 
-    fun getId(): Long? {
-        return id
-    }
-
     fun getFirstName(): String? {
         return firstName
     }
@@ -76,10 +62,6 @@ class Student(
 
     fun getEmail(): String? {
         return email
-    }
-
-    fun setId(idNew: Long?) {
-        id = idNew
     }
 
     fun setFirstName(firstName: String?) {
@@ -95,10 +77,6 @@ class Student(
     fun setEmail(emailAddress: String?) {
         validateEmail(emailAddress)
         this.email = emailAddress!!
-    }
-
-    fun getRepositories(): String? {
-        return repositories
     }
 
     @JsonIgnore

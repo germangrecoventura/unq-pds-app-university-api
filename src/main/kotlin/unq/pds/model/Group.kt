@@ -6,11 +6,10 @@ import javax.management.InvalidAttributeValueException
 import javax.persistence.*
 
 @Entity
-@Table(name = "grupo")
-@JsonPropertyOrder("id", "name", "members", "repository")
-class Group(
-    name: String
-) {
+@Table(name = "groupApp")
+@JsonPropertyOrder("id", "name", "members", "projects")
+class Group (name: String): ProjectOwner() {
+
     @Column(nullable = false)
     @JsonProperty
     @Schema(example = "Group 1")
@@ -20,19 +19,9 @@ class Group(
             field = value
         }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonProperty
-    @Schema(example = "1")
-    private var id: Long? = null
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JsonProperty
     var members: MutableSet<Student> = mutableSetOf()
-
-    @Column(nullable = true)
-    @JsonProperty
-    var repository: String? = null
 
     fun addMember(member: Student) {
         if (isMember(member)) throw CloneNotSupportedException("The member is already in the group")
@@ -43,8 +32,6 @@ class Group(
         if (!isMember(member)) throw NoSuchElementException("The member is not in the group")
         members.remove(member)
     }
-
-    fun getId() = id
 
     init { this.validateCreation() }
 

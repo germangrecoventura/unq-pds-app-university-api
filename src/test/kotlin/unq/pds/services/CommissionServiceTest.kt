@@ -363,13 +363,13 @@ class CommissionServiceTest {
     @Test
     fun `should recover a list with two commissions when recover all and there are exactly two persisted`() {
         matterService.save(aMatter().build())
-        matterService.save(aMatter().withName("Desarrollo de aplicaciones").build())
+        matterService.save(aMatter().withName("Applications development").build())
         commissionService.save(aCommission().build())
-        commissionService.save(aCommission().withMatter(aMatter().withName("Desarrollo de aplicaciones").build()).build())
+        commissionService.save(aCommission().withMatter(aMatter().withName("Applications development").build()).build())
         val commissions = commissionService.readAll()
 
         Assertions.assertEquals(2, commissions.size)
-        Assertions.assertTrue(commissions.any { it.getMatter().name == "Practica de Desarrollo de Software" })
-        Assertions.assertTrue(commissions.any { it.getMatter().name == "Desarrollo de aplicaciones" })
+        Assertions.assertTrue(commissions.any { it.getMatter().name == "Software development practice" })
+        Assertions.assertTrue(commissions.any { it.getMatter().name == "Applications development" })
     }
 }

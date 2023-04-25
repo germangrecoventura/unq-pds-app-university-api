@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 import unq.pds.model.Group
 import unq.pds.persistence.GroupDAO
 import unq.pds.services.GroupService
+import unq.pds.services.ProjectService
 import unq.pds.services.StudentService
 
 @Service
@@ -14,6 +15,7 @@ open class GroupServiceImpl : GroupService {
 
     @Autowired private lateinit var groupDAO: GroupDAO
     @Autowired private lateinit var studentService: StudentService
+    @Autowired private lateinit var projectService: ProjectService
 
     override fun save(group: Group): Group {
         return groupDAO.save(group)
@@ -21,7 +23,7 @@ open class GroupServiceImpl : GroupService {
 
     override fun update(group: Group): Group {
         if (group.getId() != null && groupDAO.existsById(group.getId()!!)) return groupDAO.save(group)
-         else throw NoSuchElementException("Group does not exists")
+         else throw NoSuchElementException("Group does not exist")
     }
 
     override fun read(groupId: Long): Group {
@@ -45,6 +47,14 @@ open class GroupServiceImpl : GroupService {
         val group = this.read(groupId)
         val student = studentService.findById(studentId)
         group.removeMember(student)
+
+        return this.update(group)
+    }
+
+    override fun addProject(groupId: Long, projectId: Long): Group {
+        val group = this.read(groupId)
+        val project = projectService.read(projectId)
+        group.addProject(project)
 
         return this.update(group)
     }

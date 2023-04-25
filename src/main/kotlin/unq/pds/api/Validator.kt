@@ -15,6 +15,9 @@ class Validator {
                     + "[0-9]{1,2}|25[0-5]|2[0-4][0-9]))|"
                     + "([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$", Pattern.CASE_INSENSITIVE
         )
+        private val specialCharacterGithub =
+            Pattern.compile("[¡!@#$%&*()+=|<>¿?{}.\\[\\]~]", Pattern.CASE_INSENSITIVE)
+
 
         fun containsNumber(toCheck: String?): Boolean {
             if (toCheck == null) {
@@ -35,6 +38,14 @@ class Validator {
                 return false
             }
             val matcher = specialCharacterPattern.matcher(toCheck)
+            return matcher.find()
+        }
+
+        fun containsSpecialCharacterGithub(toCheck: String?): Boolean {
+            if (toCheck == null) {
+                return false
+            }
+            val matcher = specialCharacterGithub.matcher(toCheck)
             return matcher.find()
         }
 

@@ -6,14 +6,16 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
+import unq.pds.model.builder.BuilderStudent.Companion.aStudent
+import unq.pds.model.builder.ProjectBuilder
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
-import unq.pds.services.impl.StudentServiceImpl
 import javax.management.InvalidAttributeValueException
 
 @SpringBootTest
 class StudentServiceTest {
 
-    @Autowired lateinit var studentService: StudentServiceImpl
+    @Autowired lateinit var studentService: StudentService
+    @Autowired lateinit var projectService: ProjectService
     @Autowired lateinit var initializer: Initializer
 
     @BeforeEach
@@ -212,15 +214,12 @@ class StudentServiceTest {
 
     @Test
     fun `should throw an exception when update a non-existent student`() {
-        var student = studentService.save(aStudentDTO().build())
-        student.setId(-5)
-
         val thrown: NoSuchElementException =
-            Assertions.assertThrows(NoSuchElementException::class.java) { studentService.update(student) }
+            Assertions.assertThrows(NoSuchElementException::class.java) { studentService.update(aStudent().build()) }
 
 
         Assertions.assertEquals(
-            "Not found the student with id -5",
+            "Student does not exist",
             thrown.message
         )
     }
@@ -281,6 +280,47 @@ class StudentServiceTest {
             "Not found the student with email german@gmial.com",
             thrown.message
         )
+    }
+
+    @Test
+    fun `should add a project to a student when it was not previously added and both exist`() {
+        val student = studentService.save(aStudentDTO().build())
+        val project = projectService.save(ProjectBuilder.aProject().build())
+        Assertions.assertEquals(0, student.projects.size)
+        val groupWithAProject = studentService.addProject(student.getId()!!, project.getId()!!)
+        Assertions.assertEquals(1, groupWithAProject.projects.size)
+    }
+
+    @Test
+    fun `should throw an exception when trying to add the same project to a student twice and both exist`() {
+        val student = studentService.save(aStudentDTO().build())
+        val project = projectService.save(ProjectBuilder.aProject().build())
+        studentService.addProject(student.getId()!!, project.getId()!!)
+        try {
+            studentService.addProject(student.getId()!!, project.getId()!!)
+        } catch (e: CloneNotSupportedException) {
+            Assertions.assertEquals("The project has already been added", e.message)
+        }
+    }
+
+    @Test
+    fun `should throw an exception when trying to add a project to a student and the project does not exist`() {
+        val student = studentService.save(aStudentDTO().build())
+        try {
+            studentService.addProject(student.getId()!!, -1)
+        } catch (e: NoSuchElementException) {
+            Assertions.assertEquals("There is no project with that id", e.message)
+        }
+    }
+
+    @Test
+    fun `should throw an exception when trying to add a project to a student and the student does not exist`() {
+        val project = projectService.save(ProjectBuilder.aProject().build())
+        try {
+            studentService.addProject(-1, project.getId()!!)
+        } catch (e: NoSuchElementException) {
+            Assertions.assertEquals("Not found the student with id -1", e.message)
+        }
     }
 
     @Test

@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
 import unq.pds.model.builder.GroupBuilder.Companion.aGroup
+import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 
 @SpringBootTest
@@ -12,6 +13,7 @@ class GroupServiceTest {
 
     @Autowired lateinit var groupService: GroupService
     @Autowired lateinit var studentService: StudentService
+    @Autowired lateinit var projectService: ProjectService
     @Autowired lateinit var initializer: Initializer
 
     @BeforeEach
@@ -55,7 +57,7 @@ class GroupServiceTest {
         try {
             groupService.update(aGroup().build())
         } catch (e:NoSuchElementException) {
-            Assertions.assertEquals("Group does not exists", e.message)
+            Assertions.assertEquals("Group does not exist", e.message)
         }
     }
 
@@ -76,7 +78,7 @@ class GroupServiceTest {
     }
 
     @Test
-    fun `should add a member to a group when it was not previously added and both exists`() {
+    fun `should add a member to a group when it was not previously added and both exist`() {
         val group = groupService.save(aGroup().build())
         val member = studentService.save(aStudentDTO().build())
         Assertions.assertEquals(0, group.members.size)
@@ -85,7 +87,7 @@ class GroupServiceTest {
     }
 
     @Test
-    fun `should throw an exception when trying to add the same member to the group twice and both exists`() {
+    fun `should throw an exception when trying to add the same member to the group twice and both exist`() {
         val group = groupService.save(aGroup().build())
         val member = studentService.save(aStudentDTO().build())
         groupService.addMember(group.getId()!!, member.getId()!!)
@@ -97,7 +99,7 @@ class GroupServiceTest {
     }
 
     @Test
-    fun `should throw an exception when trying to add a member to a group and the member does not exists`() {
+    fun `should throw an exception when trying to add a member to a group and the member does not exist`() {
         val group = groupService.save(aGroup().build())
         try {
             groupService.addMember(group.getId()!!, -1)
@@ -107,7 +109,7 @@ class GroupServiceTest {
     }
 
     @Test
-    fun `should throw an exception when trying to add a member to a group and the group does not exists`() {
+    fun `should throw an exception when trying to add a member to a group and the group does not exist`() {
         val member = studentService.save(aStudentDTO().build())
         try {
             groupService.addMember(-1, member.getId()!!)
@@ -117,7 +119,7 @@ class GroupServiceTest {
     }
 
     @Test
-    fun `should remove a member from a group when it was previously added and both exists`() {
+    fun `should remove a member from a group when it was previously added and both exist`() {
         val group = groupService.save(aGroup().build())
         val member = studentService.save(aStudentDTO().build())
         Assertions.assertEquals(0, group.members.size)
@@ -128,7 +130,7 @@ class GroupServiceTest {
     }
 
     @Test
-    fun `should throw an exception when trying to remove a member who does not belong to the group and both exists`() {
+    fun `should throw an exception when trying to remove a member who does not belong to the group and both exist`() {
         val group = groupService.save(aGroup().build())
         val member = studentService.save(aStudentDTO().build())
         try {
@@ -139,7 +141,7 @@ class GroupServiceTest {
     }
 
     @Test
-    fun `should throw an exception when trying to remove a member of a group and the member does not exists`() {
+    fun `should throw an exception when trying to remove a member of a group and the member does not exist`() {
         val group = groupService.save(aGroup().build())
         try {
             groupService.removeMember(group.getId()!!, -1)
@@ -149,10 +151,51 @@ class GroupServiceTest {
     }
 
     @Test
-    fun `should throw an exception when trying to remove a member of a group and the group does not exists`() {
+    fun `should throw an exception when trying to remove a member of a group and the group does not exist`() {
         val member = studentService.save(aStudentDTO().build())
         try {
             groupService.removeMember(-1, member.getId()!!)
+        } catch (e: NoSuchElementException) {
+            Assertions.assertEquals("There is no group with that id", e.message)
+        }
+    }
+
+    @Test
+    fun `should add a project to a group when it was not previously added and both exist`() {
+        val group = groupService.save(aGroup().build())
+        val project = projectService.save(aProject().build())
+        Assertions.assertEquals(0, group.projects.size)
+        val groupWithAProject = groupService.addProject(group.getId()!!, project.getId()!!)
+        Assertions.assertEquals(1, groupWithAProject.projects.size)
+    }
+
+    @Test
+    fun `should throw an exception when trying to add the same project to the group twice and both exist`() {
+        val group = groupService.save(aGroup().build())
+        val project = projectService.save(aProject().build())
+        groupService.addProject(group.getId()!!, project.getId()!!)
+        try {
+            groupService.addProject(group.getId()!!, project.getId()!!)
+        } catch (e: CloneNotSupportedException) {
+            Assertions.assertEquals("The project has already been added", e.message)
+        }
+    }
+
+    @Test
+    fun `should throw an exception when trying to add a project to a group and the project does not exist`() {
+        val group = groupService.save(aGroup().build())
+        try {
+            groupService.addProject(group.getId()!!, -1)
+        } catch (e: NoSuchElementException) {
+            Assertions.assertEquals("There is no project with that id", e.message)
+        }
+    }
+
+    @Test
+    fun `should throw an exception when trying to add a project to a group and the group does not exist`() {
+        val project = projectService.save(aProject().build())
+        try {
+            groupService.addProject(-1, project.getId()!!)
         } catch (e: NoSuchElementException) {
             Assertions.assertEquals("There is no group with that id", e.message)
         }
