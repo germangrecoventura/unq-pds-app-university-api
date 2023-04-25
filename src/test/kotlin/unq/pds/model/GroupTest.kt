@@ -3,6 +3,7 @@ package unq.pds.model
 import org.junit.jupiter.api.*
 import unq.pds.model.builder.BuilderStudent.Companion.aStudent
 import unq.pds.model.builder.GroupBuilder.Companion.aGroup
+import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import javax.management.InvalidAttributeValueException
 
 class GroupTest {
@@ -63,6 +64,25 @@ class GroupTest {
             group.removeMember(aStudent().build())
         } catch (e: NoSuchElementException) {
             Assertions.assertEquals("The member is not in the group", e.message)
+        }
+    }
+
+    @Test
+    fun `should add a project when it has not been added previously`() {
+        val group = aGroup().build()
+        Assertions.assertEquals(0, group.projects.size)
+        group.addProject(aProject().build())
+        Assertions.assertEquals(1, group.projects.size)
+    }
+
+    @Test
+    fun `should throw an exception when trying to add the same project to the group twice`() {
+        val group = aGroup().build()
+        group.addProject(aProject().build())
+        try {
+            group.addProject(aProject().build())
+        } catch (e: CloneNotSupportedException) {
+            Assertions.assertEquals("The project has already been added", e.message)
         }
     }
 }

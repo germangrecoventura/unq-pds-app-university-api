@@ -63,7 +63,7 @@ class MatterServiceTest {
         try {
             matterService.update(aMatter().build())
         } catch (e:NoSuchElementException) {
-            Assertions.assertEquals("Matter does not exists", e.message)
+            Assertions.assertEquals("Matter does not exist", e.message)
         }
     }
 

@@ -1,6 +1,5 @@
 package unq.pds.services.impl
 
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -8,13 +7,15 @@ import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.model.Student
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.persistence.StudentDAO
+import unq.pds.services.ProjectService
 import unq.pds.services.StudentService
 
 @Service
 @Transactional
 open class StudentServiceImpl : StudentService {
-    @Autowired
-    lateinit var studentDAO: StudentDAO
+
+    @Autowired lateinit var studentDAO: StudentDAO
+    @Autowired lateinit var projectService: ProjectService
 
     override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
         if (studentDAO.findByEmail(studentCreateRequestDTO.email!!).isPresent) {
@@ -30,16 +31,12 @@ open class StudentServiceImpl : StudentService {
     }
 
     override fun update(student: Student): Student {
-        var studentRecovery = findById(student.getId()!!)
         var studentWithEmail = studentDAO.findByEmail(student.getEmail()!!)
-        if (studentWithEmail.isPresent && studentRecovery.getId() != studentWithEmail.get().getId()) {
+        if (studentWithEmail.isPresent && student.getId() != studentWithEmail.get().getId()) {
             throw AlreadyRegisteredException("email")
         }
-
-        studentRecovery.setFirstName(student.getFirstName())
-        studentRecovery.setLastName(student.getLastName())
-        studentRecovery.setEmail(student.getEmail())
-        return studentDAO.save(studentRecovery)
+        if (student.getId() != null && studentDAO.existsById(student.getId()!!)) return studentDAO.save(student)
+         else throw NoSuchElementException("Student does not exist")
     }
 
     override fun deleteById(id: Long) {
@@ -61,6 +58,14 @@ open class StudentServiceImpl : StudentService {
     override fun findByEmail(email: String): Student {
         return studentDAO.findByEmail(email)
             .orElseThrow { NoSuchElementException("Not found the student with email $email") }
+    }
+
+    override fun addProject(studentId: Long, projectId: Long): Student {
+        val student = this.findById(studentId)
+        val project = projectService.read(projectId)
+        student.addProject(project)
+
+        return this.update(student)
     }
 
     override fun readAll(): List<Student> {
