@@ -11,7 +11,7 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "student")
-@JsonPropertyOrder("id", "firstName", "lastName", "email", "repositories")
+@JsonPropertyOrder("id", "firstName", "lastName", "email", "projects")
 class Student(
     @Column(nullable = false) @JsonProperty @field:Schema(example = "German") private var firstName: String,
     @Column(nullable = false) @JsonProperty @field:Schema(example = "Greco") private var lastName: String,

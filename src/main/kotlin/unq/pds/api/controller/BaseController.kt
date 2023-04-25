@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import unq.pds.api.dtos.ErrorDTO
 import unq.pds.model.exceptions.AlreadyRegisteredException
+import java.sql.SQLIntegrityConstraintViolationException
 import java.util.function.Consumer
 import javax.management.InvalidAttributeValueException
 
@@ -66,5 +67,11 @@ class BaseController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleCloneNotSupportedException(ex: CloneNotSupportedException): ResponseEntity<ErrorDTO> {
         return ResponseEntity.badRequest().body(ErrorDTO(ex.message!!))
+    }
+
+    @ExceptionHandler(SQLIntegrityConstraintViolationException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleSQLIntegrityConstraintViolationException(ex: SQLIntegrityConstraintViolationException): ResponseEntity<ErrorDTO> {
+        return ResponseEntity.badRequest().body(ErrorDTO("The project already has an owner"))
     }
 }

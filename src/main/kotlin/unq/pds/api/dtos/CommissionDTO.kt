@@ -15,9 +15,9 @@ class CommissionDTO {
     @Schema(example = "FIRST_PERIOD")
     var fourMonthPeriod: FourMonthPeriod? = null
 
-    @NotBlank(message = "Name cannot be empty")
+    @NotBlank(message = "Matter name cannot be empty")
     @Pattern(regexp = "[a-zA-Z0-9 ]+")
-    @Schema(example = "Matematica")
+    @Schema(example = "Math")
     var matterName: String? = null
 
     fun fromDTOToModel() = Commission(year!!, fourMonthPeriod!!, Matter(matterName!!))

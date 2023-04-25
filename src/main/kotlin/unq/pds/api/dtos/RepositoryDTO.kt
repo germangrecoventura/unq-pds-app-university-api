@@ -5,9 +5,9 @@ import javax.validation.constraints.Pattern
 
 class RepositoryDTO {
     @NotBlank(message = "Name cannot be empty")
-    @Pattern(regexp = "[a-zA-Z0-9]+[_-]", message = "The name cannot contain special characters except - and _")
+    @Pattern(regexp = "[a-zA-Z0-9_-]+", message = "The name cannot contain special characters except - and _")
     var name: String? = null
 
-    @NotBlank(message = "Name cannot be empty")
+    @NotBlank(message = "Owner cannot be empty")
     var owner: String? = null
 }

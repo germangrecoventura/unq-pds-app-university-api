@@ -15,7 +15,7 @@ class Matter(
     @Column(nullable = false, unique = true)
     @JsonProperty
     @Pattern(regexp = "[a-zA-Z0-9 ]+")
-    @Schema(example = "Matematica")
+    @Schema(example = "Math")
     var name = name
         set(value) {
             this.validateName(value)

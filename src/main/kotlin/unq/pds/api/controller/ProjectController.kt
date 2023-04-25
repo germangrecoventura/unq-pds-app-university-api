@@ -1,26 +1,31 @@
 package unq.pds.api.controller
 
-import io.swagger.v3.oas.annotations.*
-import io.swagger.v3.oas.annotations.media.*
-import io.swagger.v3.oas.annotations.responses.*
-import org.springframework.http.*
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.ErrorDTO
-import unq.pds.api.dtos.GroupDTO
-import unq.pds.model.Group
-import unq.pds.services.GroupService
+import unq.pds.api.dtos.ProjectDTO
+import unq.pds.model.Project
+import unq.pds.services.ProjectService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 
 @RestController
 @CrossOrigin
-@RequestMapping("groups")
-class GroupController(private val groupService: GroupService) {
+@RequestMapping("projects")
+class ProjectController(private val projectService: ProjectService) {
 
     @PostMapping
     @Operation(
-        summary = "Registers a group",
-        description = "Registers a group",
+        summary = "Registers a project",
+        description = "Registers a project",
     )
     @ApiResponses(
         value = [
@@ -30,7 +35,7 @@ class GroupController(private val groupService: GroupService) {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Group::class),
+                        schema = Schema(implementation = Project::class),
                     )
                 ]
             ),
@@ -40,20 +45,20 @@ class GroupController(private val groupService: GroupService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"name\": \"Name cannot be empty\"\n" +
+                                "  \"message\": \"string\"\n" +
                                 "}"
                     )]
                 )]
             )]
     )
-    fun createGroup(@RequestBody @Valid group: GroupDTO): ResponseEntity<Group> {
-        return ResponseEntity(groupService.save(group.fromDTOToModel()), HttpStatus.OK)
+    fun createProject(@RequestBody @Valid project: ProjectDTO): ResponseEntity<Any> {
+        return ResponseEntity(projectService.save(project.fromDTOToModel()), HttpStatus.OK)
     }
 
     @GetMapping
     @Operation(
-        summary = "Get a group",
-        description = "Get a group using the id as the unique identifier",
+        summary = "Get a project",
+        description = "Get a project using the id as the unique identifier",
     )
     @ApiResponses(
         value = [
@@ -63,7 +68,7 @@ class GroupController(private val groupService: GroupService) {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Group::class),
+                        schema = Schema(implementation = Project::class),
                     )
                 ]
             ),
@@ -84,15 +89,15 @@ class GroupController(private val groupService: GroupService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"There is no group with that id\"\n" +
+                                "  \"message\": \"There is no project with that id\"\n" +
                                 "}"
                     )]
                 )]
             )]
     )
-    fun getGroup(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+    fun getProject(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         return try {
-            ResponseEntity(groupService.read(id), HttpStatus.OK)
+            ResponseEntity(projectService.read(id), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
             ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
@@ -100,8 +105,8 @@ class GroupController(private val groupService: GroupService) {
 
     @PutMapping
     @Operation(
-        summary = "Update a group",
-        description = "Update a group",
+        summary = "Update a project",
+        description = "Update a project",
     )
     @ApiResponses(
         value = [
@@ -111,7 +116,7 @@ class GroupController(private val groupService: GroupService) {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Group::class)
+                        schema = Schema(implementation = Project::class)
                     )
                 ]
             ),
@@ -132,15 +137,15 @@ class GroupController(private val groupService: GroupService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"Group does not exists\"\n" +
+                                "  \"message\": \"Project does not exist\"\n" +
                                 "}"
                     )]
                 )]
             )]
     )
-    fun updateGroup(@RequestBody group: Group): ResponseEntity<Any> {
+    fun updateProject(@RequestBody project: Project): ResponseEntity<Any> {
         return try {
-            ResponseEntity(groupService.update(group), HttpStatus.OK)
+            ResponseEntity(projectService.update(project), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
             ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
@@ -148,8 +153,8 @@ class GroupController(private val groupService: GroupService) {
 
     @DeleteMapping
     @Operation(
-        summary = "Delete a group",
-        description = "Delete a group using the id as the unique identifier",
+        summary = "Delete a project",
+        description = "Delete a project using the id as the unique identifier",
     )
     @ApiResponses(
         value = [
@@ -160,7 +165,7 @@ class GroupController(private val groupService: GroupService) {
                     Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"message\": \"Group has been deleted successfully\"\n" +
+                                    "  \"message\": \"Project has been deleted successfully\"\n" +
                                     "}"
                         )]
                     )]
@@ -182,18 +187,18 @@ class GroupController(private val groupService: GroupService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"There is no group with that id\"\n" +
+                                "  \"message\": \"There is no project with that id\"\n" +
                                 "}"
                     )]
                 )]
             )]
     )
-    fun deleteMatter(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+    fun deleteCommission(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         return try {
-            groupService.delete(id)
+            projectService.delete(id)
             ResponseEntity(
                 "{\n" +
-                        "  \"message\": \"Group has been deleted successfully\"\n" +
+                        "  \"message\": \"Project has been deleted successfully\"\n" +
                         "}", HttpStatus.OK
             )
         } catch (e: NoSuchElementException) {
@@ -201,10 +206,10 @@ class GroupController(private val groupService: GroupService) {
         }
     }
 
-    @PutMapping("/addMember/{groupId}/{studentId}")
+    @PutMapping("/addRepository/{projectId}/{repositoryId}")
     @Operation(
-        summary = "Add a member to a group",
-        description = "Add a member to a group",
+        summary = "Add a repository to a project",
+        description = "Add a repository to a project",
     )
     @ApiResponses(
         value = [
@@ -214,7 +219,7 @@ class GroupController(private val groupService: GroupService) {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Group::class),
+                        schema = Schema(implementation = Project::class),
                     )
                 ]
             ),
@@ -241,105 +246,9 @@ class GroupController(private val groupService: GroupService) {
                 )]
             )]
     )
-    fun addMember(@NotBlank @PathVariable groupId: Long, @NotBlank @PathVariable studentId: Long): ResponseEntity<Any> {
+    fun addRepository(@NotBlank @PathVariable projectId: Long, @NotBlank @PathVariable repositoryId: Long): ResponseEntity<Any> {
         return try {
-            ResponseEntity(groupService.addMember(groupId, studentId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
-    }
-
-    @PutMapping("/removeMember/{groupId}/{studentId}")
-    @Operation(
-        summary = "Remove a member of a group",
-        description = "Remove a member of a group",
-    )
-    @ApiResponses(
-        value = [
-            ApiResponse(
-                responseCode = "200",
-                description = "Success",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schema = Schema(implementation = Group::class),
-                    )
-                ]
-            ),
-            ApiResponse(
-                responseCode = "400",
-                description = "Bad request",
-                content = [Content(
-                    mediaType = "application/json", examples = [ExampleObject(
-                        value = "{\n" +
-                                "  \"message\": \"string\"\n" +
-                                "}"
-                    )]
-                )]
-            ),
-            ApiResponse(
-                responseCode = "404",
-                description = "Not found",
-                content = [Content(
-                    mediaType = "application/json", examples = [ExampleObject(
-                        value = "{\n" +
-                                "  \"message\": \"string\"\n" +
-                                "}"
-                    )]
-                )]
-            )]
-    )
-    fun removeMember(@NotBlank @PathVariable groupId: Long, @NotBlank @PathVariable studentId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(groupService.removeMember(groupId, studentId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
-    }
-
-    @PutMapping("/addProject/{groupId}/{projectId}")
-    @Operation(
-        summary = "Add a project to a group",
-        description = "Add a project to a group",
-    )
-    @ApiResponses(
-        value = [
-            ApiResponse(
-                responseCode = "200",
-                description = "Success",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schema = Schema(implementation = Group::class),
-                    )
-                ]
-            ),
-            ApiResponse(
-                responseCode = "400",
-                description = "Bad request",
-                content = [Content(
-                    mediaType = "application/json", examples = [ExampleObject(
-                        value = "{\n" +
-                                "  \"message\": \"string\"\n" +
-                                "}"
-                    )]
-                )]
-            ),
-            ApiResponse(
-                responseCode = "404",
-                description = "Not found",
-                content = [Content(
-                    mediaType = "application/json", examples = [ExampleObject(
-                        value = "{\n" +
-                                "  \"message\": \"string\"\n" +
-                                "}"
-                    )]
-                )]
-            )]
-    )
-    fun addProject(@NotBlank @PathVariable groupId: Long, @NotBlank @PathVariable projectId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(groupService.addProject(groupId, projectId), HttpStatus.OK)
+            ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
             ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
@@ -347,8 +256,8 @@ class GroupController(private val groupService: GroupService) {
 
     @GetMapping("/getAll")
     @Operation(
-        summary = "Get all groups",
-        description = "Get all groups",
+        summary = "Get all projects",
+        description = "Get all projects",
     )
     @ApiResponses(
         value = [
@@ -358,12 +267,12 @@ class GroupController(private val groupService: GroupService) {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        array = ArraySchema(schema = Schema(implementation = Group::class)),
+                        array = ArraySchema(schema = Schema(implementation = Project::class)),
                     )
                 ]
             )]
     )
-    fun getAll(): ResponseEntity<List<Group>> {
-        return ResponseEntity(groupService.readAll(), HttpStatus.OK)
+    fun getAll(): ResponseEntity<List<Project>> {
+        return ResponseEntity(projectService.readAll(), HttpStatus.OK)
     }
 }

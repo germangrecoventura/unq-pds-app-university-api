@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import unq.pds.api.dtos.ErrorDTO
 import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.model.Student
 import unq.pds.model.exceptions.AlreadyRegisteredException
@@ -227,6 +228,54 @@ class StudentController {
                             "  \"student\": \"Not found student with id ${id}\"\n" +
                             "}", HttpStatus.NOT_FOUND
                 )
+            }
+        }
+
+        @PutMapping("/addProject/{studentId}/{projectId}")
+        @Operation(
+            summary = "Add a project to a student",
+            description = "Add a project to a student",
+        )
+        @ApiResponses(
+            value = [
+                ApiResponse(
+                    responseCode = "200",
+                    description = "Success",
+                    content = [
+                        Content(
+                            mediaType = "application/json",
+                            schema = Schema(implementation = Student::class),
+                        )
+                    ]
+                ),
+                ApiResponse(
+                    responseCode = "400",
+                    description = "Bad request",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )]
+                ),
+                ApiResponse(
+                    responseCode = "404",
+                    description = "Not found",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )]
+                )]
+        )
+        fun addProject(@NotBlank @PathVariable studentId: Long, @NotBlank @PathVariable projectId: Long): ResponseEntity<Any> {
+            return try {
+                ResponseEntity(studentService.addProject(studentId, projectId), HttpStatus.OK)
+            } catch (e: NoSuchElementException) {
+                ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
             }
         }
 

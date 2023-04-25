@@ -7,7 +7,7 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "groupApp")
-@JsonPropertyOrder("id", "name", "members", "repository")
+@JsonPropertyOrder("id", "name", "members", "projects")
 class Group (name: String): ProjectOwner() {
 
     @Column(nullable = false)
