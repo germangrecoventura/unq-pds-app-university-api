@@ -9,7 +9,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
-import java.sql.SQLIntegrityConstraintViolationException
 import java.util.function.Consumer
 import javax.management.InvalidAttributeValueException
 
