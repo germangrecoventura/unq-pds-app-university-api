@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import unq.pds.api.dtos.ErrorDTO
+import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.model.Student
 import unq.pds.model.exceptions.AlreadyRegisteredException
@@ -207,7 +207,7 @@ class StudentController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"student\": \"Not found student with id\"\n" +
+                                    "  \"message\": \"Not found student with id\"\n" +
                                     "}"
                         )]
                     )]
@@ -216,18 +216,9 @@ class StudentController {
         fun deleteStudent(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
             return try {
                 studentService.deleteById(id)
-
-                ResponseEntity(
-                    "{\n" +
-                            "  \"message\": \"Student has been deleted successfully\"\n" +
-                            "}", HttpStatus.OK
-                )
+                ResponseEntity(MessageDTO("Student has been deleted successfully"), HttpStatus.OK)
             } catch (e: Exception) {
-                ResponseEntity(
-                    "{\n" +
-                            "  \"student\": \"Not found student with id ${id}\"\n" +
-                            "}", HttpStatus.NOT_FOUND
-                )
+                ResponseEntity(MessageDTO("Not found student with id $id"), HttpStatus.NOT_FOUND)
             }
         }
 
@@ -275,7 +266,7 @@ class StudentController {
             return try {
                 ResponseEntity(studentService.addProject(studentId, projectId), HttpStatus.OK)
             } catch (e: NoSuchElementException) {
-                ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+                ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
             }
         }
 

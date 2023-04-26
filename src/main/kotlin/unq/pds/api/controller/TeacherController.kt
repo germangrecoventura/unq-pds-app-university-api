@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import unq.pds.api.dtos.ErrorDTO
+import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.TeacherCreateRequestDTO
 import unq.pds.model.Teacher
 import unq.pds.model.exceptions.AlreadyRegisteredException
@@ -103,7 +103,7 @@ class TeacherController {
             return try {
                 ResponseEntity(teacherService.findById(id), HttpStatus.OK)
             } catch (e: NoSuchElementException) {
-                ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+                ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
             }
         }
 
@@ -158,7 +158,7 @@ class TeacherController {
                             "}", HttpStatus.BAD_REQUEST
                 )
             } catch (e: NoSuchElementException) {
-                ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+                ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
             }
         }
 
@@ -198,7 +198,7 @@ class TeacherController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"teacher\": \"Not found teacher with id\"\n" +
+                                    "  \"message\": \"Not found teacher with id\"\n" +
                                     "}"
                         )]
                     )]
@@ -207,14 +207,9 @@ class TeacherController {
         fun deleteTeacher(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
             return try {
                 teacherService.deleteById(id)
-
-                ResponseEntity(
-                    "{\n" +
-                            "  \"message\": \"Teacher has been deleted successfully\"\n" +
-                            "}", HttpStatus.OK
-                )
+                ResponseEntity(MessageDTO("Teacher has been deleted successfully"), HttpStatus.OK)
             } catch (e: NoSuchElementException) {
-                ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+                ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
             }
         }
 

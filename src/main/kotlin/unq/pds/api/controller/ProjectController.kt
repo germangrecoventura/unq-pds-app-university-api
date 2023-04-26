@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import unq.pds.api.dtos.ErrorDTO
+import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Project
 import unq.pds.services.ProjectService
@@ -99,7 +99,7 @@ class ProjectController(private val projectService: ProjectService) {
         return try {
             ResponseEntity(projectService.read(id), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -147,7 +147,7 @@ class ProjectController(private val projectService: ProjectService) {
         return try {
             ResponseEntity(projectService.update(project), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -196,13 +196,9 @@ class ProjectController(private val projectService: ProjectService) {
     fun deleteProject(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         return try {
             projectService.delete(id)
-            ResponseEntity(
-                "{\n" +
-                        "  \"message\": \"Project has been deleted successfully\"\n" +
-                        "}", HttpStatus.OK
-            )
+            ResponseEntity(MessageDTO("Project has been deleted successfully"), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -250,7 +246,7 @@ class ProjectController(private val projectService: ProjectService) {
         return try {
             ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 

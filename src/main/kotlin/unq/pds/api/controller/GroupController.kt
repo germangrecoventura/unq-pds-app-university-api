@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.*
 import io.swagger.v3.oas.annotations.responses.*
 import org.springframework.http.*
 import org.springframework.web.bind.annotation.*
-import unq.pds.api.dtos.ErrorDTO
+import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.GroupDTO
 import unq.pds.model.Group
 import unq.pds.services.GroupService
@@ -94,7 +94,7 @@ class GroupController(private val groupService: GroupService) {
         return try {
             ResponseEntity(groupService.read(id), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -142,7 +142,7 @@ class GroupController(private val groupService: GroupService) {
         return try {
             ResponseEntity(groupService.update(group), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -191,13 +191,9 @@ class GroupController(private val groupService: GroupService) {
     fun deleteMatter(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         return try {
             groupService.delete(id)
-            ResponseEntity(
-                "{\n" +
-                        "  \"message\": \"Group has been deleted successfully\"\n" +
-                        "}", HttpStatus.OK
-            )
+            ResponseEntity(MessageDTO("Group has been deleted successfully"), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -245,7 +241,7 @@ class GroupController(private val groupService: GroupService) {
         return try {
             ResponseEntity(groupService.addMember(groupId, studentId), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -293,7 +289,7 @@ class GroupController(private val groupService: GroupService) {
         return try {
             ResponseEntity(groupService.removeMember(groupId, studentId), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -341,7 +337,7 @@ class GroupController(private val groupService: GroupService) {
         return try {
             ResponseEntity(groupService.addProject(groupId, projectId), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 

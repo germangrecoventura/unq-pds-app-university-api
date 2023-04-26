@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.responses.*
 import org.springframework.http.*
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.CommissionDTO
-import unq.pds.api.dtos.ErrorDTO
+import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.Commission
 import unq.pds.services.CommissionService
 import javax.validation.Valid
@@ -61,7 +61,7 @@ class CommissionController(private val commissionService: CommissionService) {
         return try {
             ResponseEntity(commissionService.save(commission.fromDTOToModel()), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -109,7 +109,7 @@ class CommissionController(private val commissionService: CommissionService) {
         return try {
             ResponseEntity(commissionService.read(id), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -157,7 +157,7 @@ class CommissionController(private val commissionService: CommissionService) {
         return try {
             ResponseEntity(commissionService.update(commission), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -206,13 +206,9 @@ class CommissionController(private val commissionService: CommissionService) {
     fun deleteCommission(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         return try {
             commissionService.delete(id)
-            ResponseEntity(
-                "{\n" +
-                        "  \"message\": \"Commission has been deleted successfully\"\n" +
-                        "}", HttpStatus.OK
-            )
+            ResponseEntity(MessageDTO("Commission has been deleted successfully"), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -260,7 +256,7 @@ class CommissionController(private val commissionService: CommissionService) {
         return try {
             ResponseEntity(commissionService.addStudent(commissionId, studentId), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -308,7 +304,7 @@ class CommissionController(private val commissionService: CommissionService) {
         return try {
             ResponseEntity(commissionService.removeStudent(commissionId, studentId), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -356,7 +352,7 @@ class CommissionController(private val commissionService: CommissionService) {
         return try {
             ResponseEntity(commissionService.addTeacher(commissionId, teacherId), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -404,7 +400,7 @@ class CommissionController(private val commissionService: CommissionService) {
         return try {
             ResponseEntity(commissionService.removeTeacher(commissionId, teacherId), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -452,7 +448,7 @@ class CommissionController(private val commissionService: CommissionService) {
         return try {
             ResponseEntity(commissionService.addGroup(commissionId, groupId), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
@@ -500,7 +496,7 @@ class CommissionController(private val commissionService: CommissionService) {
         return try {
             ResponseEntity(commissionService.removeGroup(commissionId, groupId), HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
         }
     }
 
