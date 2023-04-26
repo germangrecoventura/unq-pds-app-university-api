@@ -193,7 +193,7 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             )]
     )
-    fun deleteCommission(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+    fun deleteProject(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         return try {
             projectService.delete(id)
             ResponseEntity(
