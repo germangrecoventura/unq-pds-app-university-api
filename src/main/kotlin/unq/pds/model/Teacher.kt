@@ -18,7 +18,7 @@ class Teacher(
     @Column(nullable = false, unique = true) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String
 ) {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonProperty
     @Schema(example = "1")
     private var id: Long? = null
