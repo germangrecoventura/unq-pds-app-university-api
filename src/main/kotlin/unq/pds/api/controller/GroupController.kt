@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.*
 import io.swagger.v3.oas.annotations.responses.*
 import org.springframework.http.*
 import org.springframework.web.bind.annotation.*
-import unq.pds.api.dtos.ErrorDTO
+import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.GroupDTO
 import unq.pds.model.Group
 import unq.pds.services.GroupService
@@ -91,11 +91,7 @@ class GroupController(private val groupService: GroupService) {
             )]
     )
     fun getGroup(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(groupService.read(id), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(groupService.read(id), HttpStatus.OK)
     }
 
     @PutMapping
@@ -121,7 +117,7 @@ class GroupController(private val groupService: GroupService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"string\"\n" +
+                                "  \"message\": \"Name cannot be empty\"\n" +
                                 "}"
                     )]
                 )]
@@ -132,18 +128,14 @@ class GroupController(private val groupService: GroupService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"Group does not exists\"\n" +
+                                "  \"message\": \"Group does not exist\"\n" +
                                 "}"
                     )]
                 )]
             )]
     )
     fun updateGroup(@RequestBody group: Group): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(groupService.update(group), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(groupService.update(group), HttpStatus.OK)
     }
 
     @DeleteMapping
@@ -188,17 +180,9 @@ class GroupController(private val groupService: GroupService) {
                 )]
             )]
     )
-    fun deleteMatter(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        return try {
-            groupService.delete(id)
-            ResponseEntity(
-                "{\n" +
-                        "  \"message\": \"Group has been deleted successfully\"\n" +
-                        "}", HttpStatus.OK
-            )
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+    fun deleteGroup(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        groupService.delete(id)
+        return ResponseEntity(MessageDTO("Group has been deleted successfully"), HttpStatus.OK)
     }
 
     @PutMapping("/addMember/{groupId}/{studentId}")
@@ -242,11 +226,7 @@ class GroupController(private val groupService: GroupService) {
             )]
     )
     fun addMember(@NotBlank @PathVariable groupId: Long, @NotBlank @PathVariable studentId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(groupService.addMember(groupId, studentId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(groupService.addMember(groupId, studentId), HttpStatus.OK)
     }
 
     @PutMapping("/removeMember/{groupId}/{studentId}")
@@ -290,11 +270,7 @@ class GroupController(private val groupService: GroupService) {
             )]
     )
     fun removeMember(@NotBlank @PathVariable groupId: Long, @NotBlank @PathVariable studentId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(groupService.removeMember(groupId, studentId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(groupService.removeMember(groupId, studentId), HttpStatus.OK)
     }
 
     @PutMapping("/addProject/{groupId}/{projectId}")
@@ -338,11 +314,7 @@ class GroupController(private val groupService: GroupService) {
             )]
     )
     fun addProject(@NotBlank @PathVariable groupId: Long, @NotBlank @PathVariable projectId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(groupService.addProject(groupId, projectId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(groupService.addProject(groupId, projectId), HttpStatus.OK)
     }
 
     @GetMapping("/getAll")

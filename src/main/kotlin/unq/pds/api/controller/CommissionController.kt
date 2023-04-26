@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.responses.*
 import org.springframework.http.*
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.CommissionDTO
-import unq.pds.api.dtos.ErrorDTO
+import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.Commission
 import unq.pds.services.CommissionService
 import javax.validation.Valid
@@ -58,11 +58,7 @@ class CommissionController(private val commissionService: CommissionService) {
             )]
     )
     fun createCommission(@RequestBody @Valid commission: CommissionDTO): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(commissionService.save(commission.fromDTOToModel()), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(commissionService.save(commission.fromDTOToModel()), HttpStatus.OK)
     }
 
     @GetMapping
@@ -106,11 +102,7 @@ class CommissionController(private val commissionService: CommissionService) {
             )]
     )
     fun getCommission(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(commissionService.read(id), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(commissionService.read(id), HttpStatus.OK)
     }
 
     @PutMapping
@@ -154,11 +146,7 @@ class CommissionController(private val commissionService: CommissionService) {
             )]
     )
     fun updateCommission(@RequestBody commission: Commission): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(commissionService.update(commission), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(commissionService.update(commission), HttpStatus.OK)
     }
 
     @DeleteMapping
@@ -204,16 +192,8 @@ class CommissionController(private val commissionService: CommissionService) {
             )]
     )
     fun deleteCommission(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        return try {
-            commissionService.delete(id)
-            ResponseEntity(
-                "{\n" +
-                        "  \"message\": \"Commission has been deleted successfully\"\n" +
-                        "}", HttpStatus.OK
-            )
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        commissionService.delete(id)
+        return ResponseEntity(MessageDTO("Commission has been deleted successfully"), HttpStatus.OK)
     }
 
     @PutMapping("/addStudent/{commissionId}/{studentId}")
@@ -257,11 +237,7 @@ class CommissionController(private val commissionService: CommissionService) {
             )]
     )
     fun addStudent(@NotBlank @PathVariable commissionId: Long, @NotBlank @PathVariable studentId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(commissionService.addStudent(commissionId, studentId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(commissionService.addStudent(commissionId, studentId), HttpStatus.OK)
     }
 
     @PutMapping("/removeStudent/{commissionId}/{studentId}")
@@ -305,11 +281,7 @@ class CommissionController(private val commissionService: CommissionService) {
             )]
     )
     fun removeStudent(@NotBlank @PathVariable commissionId: Long, @NotBlank @PathVariable studentId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(commissionService.removeStudent(commissionId, studentId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(commissionService.removeStudent(commissionId, studentId), HttpStatus.OK)
     }
 
     @PutMapping("/addTeacher/{commissionId}/{teacherId}")
@@ -353,11 +325,7 @@ class CommissionController(private val commissionService: CommissionService) {
             )]
     )
     fun addTeacher(@NotBlank @PathVariable commissionId: Long, @NotBlank @PathVariable teacherId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(commissionService.addTeacher(commissionId, teacherId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(commissionService.addTeacher(commissionId, teacherId), HttpStatus.OK)
     }
 
     @PutMapping("/removeTeacher/{commissionId}/{teacherId}")
@@ -401,11 +369,7 @@ class CommissionController(private val commissionService: CommissionService) {
             )]
     )
     fun removeTeacher(@NotBlank @PathVariable commissionId: Long, @NotBlank @PathVariable teacherId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(commissionService.removeTeacher(commissionId, teacherId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(commissionService.removeTeacher(commissionId, teacherId), HttpStatus.OK)
     }
 
     @PutMapping("/addGroup/{commissionId}/{groupId}")
@@ -449,11 +413,7 @@ class CommissionController(private val commissionService: CommissionService) {
             )]
     )
     fun addGroup(@NotBlank @PathVariable commissionId: Long, @NotBlank @PathVariable groupId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(commissionService.addGroup(commissionId, groupId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(commissionService.addGroup(commissionId, groupId), HttpStatus.OK)
     }
 
     @PutMapping("/removeGroup/{commissionId}/{groupId}")
@@ -497,11 +457,7 @@ class CommissionController(private val commissionService: CommissionService) {
             )]
     )
     fun removeGroup(@NotBlank @PathVariable commissionId: Long, @NotBlank @PathVariable groupId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(commissionService.removeGroup(commissionId, groupId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(commissionService.removeGroup(commissionId, groupId), HttpStatus.OK)
     }
 
     @GetMapping("/getAll")

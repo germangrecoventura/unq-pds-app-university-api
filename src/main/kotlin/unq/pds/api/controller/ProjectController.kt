@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import unq.pds.api.dtos.ErrorDTO
+import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Project
 import unq.pds.services.ProjectService
@@ -96,11 +96,7 @@ class ProjectController(private val projectService: ProjectService) {
             )]
     )
     fun getProject(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(projectService.read(id), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(projectService.read(id), HttpStatus.OK)
     }
 
     @PutMapping
@@ -144,11 +140,7 @@ class ProjectController(private val projectService: ProjectService) {
             )]
     )
     fun updateProject(@RequestBody project: Project): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(projectService.update(project), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(projectService.update(project), HttpStatus.OK)
     }
 
     @DeleteMapping
@@ -193,17 +185,9 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             )]
     )
-    fun deleteCommission(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        return try {
-            projectService.delete(id)
-            ResponseEntity(
-                "{\n" +
-                        "  \"message\": \"Project has been deleted successfully\"\n" +
-                        "}", HttpStatus.OK
-            )
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+    fun deleteProject(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        projectService.delete(id)
+        return ResponseEntity(MessageDTO("Project has been deleted successfully"), HttpStatus.OK)
     }
 
     @PutMapping("/addRepository/{projectId}/{repositoryId}")
@@ -247,11 +231,7 @@ class ProjectController(private val projectService: ProjectService) {
             )]
     )
     fun addRepository(@NotBlank @PathVariable projectId: Long, @NotBlank @PathVariable repositoryId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
     }
 
     @GetMapping("/getAll")

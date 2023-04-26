@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.model.Student
 import unq.pds.model.exceptions.AlreadyRegisteredException
+import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.ProjectService
 import unq.pds.services.StudentService
@@ -63,6 +64,9 @@ open class StudentServiceImpl : StudentService {
     override fun addProject(studentId: Long, projectId: Long): Student {
         val student = this.findById(studentId)
         val project = projectService.read(projectId)
+        if (studentDAO.projectOwnerOfTheProject(project).isPresent) {
+            throw ProjectAlreadyHasAnOwnerException()
+        }
         student.addProject(project)
 
         return this.update(student)

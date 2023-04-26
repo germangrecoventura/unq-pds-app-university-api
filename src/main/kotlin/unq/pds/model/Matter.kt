@@ -23,7 +23,7 @@ class Matter(
         }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonProperty
     @Schema(example = "1")
     private var id: Long? = null
