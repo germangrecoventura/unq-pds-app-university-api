@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
 import unq.pds.model.builder.BuilderStudent.Companion.aStudent
-import unq.pds.model.builder.ProjectBuilder
+import unq.pds.model.builder.GroupBuilder.Companion.aGroup
+import unq.pds.model.builder.ProjectBuilder.Companion.aProject
+import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import javax.management.InvalidAttributeValueException
 
@@ -16,6 +18,7 @@ class StudentServiceTest {
 
     @Autowired lateinit var studentService: StudentService
     @Autowired lateinit var projectService: ProjectService
+    @Autowired lateinit var groupService: GroupService
     @Autowired lateinit var initializer: Initializer
 
     @BeforeEach
@@ -285,22 +288,10 @@ class StudentServiceTest {
     @Test
     fun `should add a project to a student when it was not previously added and both exist`() {
         val student = studentService.save(aStudentDTO().build())
-        val project = projectService.save(ProjectBuilder.aProject().build())
+        val project = projectService.save(aProject().build())
         Assertions.assertEquals(0, student.projects.size)
         val groupWithAProject = studentService.addProject(student.getId()!!, project.getId()!!)
         Assertions.assertEquals(1, groupWithAProject.projects.size)
-    }
-
-    @Test
-    fun `should throw an exception when trying to add the same project to a student twice and both exist`() {
-        val student = studentService.save(aStudentDTO().build())
-        val project = projectService.save(ProjectBuilder.aProject().build())
-        studentService.addProject(student.getId()!!, project.getId()!!)
-        try {
-            studentService.addProject(student.getId()!!, project.getId()!!)
-        } catch (e: CloneNotSupportedException) {
-            Assertions.assertEquals("The project has already been added", e.message)
-        }
     }
 
     @Test
@@ -315,11 +306,38 @@ class StudentServiceTest {
 
     @Test
     fun `should throw an exception when trying to add a project to a student and the student does not exist`() {
-        val project = projectService.save(ProjectBuilder.aProject().build())
+        val project = projectService.save(aProject().build())
         try {
             studentService.addProject(-1, project.getId()!!)
         } catch (e: NoSuchElementException) {
             Assertions.assertEquals("Not found the student with id -1", e.message)
+        }
+    }
+
+    @Test
+    fun `should throw an exception when trying to add a project to a student and the project already has an owner`() {
+        val studentA = studentService.save(aStudentDTO().build())
+        val studentB = studentService.save(aStudentDTO().withFirstName("Lucas")
+            .withLastName("Ziegemann").withEmail("lucas@gmail.com").build())
+        val project = projectService.save(aProject().build())
+        studentService.addProject(studentA.getId()!!, project.getId()!!)
+        try {
+            studentService.addProject(studentB.getId()!!, project.getId()!!)
+        } catch (e: ProjectAlreadyHasAnOwnerException) {
+            Assertions.assertEquals("The project already has an owner", e.message)
+        }
+    }
+
+    @Test
+    fun `should throw an exception when trying to add a project to a group and the project already has an owner`() {
+        val student = studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroup().build())
+        val project = projectService.save(aProject().build())
+        studentService.addProject(student.getId()!!, project.getId()!!)
+        try {
+            groupService.addProject(group.getId()!!, project.getId()!!)
+        } catch (e: ProjectAlreadyHasAnOwnerException) {
+            Assertions.assertEquals("The project already has an owner", e.message)
         }
     }
 

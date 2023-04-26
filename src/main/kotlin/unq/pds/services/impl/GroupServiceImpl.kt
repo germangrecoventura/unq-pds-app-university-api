@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.model.Group
+import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import unq.pds.persistence.GroupDAO
 import unq.pds.services.GroupService
 import unq.pds.services.ProjectService
@@ -54,6 +55,9 @@ open class GroupServiceImpl : GroupService {
     override fun addProject(groupId: Long, projectId: Long): Group {
         val group = this.read(groupId)
         val project = projectService.read(projectId)
+        if (groupDAO.projectOwnerOfTheProject(project).isPresent) {
+            throw ProjectAlreadyHasAnOwnerException()
+        }
         group.addProject(project)
 
         return this.update(group)

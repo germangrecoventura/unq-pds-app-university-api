@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.exceptions.AlreadyRegisteredException
+import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import java.sql.SQLIntegrityConstraintViolationException
 import java.util.function.Consumer
 import javax.management.InvalidAttributeValueException
@@ -69,9 +70,9 @@ class BaseController {
         return ResponseEntity.badRequest().body(MessageDTO(ex.message!!))
     }
 
-    @ExceptionHandler(SQLIntegrityConstraintViolationException::class)
+    @ExceptionHandler(ProjectAlreadyHasAnOwnerException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleSQLIntegrityConstraintViolationException(ex: SQLIntegrityConstraintViolationException): ResponseEntity<MessageDTO> {
-        return ResponseEntity.badRequest().body(MessageDTO("The project already has an owner"))
+    fun handleProjectAlreadyHasAnOwnerException(ex: ProjectAlreadyHasAnOwnerException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.badRequest().body(MessageDTO(ex.message))
     }
 }
