@@ -74,4 +74,10 @@ class BaseController {
     fun handleProjectAlreadyHasAnOwnerException(ex: ProjectAlreadyHasAnOwnerException): ResponseEntity<MessageDTO> {
         return ResponseEntity.badRequest().body(MessageDTO(ex.message))
     }
+
+    @ExceptionHandler(NoSuchElementException::class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    fun handleNoSuchElementException(ex: NoSuchElementException): ResponseEntity<MessageDTO> {
+        return ResponseEntity(MessageDTO(ex.message!!), HttpStatus.NOT_FOUND)
+    }
 }

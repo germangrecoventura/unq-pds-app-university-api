@@ -96,11 +96,7 @@ class ProjectController(private val projectService: ProjectService) {
             )]
     )
     fun getProject(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(projectService.read(id), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(projectService.read(id), HttpStatus.OK)
     }
 
     @PutMapping
@@ -144,11 +140,7 @@ class ProjectController(private val projectService: ProjectService) {
             )]
     )
     fun updateProject(@RequestBody project: Project): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(projectService.update(project), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(projectService.update(project), HttpStatus.OK)
     }
 
     @DeleteMapping
@@ -194,12 +186,8 @@ class ProjectController(private val projectService: ProjectService) {
             )]
     )
     fun deleteProject(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        return try {
-            projectService.delete(id)
-            ResponseEntity(MessageDTO("Project has been deleted successfully"), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        projectService.delete(id)
+        return ResponseEntity(MessageDTO("Project has been deleted successfully"), HttpStatus.OK)
     }
 
     @PutMapping("/addRepository/{projectId}/{repositoryId}")
@@ -243,11 +231,7 @@ class ProjectController(private val projectService: ProjectService) {
             )]
     )
     fun addRepository(@NotBlank @PathVariable projectId: Long, @NotBlank @PathVariable repositoryId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
     }
 
     @GetMapping("/getAll")

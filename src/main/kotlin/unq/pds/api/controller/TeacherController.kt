@@ -55,8 +55,7 @@ class TeacherController {
                 )]
         )
         fun createTeacher(@RequestBody @Valid teacher: TeacherCreateRequestDTO): ResponseEntity<Teacher> {
-            var teacherSaved = teacherService.save(teacher)
-            return ResponseEntity(teacherSaved, HttpStatus.OK)
+            return ResponseEntity(teacherService.save(teacher), HttpStatus.OK)
         }
 
         @GetMapping
@@ -93,20 +92,15 @@ class TeacherController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"teacher\": \"Not found teacher with id\"\n" +
+                                    "  \"teacher\": \"Not found the teacher with id\"\n" +
                                     "}"
                         )]
                     )]
                 )]
         )
         fun getTeacher(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-            return try {
-                ResponseEntity(teacherService.findById(id), HttpStatus.OK)
-            } catch (e: NoSuchElementException) {
-                ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
-            }
+            return ResponseEntity(teacherService.findById(id), HttpStatus.OK)
         }
-
 
         @PutMapping
         @Operation(
@@ -142,24 +136,14 @@ class TeacherController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"teacher\": \"Not found teacher with id\"\n" +
+                                    "  \"teacher\": \"Not found the teacher with id\"\n" +
                                     "}"
                         )]
                     )]
                 )]
         )
         fun updateTeacher(@RequestBody teacher: Teacher): ResponseEntity<Any> {
-            return try {
-                ResponseEntity(teacherService.update(teacher), HttpStatus.OK)
-            } catch (e: AlreadyRegisteredException) {
-                ResponseEntity(
-                    "{\n" +
-                            "  \"message\": \"${e.message}\"\n" +
-                            "}", HttpStatus.BAD_REQUEST
-                )
-            } catch (e: NoSuchElementException) {
-                ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
-            }
+            return ResponseEntity(teacherService.update(teacher), HttpStatus.OK)
         }
 
         @DeleteMapping
@@ -187,7 +171,7 @@ class TeacherController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"teacher\": \"Not found teacher with id\"\n" +
+                                    "  \"teacher\": \"Required request parameter 'id' for method parameter type long is not present\"\n" +
                                     "}"
                         )]
                     )]
@@ -198,19 +182,15 @@ class TeacherController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"message\": \"Not found teacher with id\"\n" +
+                                    "  \"message\": \"The teacher with id is not registered\"\n" +
                                     "}"
                         )]
                     )]
                 )]
         )
         fun deleteTeacher(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-            return try {
-                teacherService.deleteById(id)
-                ResponseEntity(MessageDTO("Teacher has been deleted successfully"), HttpStatus.OK)
-            } catch (e: NoSuchElementException) {
-                ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
-            }
+            teacherService.deleteById(id)
+            return ResponseEntity(MessageDTO("Teacher has been deleted successfully"), HttpStatus.OK)
         }
 
         @GetMapping("/getAll")

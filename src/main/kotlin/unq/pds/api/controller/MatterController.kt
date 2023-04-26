@@ -91,11 +91,7 @@ class MatterController(private val matterService: MatterService) {
             )]
     )
     fun getMatter(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(matterService.read(id), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(matterService.read(id), HttpStatus.OK)
     }
 
     @PutMapping
@@ -132,18 +128,14 @@ class MatterController(private val matterService: MatterService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"Matter does not exists\"\n" +
+                                "  \"message\": \"Matter does not exist\"\n" +
                                 "}"
                     )]
                 )]
             )]
     )
     fun updateMatter(@RequestBody matter: Matter): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(matterService.update(matter), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        return ResponseEntity(matterService.update(matter), HttpStatus.OK)
     }
 
     @DeleteMapping
@@ -189,12 +181,8 @@ class MatterController(private val matterService: MatterService) {
             )]
     )
     fun deleteMatter(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        return try {
-            matterService.delete(id)
-            ResponseEntity(MessageDTO("Matter has been deleted successfully"), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
-        }
+        matterService.delete(id)
+        return ResponseEntity(MessageDTO("Matter has been deleted successfully"), HttpStatus.OK)
     }
 
     @GetMapping("/getAll")

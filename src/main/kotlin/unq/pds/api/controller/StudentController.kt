@@ -54,9 +54,8 @@ class StudentController {
                     )]
                 )]
         )
-        fun createUser(@RequestBody @Valid student: StudentCreateRequestDTO): ResponseEntity<Student> {
-            var userSaved = studentService.save(student)
-            return ResponseEntity(userSaved, HttpStatus.OK)
+        fun createStudent(@RequestBody @Valid student: StudentCreateRequestDTO): ResponseEntity<Student> {
+            return ResponseEntity(studentService.save(student), HttpStatus.OK)
         }
 
         @GetMapping
@@ -93,24 +92,15 @@ class StudentController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"student\": \"Not found student with id\"\n" +
+                                    "  \"message\": \"Not found the student with id\"\n" +
                                     "}"
                         )]
                     )]
                 )]
         )
         fun getStudent(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-            return try {
-                ResponseEntity(studentService.findById(id), HttpStatus.OK)
-            } catch (e: RuntimeException) {
-                ResponseEntity(
-                    "{\n" +
-                            "  \"student\": \"Not found student with id\"\n" +
-                            "}", HttpStatus.NOT_FOUND
-                )
-            }
+            return ResponseEntity(studentService.findById(id), HttpStatus.OK)
         }
-
 
         @PutMapping
         @Operation(
@@ -146,30 +136,15 @@ class StudentController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"student\": \"Not found student with id\"\n" +
+                                    "  \"message\": \"Student does not exist\"\n" +
                                     "}"
                         )]
                     )]
                 )]
         )
         fun updateStudent(@RequestBody student: Student): ResponseEntity<Any> {
-            return try {
-                ResponseEntity(studentService.update(student), HttpStatus.OK)
-            } catch (e: AlreadyRegisteredException) {
-                ResponseEntity(
-                    "{\n" +
-                            "  \"message\": \"${e.message}\"\n" +
-                            "}", HttpStatus.BAD_REQUEST
-                )
-            }catch (e: NoSuchElementException) {
-                ResponseEntity(
-                    "{\n" +
-                            "  \"student\": \"Not found student with id ${student.getId()}\"\n" +
-                            "}", HttpStatus.NOT_FOUND
-                )
-            }
+            return ResponseEntity(studentService.update(student), HttpStatus.OK)
         }
-
 
         @DeleteMapping
         @Operation(
@@ -207,19 +182,15 @@ class StudentController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"message\": \"Not found student with id\"\n" +
+                                    "  \"message\": \"The student with id is not registered\"\n" +
                                     "}"
                         )]
                     )]
                 )]
         )
         fun deleteStudent(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-            return try {
-                studentService.deleteById(id)
-                ResponseEntity(MessageDTO("Student has been deleted successfully"), HttpStatus.OK)
-            } catch (e: Exception) {
-                ResponseEntity(MessageDTO("Not found student with id $id"), HttpStatus.NOT_FOUND)
-            }
+            studentService.deleteById(id)
+            return ResponseEntity(MessageDTO("Student has been deleted successfully"), HttpStatus.OK)
         }
 
         @PutMapping("/addProject/{studentId}/{projectId}")
@@ -263,11 +234,7 @@ class StudentController {
                 )]
         )
         fun addProject(@NotBlank @PathVariable studentId: Long, @NotBlank @PathVariable projectId: Long): ResponseEntity<Any> {
-            return try {
-                ResponseEntity(studentService.addProject(studentId, projectId), HttpStatus.OK)
-            } catch (e: NoSuchElementException) {
-                ResponseEntity(MessageDTO(e.message!!), HttpStatus.NOT_FOUND)
-            }
+            return ResponseEntity(studentService.addProject(studentId, projectId), HttpStatus.OK)
         }
 
         @GetMapping("/getAll")
