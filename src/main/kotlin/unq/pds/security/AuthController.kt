@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.services.StudentService
+import unq.pds.services.TeacherService
 import java.util.*
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletResponse
@@ -14,28 +15,18 @@ import javax.validation.Valid
 
 @RestController
 @CrossOrigin
-class AuthController(private val studentService: StudentService) {
+class AuthController(private val studentService: StudentService, private val teacherService: TeacherService) {
 
     @PostMapping("/login")
     fun login(@Valid @RequestBody body: LoginDTO, response: HttpServletResponse): ResponseEntity<Any> {
-        try {
-            val student = studentService.findByEmail(body.email!!)
-            if (!student.comparePassword(body.password!!)) {
-                return ResponseEntity(MessageDTO("Password is incorrect"), HttpStatus.UNAUTHORIZED)
+        return try {
+            if (body.role == "STUDENT") {
+                studentLogin(body, response)
+            } else {
+                teacherLogin(body, response)
             }
-            val issuer = student.getEmail().toString()
-            val jwt = Jwts.builder()
-                .setIssuer(issuer)
-                .setExpiration(Date(System.currentTimeMillis() + 60 * 24 * 1000))
-                .signWith(SignatureAlgorithm.HS512, "secret".encodeToByteArray())
-                .compact()
-
-            val cookie = Cookie("jwt", jwt)
-            cookie.isHttpOnly = false
-            response.addCookie(cookie)
-            return ResponseEntity("You are logged in correctly", HttpStatus.OK)
         } catch (e: NoSuchElementException) {
-            return ResponseEntity(MessageDTO(e.message!!), HttpStatus.UNAUTHORIZED)
+            ResponseEntity(MessageDTO(e.message!!), HttpStatus.UNAUTHORIZED)
         }
     }
 
@@ -57,6 +48,43 @@ class AuthController(private val studentService: StudentService) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return ResponseEntity(studentService.findByEmail(body.issuer), HttpStatus.OK)
+        return if (body["role"] == "STUDENT") ResponseEntity(studentService.findByEmail(body.issuer), HttpStatus.OK)
+        else ResponseEntity(teacherService.findByEmail(body.issuer), HttpStatus.OK)
+    }
+
+    private fun studentLogin(body: LoginDTO, response: HttpServletResponse): ResponseEntity<Any> {
+        val student = studentService.findByEmail(body.email!!)
+        if (!student.comparePassword(body.password!!)) {
+            return ResponseEntity(MessageDTO("Password is incorrect"), HttpStatus.UNAUTHORIZED)
+        }
+        val issuer = student.getEmail().toString()
+        val role = student.getRole()
+        addCookie(role, issuer, response)
+        return ResponseEntity("You are logged in correctly", HttpStatus.OK)
+    }
+
+
+    private fun teacherLogin(body: LoginDTO, response: HttpServletResponse): ResponseEntity<Any> {
+        val teacher = teacherService.findByEmail(body.email!!)
+        if (!teacher.comparePassword(body.password!!)) {
+            return ResponseEntity(MessageDTO("Password is incorrect"), HttpStatus.UNAUTHORIZED)
+        }
+        val issuer = teacher.getEmail()
+        val role = teacher.getRole()
+        addCookie(role, issuer, response)
+        return ResponseEntity("You are logged in correctly", HttpStatus.OK)
+    }
+
+    private fun addCookie(role: String, issuer: String, response: HttpServletResponse) {
+        val jwt = Jwts.builder()
+            .claim("role", role)
+            .setIssuer(issuer)
+            .setExpiration(Date(System.currentTimeMillis() + 60 * 24 * 1000))
+            .signWith(SignatureAlgorithm.HS512, "secret".encodeToByteArray())
+            .compact()
+
+        val cookie = Cookie("jwt", jwt)
+        cookie.isHttpOnly = false
+        response.addCookie(cookie)
     }
 }
