@@ -20,6 +20,8 @@ class ProjectServiceTest {
     @Autowired
     lateinit var initializer: Initializer
 
+    private var token: String = "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"
+
     @Autowired
     lateinit var studentService: StudentService
 
@@ -87,7 +89,6 @@ class ProjectServiceTest {
     @Test
     fun `should add a repository to a project when it was not previously added and both exist`() {
         val project = projectService.save(aProject().build())
-        val token = System.getenv("TOKEN")
         studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
         val repository = repositoryService.save(aRepositoryDTO().build())
         Assertions.assertEquals(0, project.repositories.size)
@@ -98,7 +99,6 @@ class ProjectServiceTest {
     @Test
     fun `should throw an exception when trying to add the same repository to a project twice and both exist`() {
         val project = projectService.save(aProject().build())
-        val token = System.getenv("TOKEN")
         studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
         val repository = repositoryService.save(aRepositoryDTO().build())
         projectService.addRepository(project.getId()!!, repository.id)
@@ -121,7 +121,6 @@ class ProjectServiceTest {
 
     @Test
     fun `should throw an exception when trying to add a repository to a project and the project does not exist`() {
-        val token = System.getenv("TOKEN")
         studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
         val repository = repositoryService.save(aRepositoryDTO().build())
         try {

@@ -22,6 +22,8 @@ class RepositoryServiceTest {
     @Autowired
     lateinit var studentService: StudentService
 
+    private var token: String = "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"
+
     @Autowired
     lateinit var initializer: Initializer
 
@@ -32,7 +34,6 @@ class RepositoryServiceTest {
 
     @Test
     fun `should be create a repository when it has valid credentials`() {
-        val token = System.getenv("TOKEN")
         studentService.save(aStudentDTO().withTokenGithub(token).build())
         assertDoesNotThrow { repositoryService.save(aRepositoryDTO().build()) }
     }
@@ -69,7 +70,6 @@ class RepositoryServiceTest {
 
     @Test
     fun `should throw an exception if a save repository with an existing ID is added`() {
-        val token = System.getenv("TOKEN")
         studentService.save(aStudentDTO().withTokenGithub(token).build())
         repositoryService.save(aRepositoryDTO().build())
         val request = aRepositoryDTO().build()
@@ -96,7 +96,6 @@ class RepositoryServiceTest {
 
     @Test
     fun `should update the repository with a valid name`() {
-        val token = System.getenv("TOKEN")
         studentService.save(aStudentDTO().withTokenGithub(token).build())
 
         val repository = repositoryService.save(aRepositoryDTO().build())
@@ -109,7 +108,6 @@ class RepositoryServiceTest {
 
     @Test
     fun `should return a repository when searched for by id`() {
-        val token = System.getenv("TOKEN")
         studentService.save(aStudentDTO().withTokenGithub(token).build())
         var repository = repositoryService.save(aRepositoryDTO().build())
         var repositoryRecovery = repositoryService.findById(repository.id)
@@ -131,7 +129,6 @@ class RepositoryServiceTest {
 
     @Test
     fun `should delete a repository if it exists`() {
-        val token = System.getenv("TOKEN")
         studentService.save(aStudentDTO().withTokenGithub(token).build())
 
         var repository = repositoryService.save(aRepositoryDTO().build())
