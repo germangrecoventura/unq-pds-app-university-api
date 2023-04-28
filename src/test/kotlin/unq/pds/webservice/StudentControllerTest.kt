@@ -149,6 +149,26 @@ class StudentControllerTest {
     }
 
     @Test
+    fun `should throw a 400 status when the student has a null password`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aStudentDTO().withPassword(null).build()))
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `should throw a 400 status when the student has a empty password`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aStudentDTO().withPassword("").build()))
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
+    }
+
+    @Test
     fun `should throw a 400 status when the student has an invalid email`() {
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")

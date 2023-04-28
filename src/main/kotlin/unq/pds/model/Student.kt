@@ -1,13 +1,14 @@
 package unq.pds.model
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import unq.pds.api.Validator
 import javax.management.InvalidAttributeValueException
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.Table
 
 @Entity
 @Table(name = "student")
@@ -18,9 +19,9 @@ class Student(
     @Column(
         nullable = false,
         unique = true
-    ) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String
-): ProjectOwner() {
-
+    ) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String,
+    @field:Schema(example = "$" + "2a" + "$" + "CIymVbnbW.QfAyLP2mcw1ugKSpHbXn/N07sBhLjxUD1XqdlBNzHQi") private var password: String
+) : ProjectOwner() {
     init {
         validateCreate()
     }
@@ -29,6 +30,7 @@ class Student(
         validatePerson(firstName, "firstname")
         validatePerson(lastName, "lastname")
         validateEmail(email)
+        validatePassword(password)
     }
 
     private fun validatePerson(element: String?, field: String) {
@@ -49,6 +51,12 @@ class Student(
         }
         if (!Validator.isValidEMail(email_address)) {
             throw InvalidAttributeValueException("The email is not valid")
+        }
+    }
+
+    private fun validatePassword(password: String?) {
+        if (password.isNullOrBlank()) {
+            throw InvalidAttributeValueException("The password cannot be empty")
         }
     }
 
@@ -79,9 +87,8 @@ class Student(
         this.email = emailAddress!!
     }
 
-    @JsonIgnore
     fun getPassword(): String? {
-        return BCryptPasswordEncoder().encode("funciona")
+        return password
     }
 
     fun getRole(): String {

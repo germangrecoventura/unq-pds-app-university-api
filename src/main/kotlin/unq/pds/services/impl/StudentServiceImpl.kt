@@ -1,6 +1,7 @@
 package unq.pds.services.impl
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.StudentCreateRequestDTO
@@ -10,6 +11,7 @@ import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.ProjectService
 import unq.pds.services.StudentService
+import javax.management.InvalidAttributeValueException
 
 @Service
 @Transactional
@@ -22,11 +24,15 @@ open class StudentServiceImpl : StudentService {
         if (studentDAO.findByEmail(studentCreateRequestDTO.email!!).isPresent) {
             throw AlreadyRegisteredException("email")
         }
+        if (studentCreateRequestDTO.password.isNullOrBlank()) {
+            throw InvalidAttributeValueException("The password cannot be empty")
+        }
 
         val student = Student(
             studentCreateRequestDTO.firstName!!,
             studentCreateRequestDTO.lastName!!,
-            studentCreateRequestDTO.email!!
+            studentCreateRequestDTO.email!!,
+            BCryptPasswordEncoder().encode(studentCreateRequestDTO.password!!)
         )
         return studentDAO.save(student)
     }

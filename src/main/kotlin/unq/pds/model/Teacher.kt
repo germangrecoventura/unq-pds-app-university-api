@@ -15,7 +15,8 @@ import javax.persistence.*
 class Teacher(
     @Column(nullable = false) @JsonProperty @field:Schema(example = "German") private var firstName: String,
     @Column(nullable = false) @JsonProperty @field:Schema(example = "Greco") private var lastName: String,
-    @Column(nullable = false, unique = true) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String
+    @Column(nullable = false, unique = true) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String,
+    @field:Schema(example = "$" + "2a" + "$" + "CIymVbnbW.QfAyLP2mcw1ugKSpHbXn/N07sBhLjxUD1XqdlBNzHQi") private var password: String
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +32,7 @@ class Teacher(
         validatePerson(firstName, "firstname")
         validatePerson(lastName, "lastname")
         validateEmail(email)
+        validatePassword(password)
     }
 
     private fun validatePerson(element: String?, field: String) {
@@ -51,6 +53,12 @@ class Teacher(
         }
         if (!Validator.isValidEMail(email_address)) {
             throw InvalidAttributeValueException("The email is not valid")
+        }
+    }
+
+    private fun validatePassword(password: String?) {
+        if (password.isNullOrBlank()) {
+            throw InvalidAttributeValueException("The password cannot be empty")
         }
     }
 
@@ -89,9 +97,8 @@ class Teacher(
         email = emailAddress!!
     }
 
-    @JsonIgnore
     fun getPassword(): String? {
-        return BCryptPasswordEncoder().encode("funciona")
+        return password
     }
 
     fun getRole(): String {

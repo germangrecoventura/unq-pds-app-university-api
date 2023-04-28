@@ -1,5 +1,6 @@
 package unq.pds.model.builder
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import unq.pds.model.Teacher
 
 
@@ -7,9 +8,9 @@ class BuilderTeacher {
     private var firstName: String? = "German"
     private var lastName: String? = "Fernandez"
     private var emailAddress: String? = "german@gmail.com"
-
+    private var password: String? = BCryptPasswordEncoder().encode("funciona")
     fun build(): Teacher {
-        return Teacher(firstName!!, lastName!!, emailAddress!!)
+        return Teacher(firstName!!, lastName!!, emailAddress!!,password!!)
     }
 
     fun withFirstName(name: String?): BuilderTeacher {
@@ -24,6 +25,11 @@ class BuilderTeacher {
 
     fun withEmail(email: String?): BuilderTeacher {
         this.emailAddress = email
+        return this
+    }
+
+    fun withPassword(password: String?): BuilderTeacher {
+        this.password = password
         return this
     }
 

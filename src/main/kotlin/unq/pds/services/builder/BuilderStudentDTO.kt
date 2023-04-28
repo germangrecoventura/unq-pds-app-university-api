@@ -7,12 +7,14 @@ class BuilderStudentDTO {
     private var firstName: String? = "German"
     private var lastName: String? = "Fernandez"
     private var emailAddress: String? = "german@gmail.com"
+    private var password: String? = "funciona"
 
     fun build(): StudentCreateRequestDTO {
         var studentRequest = StudentCreateRequestDTO()
         studentRequest.firstName = firstName
         studentRequest.lastName = lastName
         studentRequest.email = emailAddress
+        studentRequest.password = password
         return studentRequest
     }
 
@@ -28,6 +30,11 @@ class BuilderStudentDTO {
 
     fun withEmail(email: String?): BuilderStudentDTO {
         this.emailAddress = email
+        return this
+    }
+
+    fun withPassword(password: String?): BuilderStudentDTO {
+        this.password = password
         return this
     }
 

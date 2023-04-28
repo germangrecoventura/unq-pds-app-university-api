@@ -13,8 +13,10 @@ import javax.management.InvalidAttributeValueException
 @SpringBootTest
 class TeacherServiceTest {
 
-    @Autowired lateinit var teacherService: TeacherServiceImpl
-    @Autowired lateinit var initializer: Initializer
+    @Autowired
+    lateinit var teacherService: TeacherServiceImpl
+    @Autowired
+    lateinit var initializer: Initializer
 
     @BeforeEach
     fun tearDown() {
@@ -157,6 +159,30 @@ class TeacherServiceTest {
 
         Assertions.assertEquals(
             "The email is not valid",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should throw an exception if password is null`() {
+        var request = aTeacherDTO().withPassword(null).build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { teacherService.save(request) }
+
+        Assertions.assertEquals(
+            "The password cannot be empty",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should throw an exception if password is empty`() {
+        var request = aTeacherDTO().withPassword("").build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { teacherService.save(request) }
+
+        Assertions.assertEquals(
+            "The password cannot be empty",
             thrown!!.message
         )
     }

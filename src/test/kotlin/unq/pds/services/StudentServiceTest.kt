@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import unq.pds.Initializer
 import unq.pds.model.builder.BuilderStudent.Companion.aStudent
 import unq.pds.model.builder.GroupBuilder.Companion.aGroup
@@ -162,6 +163,29 @@ class StudentServiceTest {
 
         Assertions.assertEquals(
             "The email is not valid",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should throw an exception if password is null`() {
+        var request = aStudentDTO().withPassword(null).build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { studentService.save(request) }
+
+        Assertions.assertEquals(
+            "The password cannot be empty",
+            thrown!!.message
+        )    }
+
+    @Test
+    fun `should throw an exception if password is empty`() {
+        var request = aStudentDTO().withPassword("").build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { studentService.save(request) }
+
+        Assertions.assertEquals(
+            "The password cannot be empty",
             thrown!!.message
         )
     }
