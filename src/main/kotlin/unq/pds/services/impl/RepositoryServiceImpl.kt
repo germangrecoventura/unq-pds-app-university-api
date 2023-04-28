@@ -3,8 +3,8 @@ package unq.pds.services.impl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import unq.pds.api.dtos.RepositoryDTO
 import unq.pds.api.GithubApi
+import unq.pds.api.dtos.RepositoryDTO
 import unq.pds.model.Repository
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.persistence.RepositoryDAO
@@ -22,7 +22,7 @@ open class RepositoryServiceImpl : RepositoryService {
     @Autowired
     private lateinit var githubApi: GithubApi
     override fun save(repositoryDTO: RepositoryDTO): Repository {
-        val repositoryId = githubApi.getRepository(repositoryDTO.owner!!,repositoryDTO.name!!)
+        val repositoryId = githubApi.getRepository(repositoryDTO.owner!!, repositoryDTO.name!!)
         if (repositoryDAO.existsById(repositoryId as Long)) throw AlreadyRegisteredException("repository")
 
         val issues = githubApi.getRepositoryIssues(repositoryDTO.owner!!, repositoryDTO.name!!)
@@ -31,7 +31,7 @@ open class RepositoryServiceImpl : RepositoryService {
         val branches = githubApi.getRepositoryBranches(repositoryDTO.owner!!, repositoryDTO.name!!)
         val commits = githubApi.getRepositoryCommits(repositoryDTO.owner!!, repositoryDTO.name!!)
 
-        val repository = Repository(repositoryId as Long, repositoryDTO.name!!, repositoryDTO.owner!!)
+        val repository = Repository(repositoryId, repositoryDTO.name!!, repositoryDTO.owner!!)
         repository.issues = issues!!
         repository.pullRequests = pullRequests!!
         repository.tags = tags!!

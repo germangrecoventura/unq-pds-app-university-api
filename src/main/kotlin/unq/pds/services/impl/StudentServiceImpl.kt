@@ -17,8 +17,11 @@ import javax.management.InvalidAttributeValueException
 @Transactional
 open class StudentServiceImpl : StudentService {
 
-    @Autowired lateinit var studentDAO: StudentDAO
-    @Autowired lateinit var projectService: ProjectService
+    @Autowired
+    lateinit var studentDAO: StudentDAO
+
+    @Autowired
+    lateinit var projectService: ProjectService
 
     override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
         if (studentDAO.findByEmail(studentCreateRequestDTO.email!!).isPresent) {
@@ -28,22 +31,51 @@ open class StudentServiceImpl : StudentService {
             throw InvalidAttributeValueException("The password cannot be empty")
         }
 
+        if (studentCreateRequestDTO.ownerGithub != null) {
+            var studentWithOwnerGithub = studentDAO.findByOwnerGithub(studentCreateRequestDTO.ownerGithub!!)
+            if (studentWithOwnerGithub.isPresent) {
+                throw AlreadyRegisteredException("owner github")
+            }
+        }
+        if (studentCreateRequestDTO.tokenGithub != null) {
+            var studentWithOwnerGithub = studentDAO.findByTokenGithub(studentCreateRequestDTO.tokenGithub!!)
+            if (studentWithOwnerGithub.isPresent) {
+                throw AlreadyRegisteredException("token github")
+            }
+        }
+
         val student = Student(
             studentCreateRequestDTO.firstName!!,
             studentCreateRequestDTO.lastName!!,
             studentCreateRequestDTO.email!!,
-            BCryptPasswordEncoder().encode(studentCreateRequestDTO.password!!)
+            BCryptPasswordEncoder().encode(studentCreateRequestDTO.password!!),
+            studentCreateRequestDTO.ownerGithub,
+            studentCreateRequestDTO.tokenGithub
         )
         return studentDAO.save(student)
     }
 
     override fun update(student: Student): Student {
+        if (student.getOwnerGithub() != null) {
+            var studentWithOwnerGithub = studentDAO.findByOwnerGithub(student.getOwnerGithub()!!)
+            if (studentWithOwnerGithub.isPresent && student.getId() != studentWithOwnerGithub.get().getId()) {
+                throw AlreadyRegisteredException("owner github")
+            }
+        }
+        if (student.getTokenGithub() != null) {
+            var studentWithToken = studentDAO.findByTokenGithub(student.getTokenGithub()!!)
+            if (studentWithToken.isPresent && student.getId() != studentWithToken.get().getId()) {
+                throw AlreadyRegisteredException("token github")
+            }
+        }
+
         var studentWithEmail = studentDAO.findByEmail(student.getEmail()!!)
         if (studentWithEmail.isPresent && student.getId() != studentWithEmail.get().getId()) {
             throw AlreadyRegisteredException("email")
         }
+
         if (student.getId() != null && studentDAO.existsById(student.getId()!!)) return studentDAO.save(student)
-         else throw NoSuchElementException("Student does not exist")
+        else throw NoSuchElementException("Student does not exist")
     }
 
     override fun deleteById(id: Long) {

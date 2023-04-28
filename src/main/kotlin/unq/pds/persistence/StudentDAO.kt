@@ -9,6 +9,8 @@ import java.util.Optional
 
 interface StudentDAO : JpaRepository<Student, Long> {
     fun findByEmail(email: String): Optional<Student>
+    fun findByOwnerGithub(owner: String): Optional<Student>
+    fun findByTokenGithub(token: String): Optional<Student>
 
     @Query(
         """

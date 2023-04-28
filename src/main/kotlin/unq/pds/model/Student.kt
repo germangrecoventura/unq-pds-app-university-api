@@ -20,7 +20,15 @@ class Student(
         nullable = false,
         unique = true
     ) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String,
-    @field:Schema(example = "$" + "2a" + "$" + "CIymVbnbW.QfAyLP2mcw1ugKSpHbXn/N07sBhLjxUD1XqdlBNzHQi") private var password: String
+    @field:Schema(example = "$" + "2a" + "$" + "CIymVbnbW.QfAyLP2mcw1ugKSpHbXn/N07sBhLjxUD1XqdlBNzHQi") private var password: String,
+    @Column(
+        nullable = true,
+        unique = true
+    ) @JsonProperty @field:Schema(example = "germangrecoventura") private var ownerGithub: String? = null,
+    @Column(
+        nullable = true,
+        unique = true
+    ) @JsonProperty @field:Schema(example = "") private var tokenGithub: String? = null
 ) : ProjectOwner() {
     init {
         validateCreate()
@@ -72,6 +80,14 @@ class Student(
         return email
     }
 
+    fun getOwnerGithub(): String? {
+        return ownerGithub
+    }
+
+    fun getTokenGithub(): String? {
+        return tokenGithub
+    }
+
     fun setFirstName(firstName: String?) {
         validatePerson(firstName, "firstname")
         this.firstName = firstName!!
@@ -85,6 +101,14 @@ class Student(
     fun setEmail(emailAddress: String?) {
         validateEmail(emailAddress)
         this.email = emailAddress!!
+    }
+
+    fun setOwnerGithub(ownerGithub: String?) {
+        this.ownerGithub = ownerGithub
+    }
+
+    fun setTokenGithub(token: String?) {
+        this.tokenGithub = token
     }
 
     fun getPassword(): String? {

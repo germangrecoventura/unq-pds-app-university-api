@@ -24,4 +24,10 @@ class StudentCreateRequestDTO {
     @NotBlank(message = "The password cannot be blank")
     @Schema(example = "funciona")
     var password: String? = null
+
+    @Schema(example = "germangrecoventura")
+    var ownerGithub: String? = null
+
+    @Schema(example = "")
+    var tokenGithub: String? = null
 }
