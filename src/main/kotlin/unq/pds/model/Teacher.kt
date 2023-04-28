@@ -94,6 +94,10 @@ class Teacher(
         return BCryptPasswordEncoder().encode("funciona")
     }
 
+    fun getRole(): String {
+        return "TEACHER"
+    }
+
     fun comparePassword(password: String): Boolean {
         return BCryptPasswordEncoder().matches(password, getPassword())
     }
