@@ -1,18 +1,27 @@
 package unq.pds.services
 
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
+import unq.pds.services.builder.BuilderStudentDTO
 
 @SpringBootTest
 class ProjectServiceTest {
 
-    @Autowired lateinit var projectService: ProjectService
-    @Autowired lateinit var repositoryService: RepositoryService
-    @Autowired lateinit var initializer: Initializer
+    @Autowired
+    lateinit var projectService: ProjectService
+    @Autowired
+    lateinit var repositoryService: RepositoryService
+    @Autowired
+    lateinit var initializer: Initializer
+
+    @Autowired
+    lateinit var studentService: StudentService
 
     @BeforeEach
     fun tearDown() {
@@ -54,7 +63,7 @@ class ProjectServiceTest {
     fun `should throw an exception when trying to update a project without persisting`() {
         try {
             projectService.update(aProject().build())
-        } catch (e:NoSuchElementException) {
+        } catch (e: NoSuchElementException) {
             Assertions.assertEquals("Project does not exist", e.message)
         }
     }
@@ -78,6 +87,8 @@ class ProjectServiceTest {
     @Test
     fun `should add a repository to a project when it was not previously added and both exist`() {
         val project = projectService.save(aProject().build())
+        val token = System.getenv("TOKEN")
+        studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
         val repository = repositoryService.save(aRepositoryDTO().build())
         Assertions.assertEquals(0, project.repositories.size)
         val projectWithARepository = projectService.addRepository(project.getId()!!, repository.id)
@@ -87,6 +98,8 @@ class ProjectServiceTest {
     @Test
     fun `should throw an exception when trying to add the same repository to a project twice and both exist`() {
         val project = projectService.save(aProject().build())
+        val token = System.getenv("TOKEN")
+        studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
         val repository = repositoryService.save(aRepositoryDTO().build())
         projectService.addRepository(project.getId()!!, repository.id)
         try {
@@ -108,6 +121,8 @@ class ProjectServiceTest {
 
     @Test
     fun `should throw an exception when trying to add a repository to a project and the project does not exist`() {
+        val token = System.getenv("TOKEN")
+        studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
         val repository = repositoryService.save(aRepositoryDTO().build())
         try {
             projectService.addRepository(-1, repository.id)

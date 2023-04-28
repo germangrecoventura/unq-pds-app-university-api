@@ -27,6 +27,16 @@ class RepositoryTest {
     }
 
     @Test
+    fun `should throw an exception if owner is null`() {
+        Assertions.assertThrows(RuntimeException::class.java) { aRepository().withOwner(null).build() }
+    }
+
+    @Test
+    fun `should throw an exception if url is null`() {
+        Assertions.assertThrows(RuntimeException::class.java) { aRepository().withOwner(null).build() }
+    }
+
+    @Test
     fun `should throw an exception if name is empty`() {
         val thrown: InvalidAttributeValueException? =
             Assertions.assertThrows(
