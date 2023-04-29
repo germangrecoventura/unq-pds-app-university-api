@@ -11,6 +11,6 @@ class LoginDTO {
     @NotBlank(message = "The password cannot be blank")
     val password: String? = null
 
-    @NotBlank(message = "The password cannot be blank")
+    @NotBlank(message = "The role cannot be blank")
     val role: String? = null
 }
