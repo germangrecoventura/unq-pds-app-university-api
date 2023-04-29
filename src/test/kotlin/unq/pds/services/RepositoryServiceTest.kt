@@ -10,6 +10,7 @@ import unq.pds.Initializer
 import unq.pds.model.builder.BuilderRepository.Companion.aRepository
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
+import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import javax.management.InvalidAttributeValueException
 
 @SpringBootTest
@@ -17,6 +18,11 @@ class RepositoryServiceTest {
 
     @Autowired
     lateinit var repositoryService: RepositoryService
+
+    @Autowired
+    lateinit var studentService: StudentService
+
+    private var token: String = "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"
 
     @Autowired
     lateinit var initializer: Initializer
@@ -28,6 +34,7 @@ class RepositoryServiceTest {
 
     @Test
     fun `should be create a repository when it has valid credentials`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
         assertDoesNotThrow { repositoryService.save(aRepositoryDTO().build()) }
     }
 
@@ -63,7 +70,7 @@ class RepositoryServiceTest {
 
     @Test
     fun `should throw an exception if a save repository with an existing ID is added`() {
-
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
         repositoryService.save(aRepositoryDTO().build())
         val request = aRepositoryDTO().build()
         val thrown: AlreadyRegisteredException? =
@@ -89,6 +96,8 @@ class RepositoryServiceTest {
 
     @Test
     fun `should update the repository with a valid name`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+
         val repository = repositoryService.save(aRepositoryDTO().build())
         repository.name = "German project"
 
@@ -99,6 +108,7 @@ class RepositoryServiceTest {
 
     @Test
     fun `should return a repository when searched for by id`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
         var repository = repositoryService.save(aRepositoryDTO().build())
         var repositoryRecovery = repositoryService.findById(repository.id)
 
@@ -119,6 +129,8 @@ class RepositoryServiceTest {
 
     @Test
     fun `should delete a repository if it exists`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+
         var repository = repositoryService.save(aRepositoryDTO().build())
         repositoryService.deleteById(repository.id)
         Assertions.assertTrue(repositoryService.count() == 0)
@@ -143,7 +155,7 @@ class RepositoryServiceTest {
             Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
 
         Assertions.assertEquals(
-            "Owner or repository not found",
+            "The student with owner germangrecoventura is not registered",
             thrown!!.message
         )
     }
@@ -155,7 +167,7 @@ class RepositoryServiceTest {
             Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
 
         Assertions.assertEquals(
-            "Owner or repository not found",
+            "The student with owner joselito is not registered",
             thrown!!.message
         )
     }

@@ -313,4 +313,23 @@ class StudentTest {
             Assertions.assertEquals("The project has already been added", e.message)
         }
     }
+
+    @Test
+    fun `should throw an exception if the password is null`() {
+        Assertions.assertThrows(RuntimeException::class.java) { aStudent().withPassword(null).build() }
+    }
+
+    @Test
+    fun `should throw an exception if the password is empty`() {
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(
+                InvalidAttributeValueException::class.java
+            )
+            { aStudent().withPassword("").build() }
+
+        Assertions.assertEquals(
+            "The password cannot be empty",
+            thrown!!.message
+        )
+    }
 }

@@ -13,8 +13,10 @@ import javax.management.InvalidAttributeValueException
 @SpringBootTest
 class TeacherServiceTest {
 
-    @Autowired lateinit var teacherService: TeacherServiceImpl
-    @Autowired lateinit var initializer: Initializer
+    @Autowired
+    lateinit var teacherService: TeacherServiceImpl
+    @Autowired
+    lateinit var initializer: Initializer
 
     @BeforeEach
     fun tearDown() {
@@ -160,7 +162,6 @@ class TeacherServiceTest {
             thrown!!.message
         )
     }
-
 
     @Test
     fun `should update teacher name when firstname is valid`() {

@@ -56,7 +56,7 @@ class Initializer {
         val students = mutableListOf(
             BuilderStudentDTO.aStudentDTO().build(),
             BuilderStudentDTO.aStudentDTO().withFirstName("Lucas").withLastName("Ziegemann")
-                .withEmail("lucas@gmail.com").build()
+                .withEmail("lucas@gmail.com").withOwnerGithub("prueba").build()
         )
         val mutListIterator = students.listIterator()
         while (mutListIterator.hasNext()) {

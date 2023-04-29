@@ -30,7 +30,8 @@ class StudentControllerTest {
     lateinit var studentService: StudentServiceImpl
     private val mapper = ObjectMapper()
 
-    @Autowired lateinit var initializer: Initializer
+    @Autowired
+    lateinit var initializer: Initializer
 
     @BeforeEach
     fun setUp() {
@@ -149,6 +150,26 @@ class StudentControllerTest {
     }
 
     @Test
+    fun `should throw a 400 status when the student has a null password`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aStudentDTO().withPassword(null).build()))
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `should throw a 400 status when the student has a empty password`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aStudentDTO().withPassword("").build()))
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
+    }
+
+    @Test
     fun `should throw a 400 status when the student has an invalid email`() {
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
@@ -165,6 +186,37 @@ class StudentControllerTest {
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().build()))
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
+    }
+
+
+    @Test
+    fun `should throw a 400 status when you save a student with owner is already registered`() {
+         studentService.save(aStudentDTO().build())
+        var student2 = aStudentDTO().withEmail("prueba@gmail.com").build()
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    mapper.writeValueAsString(student2)
+                )
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
+    }
+
+
+    @Test
+    fun `should throw a 400 status when you save a student with token is already registered`() {
+        var student = studentService.save(aStudentDTO().withTokenGithub("prueba").build())
+        var student2 = aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").withTokenGithub(student.getTokenGithub()).build()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    mapper.writeValueAsString(student2)
+                )
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
@@ -441,7 +493,7 @@ class StudentControllerTest {
     @Test
     fun `should throw a 400 status when you update a student with already registered email`() {
         var student = studentService.save(aStudentDTO().build())
-        var student2 = studentService.save(aStudentDTO().withEmail("hola@gmail.com").build())
+        var student2 = studentService.save(aStudentDTO().withEmail("hola@gmail.com").withOwnerGithub("prueba").build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/students")
@@ -454,6 +506,42 @@ class StudentControllerTest {
                             "  \"firstName\": \"${student2.getFirstName()}\",\n" +
                             "  \"lastName\": \"${student2.getLastName()}\"\n" +
                             "}"
+                )
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
+    }
+
+
+    @Test
+    fun `should throw a 400 status when you update a student with owner is already registered`() {
+        var student = studentService.save(aStudentDTO().build())
+        var student2 =
+            studentService.save(aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").build())
+        student2.setOwnerGithub(student.getOwnerGithub())
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    mapper.writeValueAsString(student2)
+                )
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
+    }
+
+
+    @Test
+    fun `should throw a 400 status when you update a student with token is already registered`() {
+        var student = studentService.save(aStudentDTO().withTokenGithub("prueba").build())
+        var student2 =
+            studentService.save(aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").build())
+        student2.setTokenGithub(student.getTokenGithub())
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    mapper.writeValueAsString(student2)
                 )
                 .accept("application/json")
         ).andExpect(status().isBadRequest)

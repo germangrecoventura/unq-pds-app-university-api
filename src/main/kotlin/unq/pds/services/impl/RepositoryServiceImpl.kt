@@ -1,37 +1,57 @@
 package unq.pds.services.impl
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.RestTemplate
+import unq.pds.api.Validator
 import unq.pds.api.dtos.RepositoryDTO
-import unq.pds.api.GithubApi
-import unq.pds.model.Repository
+import unq.pds.model.*
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.persistence.RepositoryDAO
+import unq.pds.persistence.StudentDAO
 import unq.pds.services.RepositoryService
 import java.util.*
+import javax.management.InvalidAttributeValueException
 
 
 @Service
 @Transactional
 open class RepositoryServiceImpl : RepositoryService {
 
+    private var restTemplate: RestTemplate = RestTemplate()
+
     @Autowired
     private lateinit var repositoryDAO: RepositoryDAO
 
     @Autowired
-    private lateinit var githubApi: GithubApi
+    private lateinit var studentDAO: StudentDAO
     override fun save(repositoryDTO: RepositoryDTO): Repository {
-        val repositoryId = githubApi.getRepository(repositoryDTO.owner!!,repositoryDTO.name!!)
-        if (repositoryDAO.existsById(repositoryId as Long)) throw AlreadyRegisteredException("repository")
+        val repositoryFind = getRepository(repositoryDTO.owner!!, repositoryDTO.name!!)
+        if (repositoryDAO.existsById(
+                repositoryFind!!.get("id").asLong()
+            )
+        ) throw AlreadyRegisteredException("repository")
 
-        val issues = githubApi.getRepositoryIssues(repositoryDTO.owner!!, repositoryDTO.name!!)
-        val pullRequests = githubApi.getRepositoryPulls(repositoryDTO.owner!!, repositoryDTO.name!!)
-        val tags = githubApi.getRepositoryTags(repositoryDTO.owner!!, repositoryDTO.name!!)
-        val branches = githubApi.getRepositoryBranches(repositoryDTO.owner!!, repositoryDTO.name!!)
-        val commits = githubApi.getRepositoryCommits(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val issues = getRepositoryIssues(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val pullRequests = getRepositoryPulls(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val tags = getRepositoryTags(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val branches = getRepositoryBranches(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val commits = getRepositoryCommits(repositoryDTO.owner!!, repositoryDTO.name!!)
 
-        val repository = Repository(repositoryId as Long, repositoryDTO.name!!, repositoryDTO.owner!!)
+        val repository = Repository(
+            repositoryFind.get("id").asLong(),
+            repositoryDTO.name!!,
+            repositoryDTO.owner!!,
+            repositoryFind.get("html_url").asText()
+        )
         repository.issues = issues!!
         repository.pullRequests = pullRequests!!
         repository.tags = tags!!
@@ -72,5 +92,190 @@ open class RepositoryServiceImpl : RepositoryService {
 
     override fun clearRepositories() {
         repositoryDAO.deleteAll()
+    }
+
+
+    private fun getRepositoryIssues(ownerGithub: String, nameRepository: String): MutableList<Issue>? {
+        val owner = studentDAO.findByOwnerGithub(ownerGithub)
+        if (owner.isEmpty) throw InvalidAttributeValueException("The student with owner $ownerGithub is not registered")
+        if (owner.get().getTokenGithub()
+                .isNullOrBlank()
+        ) throw InvalidAttributeValueException("The student with token is not registered")
+
+        val mapper = ObjectMapper()
+        val root: JsonNode = mapper.readTree(
+            executeRequest(
+                owner.get().getOwnerGithub()!!,
+                nameRepository,
+                owner.get().getTokenGithub()!!,
+                "issues"
+            ).body
+        )
+        val list = mutableListOf<Issue>()
+        for (i in root) {
+            val issue = Issue()
+            issue.id = i.path("id").asInt()
+            issue.title = i.path("title").asText()
+            var url = i.path("url").asText()
+            issue.url = "https://github.com/${url.substring(29, url.length)}"
+            issue.status = i.path("state").asText()
+            list.add(issue)
+        }
+        return list
+    }
+
+    private fun getRepositoryPulls(ownerGithub: String, nameRepository: String): MutableList<PullRequest>? {
+        val owner = studentDAO.findByOwnerGithub(ownerGithub)
+        if (owner.isEmpty) throw InvalidAttributeValueException("The student with owner $ownerGithub is not registered")
+        if (owner.get().getTokenGithub()
+                .isNullOrBlank()
+        ) throw InvalidAttributeValueException("The student with token is not registered")
+
+        val mapper = ObjectMapper()
+        val root: JsonNode = mapper.readTree(
+            executeRequest(
+                owner.get().getOwnerGithub()!!,
+                nameRepository,
+                owner.get().getTokenGithub()!!,
+                "pulls"
+            ).body
+        )
+        val list = mutableListOf<PullRequest>()
+        for (i in root) {
+            val pr = PullRequest()
+            pr.id = i.path("id").asInt()
+            var url = i.path("url").asText()
+            pr.url = "https://github.com/${url.substring(29, url.length)}"
+            pr.status = i.path("state").asText()
+            list.add(pr)
+        }
+        return list
+    }
+
+    private fun getRepositoryTags(ownerGithub: String, nameRepository: String): MutableList<Tag>? {
+        val owner = studentDAO.findByOwnerGithub(ownerGithub)
+        if (owner.isEmpty) throw InvalidAttributeValueException("The student with owner $ownerGithub is not registered")
+        if (owner.get().getTokenGithub()
+                .isNullOrBlank()
+        ) throw InvalidAttributeValueException("The student with token is not registered")
+
+
+        val mapper = ObjectMapper()
+        val root: JsonNode = mapper.readTree(
+            executeRequest(
+                owner.get().getOwnerGithub()!!,
+                nameRepository,
+                owner.get().getTokenGithub()!!,
+                "tags"
+            ).body
+        )
+        val list = mutableListOf<Tag>()
+        for (i in root) {
+            val tag = Tag()
+            tag.nodeId = i.path("node_id").asText()
+            tag.name = i.path("name").asText()
+            tag.zipUrl = "https://github.com/$owner/$nameRepository/archive/refs/tags/${tag.name}.zip"
+            tag.tarUrl = "https://github.com/$owner/$nameRepository/archive/refs/tags/${tag.name}.tar.gz"
+            list.add(tag)
+        }
+        return list
+    }
+
+    private fun getRepositoryBranches(ownerRepository: String, nameRepository: String): MutableList<Branch>? {
+        validation(ownerRepository, nameRepository)
+        val owner = studentDAO.findByOwnerGithub(ownerRepository)
+        if (owner.isEmpty) throw InvalidAttributeValueException("The student with owner $ownerRepository is not registered")
+        if (owner.get().getTokenGithub()
+                .isNullOrBlank()
+        ) throw InvalidAttributeValueException("The student with token is not registered")
+
+        val url = "https://api.github.com/repos/$ownerRepository/$nameRepository/branches"
+        val response: ResponseEntity<String> = makeRequest(url, owner.get().getTokenGithub()!!)
+        val mapper = ObjectMapper()
+        val root: JsonNode = mapper.readTree(response.body)
+        val list = mutableListOf<Branch>()
+        for (i in root) {
+            val branch = Branch()
+            branch.name = i.path("name").asText()
+            list.add(branch)
+        }
+        return list
+    }
+
+    private fun executeRequest(
+        ownerRepository: String,
+        nameRepository: String,
+        token: String,
+        operation: String
+    ): ResponseEntity<String> {
+        validation(ownerRepository, nameRepository)
+        val url = "https://api.github.com/repos/$ownerRepository/$nameRepository/$operation?state=all&direction=asc"
+        return makeRequest(url, token)
+    }
+
+    private fun getRepositoryCommits(ownerRepository: String, nameRepository: String): MutableList<Commit>? {
+        val owner = studentDAO.findByOwnerGithub(ownerRepository)
+        if (owner.isEmpty) throw InvalidAttributeValueException("The student with owner $ownerRepository is not registered")
+        if (owner.get().getTokenGithub()
+                .isNullOrBlank()
+        ) throw InvalidAttributeValueException("The student with token is not registered")
+
+
+        val mapper = ObjectMapper()
+        val root: JsonNode = mapper.readTree(
+            executeRequest(
+                owner.get().getOwnerGithub()!!,
+                nameRepository,
+                owner.get().getTokenGithub()!!,
+                "commits"
+            ).body
+        )
+        val list = mutableListOf<Commit>()
+        for (i in root) {
+            val commit = Commit()
+            commit.nodeId = i.path("node_id").asText()
+            commit.name = i.path("commit").path("message").asText()
+            commit.url = i.path("html_url").asText()
+            list.add(commit)
+        }
+        return list
+    }
+
+
+    private fun getRepository(ownerRepository: String, nameRepository: String): JsonNode? {
+        try {
+            validation(ownerRepository, nameRepository)
+            val owner = studentDAO.findByOwnerGithub(ownerRepository)
+            if (owner.isEmpty) throw InvalidAttributeValueException("The student with owner $ownerRepository is not registered")
+            if (owner.get().getTokenGithub()
+                    .isNullOrBlank()
+            ) throw InvalidAttributeValueException("The student with token is not registered")
+
+            val url = "https://api.github.com/repos/$ownerRepository/$nameRepository"
+            val repository = makeRequest(url, owner.get().getTokenGithub()!!)
+            val mapper = ObjectMapper()
+            return mapper.readTree(repository.body)
+        } catch (e: HttpClientErrorException.NotFound) {
+            throw InvalidAttributeValueException("Owner or repository not found")
+        } catch (e: HttpClientErrorException.Unauthorized) {
+            throw RuntimeException("Not authenticated")
+        }
+    }
+
+    private fun makeRequest(url: String, token: String): ResponseEntity<String> {
+        val headers = HttpHeaders()
+        headers.set("Accept", "application/vnd.github+json")
+        headers.set("Authorization", "Bearer $token")
+        val request: HttpEntity<*> = HttpEntity<Any?>(headers)
+        return restTemplate.exchange(
+            url, HttpMethod.GET, request,
+            String::class.java
+        )
+    }
+
+    private fun validation(ownerRepository: String, nameRepository: String) {
+        if (ownerRepository.isNullOrBlank()) throw InvalidAttributeValueException("Created repository cannot be empty")
+        if (nameRepository.isNullOrBlank()) throw InvalidAttributeValueException("Name repository cannot be empty")
+        if (Validator.containsSpecialCharacterGithub(nameRepository)) throw InvalidAttributeValueException("The name repository cannot contain special characters except - and _")
     }
 }

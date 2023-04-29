@@ -20,4 +20,8 @@ class TeacherCreateRequestDTO {
     @NotBlank(message = "The email address cannot be blank")
     @Schema(example = "german@gmail.com")
     var email: String? = null
+
+    @NotBlank(message = "The password cannot be blank")
+    @Schema(example = "funciona")
+    var password: String? = null
 }
