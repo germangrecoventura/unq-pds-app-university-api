@@ -27,9 +27,6 @@ open class StudentServiceImpl : StudentService {
         if (studentDAO.findByEmail(studentCreateRequestDTO.email!!).isPresent) {
             throw AlreadyRegisteredException("email")
         }
-        if (studentCreateRequestDTO.password.isNullOrBlank()) {
-            throw InvalidAttributeValueException("The password cannot be empty")
-        }
 
         if (studentCreateRequestDTO.ownerGithub != null) {
             var studentWithOwnerGithub = studentDAO.findByOwnerGithub(studentCreateRequestDTO.ownerGithub!!)

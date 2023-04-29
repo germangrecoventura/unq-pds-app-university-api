@@ -206,31 +206,6 @@ class StudentServiceTest {
     }
 
     @Test
-    fun `should throw an exception if password is null`() {
-        var request = aStudentDTO().withPassword(null).build()
-        val thrown: InvalidAttributeValueException? =
-            Assertions.assertThrows(InvalidAttributeValueException::class.java) { studentService.save(request) }
-
-        Assertions.assertEquals(
-            "The password cannot be empty",
-            thrown!!.message
-        )
-    }
-
-    @Test
-    fun `should throw an exception if password is empty`() {
-        var request = aStudentDTO().withPassword("").build()
-        val thrown: InvalidAttributeValueException? =
-            Assertions.assertThrows(InvalidAttributeValueException::class.java) { studentService.save(request) }
-
-        Assertions.assertEquals(
-            "The password cannot be empty",
-            thrown!!.message
-        )
-    }
-
-
-    @Test
     fun `should update student name when firstname is valid`() {
         var request = aStudentDTO().withEmail("prueba@gmail.com").build()
         var student = studentService.save(request)
@@ -238,7 +213,6 @@ class StudentServiceTest {
         var studentUpdated = studentService.update(student)
         Assertions.assertTrue(studentUpdated.getFirstName() == student.getFirstName())
     }
-
 
     @Test
     fun `should update student lastname when lastname is valid`() {

@@ -21,9 +21,6 @@ open class TeacherServiceImpl : TeacherService {
         if (teacherDAO.findByEmail(teacherCreateRequestDTO.email!!).isPresent) {
             throw AlreadyRegisteredException("email")
         }
-        if (teacherCreateRequestDTO.password.isNullOrBlank()) {
-            throw InvalidAttributeValueException("The password cannot be empty")
-        }
         val teacher = Teacher(
             teacherCreateRequestDTO.firstName!!,
             teacherCreateRequestDTO.lastName!!,
