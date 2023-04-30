@@ -79,7 +79,7 @@ class AuthController(private val studentService: StudentService, private val tea
         val jwt = Jwts.builder()
             .claim("role", role)
             .setIssuer(issuer)
-            .setExpiration(Date(System.currentTimeMillis() + 60 * 24 * 1000))
+            .setExpiration(Date(System.currentTimeMillis() + 86400000))
             .signWith(SignatureAlgorithm.HS512, "secret".encodeToByteArray())
             .compact()
 
