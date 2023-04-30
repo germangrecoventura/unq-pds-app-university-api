@@ -103,7 +103,7 @@ open class RepositoryServiceImpl : RepositoryService {
 
     override fun deleteById(repositoryId: Long) {
         if (repositoryDAO.existsById(repositoryId)) repositoryDAO.deleteById(repositoryId)
-        else throw NoSuchElementException("The repository with id -1 is not registered")
+        else throw NoSuchElementException("The repository with id $repositoryId is not registered")
     }
 
 
