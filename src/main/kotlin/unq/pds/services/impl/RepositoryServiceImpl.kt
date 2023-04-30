@@ -20,6 +20,7 @@ import unq.pds.persistence.StudentDAO
 import unq.pds.services.RepositoryService
 import java.util.*
 import javax.management.InvalidAttributeValueException
+import kotlin.NoSuchElementException
 
 
 @Service
@@ -61,10 +62,30 @@ open class RepositoryServiceImpl : RepositoryService {
         return repositoryDAO.save(repository)
     }
 
-    override fun update(repository: Repository): Repository {
-        var repositoryRecovery = findById(repository.id)
-        repositoryRecovery.name = repository.name
-        return repositoryDAO.save(repositoryRecovery)
+    override fun update(repositoryDTO: RepositoryDTO): Repository {
+        val repositoryFind = getRepository(repositoryDTO.owner!!, repositoryDTO.name!!)
+        if (!repositoryDAO.existsById(repositoryFind!!.get("id").asLong()))
+            throw NoSuchElementException("Repository does not exist")
+
+        val issues = getRepositoryIssues(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val pullRequests = getRepositoryPulls(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val tags = getRepositoryTags(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val branches = getRepositoryBranches(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val commits = getRepositoryCommits(repositoryDTO.owner!!, repositoryDTO.name!!)
+
+        val repository = Repository(
+            repositoryFind.get("id").asLong(),
+            repositoryDTO.name!!,
+            repositoryDTO.owner!!,
+            repositoryFind.get("html_url").asText()
+        )
+        repository.issues = issues!!
+        repository.pullRequests = pullRequests!!
+        repository.tags = tags!!
+        repository.branches = branches!!
+        repository.commits = commits!!
+
+        return repositoryDAO.save(repository)
     }
 
     override fun findById(repositoryId: Long): Repository {

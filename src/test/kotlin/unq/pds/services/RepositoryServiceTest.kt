@@ -71,8 +71,8 @@ class RepositoryServiceTest {
     @Test
     fun `should throw an exception if a save repository with an existing ID is added`() {
         studentService.save(aStudentDTO().withTokenGithub(token).build())
-        repositoryService.save(aRepositoryDTO().build())
         val request = aRepositoryDTO().build()
+        repositoryService.save(request)
         val thrown: AlreadyRegisteredException? =
             Assertions.assertThrows(AlreadyRegisteredException::class.java) { repositoryService.save(request) }
 
@@ -84,12 +84,12 @@ class RepositoryServiceTest {
 
     @Test
     fun `should throw an exception if that updates a repository that does not exist`() {
-        val request = aRepository().build()
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
         val thrown: NoSuchElementException? =
-            Assertions.assertThrows(NoSuchElementException::class.java) { repositoryService.update(request) }
+            Assertions.assertThrows(NoSuchElementException::class.java) { repositoryService.update(aRepositoryDTO().build()) }
 
         Assertions.assertEquals(
-            "Not found the repository with id 5",
+            "Repository does not exist",
             thrown!!.message
         )
     }
@@ -98,10 +98,9 @@ class RepositoryServiceTest {
     fun `should update the repository with a valid name`() {
         studentService.save(aStudentDTO().withTokenGithub(token).build())
 
-        val repository = repositoryService.save(aRepositoryDTO().build())
-        repository.name = "German-project"
+        repositoryService.save(aRepositoryDTO().build())
 
-        assertDoesNotThrow { repositoryService.update(repository) }
+        assertDoesNotThrow { repositoryService.update(aRepositoryDTO().build()) }
 
     }
 
@@ -149,8 +148,8 @@ class RepositoryServiceTest {
     }
 
     @Test
-    fun `should throw exception when repository not found`() {
-        var request = aRepositoryDTO().withName("joselito").build()
+    fun `should throw exception when repository owner not found`() {
+        var request = aRepositoryDTO().build()
         val thrown: InvalidAttributeValueException? =
             Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
 
@@ -161,13 +160,39 @@ class RepositoryServiceTest {
     }
 
     @Test
-    fun `should throw exception when owner not found`() {
-        var request = aRepositoryDTO().withOwner("joselito").build()
+    fun `should throw exception when repository not found`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        var request = aRepositoryDTO().withName("joselito").build()
         val thrown: InvalidAttributeValueException? =
             Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
 
         Assertions.assertEquals(
-            "The student with owner joselito is not registered",
+            "Owner or repository not found",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should throw exception when trying to update a repository and the owner not found`() {
+        var request = aRepositoryDTO().build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.update(request) }
+
+        Assertions.assertEquals(
+            "The student with owner germangrecoventura is not registered",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should throw exception when trying to update a repository and it not found`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        var request = aRepositoryDTO().withName("joselito").build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.update(request) }
+
+        Assertions.assertEquals(
+            "Owner or repository not found",
             thrown!!.message
         )
     }
