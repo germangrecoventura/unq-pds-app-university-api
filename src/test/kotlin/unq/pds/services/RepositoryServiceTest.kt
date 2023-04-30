@@ -99,7 +99,7 @@ class RepositoryServiceTest {
         studentService.save(aStudentDTO().withTokenGithub(token).build())
 
         val repository = repositoryService.save(aRepositoryDTO().build())
-        repository.name = "German project"
+        repository.name = "German-project"
 
         assertDoesNotThrow { repositoryService.update(repository) }
 

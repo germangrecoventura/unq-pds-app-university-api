@@ -16,7 +16,7 @@ class Validator {
                     + "([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$", Pattern.CASE_INSENSITIVE
         )
         private val specialCharacterGithub =
-            Pattern.compile("[¡!@#$%&*()+=|<>¿?{}.\\[\\]~]", Pattern.CASE_INSENSITIVE)
+            Pattern.compile("[ ¡!@#$%&*()+=|<>¿?{}.\\[\\]~]", Pattern.CASE_INSENSITIVE)
 
 
         fun containsNumber(toCheck: String?): Boolean {
