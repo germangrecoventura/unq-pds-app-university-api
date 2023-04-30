@@ -10,7 +10,8 @@ import javax.persistence.*
 @JsonPropertyOrder("id", "year", "fourMonthPeriod", "matter", "students", "teachers", "groupsStudents")
 class Commission(
     @Column(nullable = false) @JsonProperty @field:Schema(example = "2023") private var year: Int,
-    @Column(nullable = false) @JsonProperty @field:Schema(example = "FIRST_PERIOD") private var fourMonthPeriod: FourMonthPeriod,
+    @Column(nullable = false) @JsonProperty @field:Schema(example = "FIRST_PERIOD")
+    @Enumerated(EnumType.STRING) private var fourMonthPeriod: FourMonthPeriod,
     @ManyToOne @JsonProperty private var matter: Matter
 ) {
     @Id
