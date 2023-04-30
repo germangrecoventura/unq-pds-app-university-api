@@ -28,6 +28,7 @@ import kotlin.NoSuchElementException
 open class RepositoryServiceImpl : RepositoryService {
 
     private var restTemplate: RestTemplate = RestTemplate()
+    private var token: String = ""
 
     @Autowired
     private lateinit var repositoryDAO: RepositoryDAO
@@ -36,11 +37,10 @@ open class RepositoryServiceImpl : RepositoryService {
     private lateinit var studentDAO: StudentDAO
     override fun save(repositoryDTO: RepositoryDTO): Repository {
         val repositoryFind = getRepository(repositoryDTO.owner!!, repositoryDTO.name!!)
-        if (repositoryDAO.existsById(
-                repositoryFind!!.get("id").asLong()
-            )
-        ) throw AlreadyRegisteredException("repository")
-
+        if (repositoryDAO.existsById(repositoryFind!!.get("id").asLong())) {
+            token = ""
+            throw AlreadyRegisteredException("repository")
+        }
         val issues = getRepositoryIssues(repositoryDTO.owner!!, repositoryDTO.name!!)
         val pullRequests = getRepositoryPulls(repositoryDTO.owner!!, repositoryDTO.name!!)
         val tags = getRepositoryTags(repositoryDTO.owner!!, repositoryDTO.name!!)
@@ -58,15 +58,18 @@ open class RepositoryServiceImpl : RepositoryService {
         repository.tags = tags!!
         repository.branches = branches!!
         repository.commits = commits!!
+
+        token = ""
 
         return repositoryDAO.save(repository)
     }
 
     override fun update(repositoryDTO: RepositoryDTO): Repository {
         val repositoryFind = getRepository(repositoryDTO.owner!!, repositoryDTO.name!!)
-        if (!repositoryDAO.existsById(repositoryFind!!.get("id").asLong()))
+        if (!repositoryDAO.existsById(repositoryFind!!.get("id").asLong())) {
+            token = ""
             throw NoSuchElementException("Repository does not exist")
-
+        }
         val issues = getRepositoryIssues(repositoryDTO.owner!!, repositoryDTO.name!!)
         val pullRequests = getRepositoryPulls(repositoryDTO.owner!!, repositoryDTO.name!!)
         val tags = getRepositoryTags(repositoryDTO.owner!!, repositoryDTO.name!!)
@@ -84,6 +87,8 @@ open class RepositoryServiceImpl : RepositoryService {
         repository.tags = tags!!
         repository.branches = branches!!
         repository.commits = commits!!
+
+        token = ""
 
         return repositoryDAO.save(repository)
     }
@@ -117,18 +122,12 @@ open class RepositoryServiceImpl : RepositoryService {
 
 
     private fun getRepositoryIssues(ownerGithub: String, nameRepository: String): MutableList<Issue>? {
-        val owner = studentDAO.findByOwnerGithub(ownerGithub)
-        if (owner.isEmpty) throw InvalidAttributeValueException("The student with owner $ownerGithub is not registered")
-        if (owner.get().getTokenGithub()
-                .isNullOrBlank()
-        ) throw InvalidAttributeValueException("The student with token is not registered")
-
         val mapper = ObjectMapper()
         val root: JsonNode = mapper.readTree(
             executeRequest(
-                owner.get().getOwnerGithub()!!,
+                ownerGithub,
                 nameRepository,
-                owner.get().getTokenGithub()!!,
+                token,
                 "issues"
             ).body
         )
@@ -146,18 +145,12 @@ open class RepositoryServiceImpl : RepositoryService {
     }
 
     private fun getRepositoryPulls(ownerGithub: String, nameRepository: String): MutableList<PullRequest>? {
-        val owner = studentDAO.findByOwnerGithub(ownerGithub)
-        if (owner.isEmpty) throw InvalidAttributeValueException("The student with owner $ownerGithub is not registered")
-        if (owner.get().getTokenGithub()
-                .isNullOrBlank()
-        ) throw InvalidAttributeValueException("The student with token is not registered")
-
         val mapper = ObjectMapper()
         val root: JsonNode = mapper.readTree(
             executeRequest(
-                owner.get().getOwnerGithub()!!,
+                ownerGithub,
                 nameRepository,
-                owner.get().getTokenGithub()!!,
+                token,
                 "pulls"
             ).body
         )
@@ -174,19 +167,12 @@ open class RepositoryServiceImpl : RepositoryService {
     }
 
     private fun getRepositoryTags(ownerGithub: String, nameRepository: String): MutableList<Tag>? {
-        val owner = studentDAO.findByOwnerGithub(ownerGithub)
-        if (owner.isEmpty) throw InvalidAttributeValueException("The student with owner $ownerGithub is not registered")
-        if (owner.get().getTokenGithub()
-                .isNullOrBlank()
-        ) throw InvalidAttributeValueException("The student with token is not registered")
-
-
         val mapper = ObjectMapper()
         val root: JsonNode = mapper.readTree(
             executeRequest(
-                owner.get().getOwnerGithub()!!,
+                ownerGithub,
                 nameRepository,
-                owner.get().getTokenGithub()!!,
+                token,
                 "tags"
             ).body
         )
@@ -195,23 +181,16 @@ open class RepositoryServiceImpl : RepositoryService {
             val tag = Tag()
             tag.nodeId = i.path("node_id").asText()
             tag.name = i.path("name").asText()
-            tag.zipUrl = "https://github.com/$owner/$nameRepository/archive/refs/tags/${tag.name}.zip"
-            tag.tarUrl = "https://github.com/$owner/$nameRepository/archive/refs/tags/${tag.name}.tar.gz"
+            tag.zipUrl = "https://github.com/$ownerGithub/$nameRepository/archive/refs/tags/${tag.name}.zip"
+            tag.tarUrl = "https://github.com/$ownerGithub/$nameRepository/archive/refs/tags/${tag.name}.tar.gz"
             list.add(tag)
         }
         return list
     }
 
     private fun getRepositoryBranches(ownerRepository: String, nameRepository: String): MutableList<Branch>? {
-        validation(ownerRepository, nameRepository)
-        val owner = studentDAO.findByOwnerGithub(ownerRepository)
-        if (owner.isEmpty) throw InvalidAttributeValueException("The student with owner $ownerRepository is not registered")
-        if (owner.get().getTokenGithub()
-                .isNullOrBlank()
-        ) throw InvalidAttributeValueException("The student with token is not registered")
-
         val url = "https://api.github.com/repos/$ownerRepository/$nameRepository/branches"
-        val response: ResponseEntity<String> = makeRequest(url, owner.get().getTokenGithub()!!)
+        val response: ResponseEntity<String> = makeRequest(url, token)
         val mapper = ObjectMapper()
         val root: JsonNode = mapper.readTree(response.body)
         val list = mutableListOf<Branch>()
@@ -235,19 +214,12 @@ open class RepositoryServiceImpl : RepositoryService {
     }
 
     private fun getRepositoryCommits(ownerRepository: String, nameRepository: String): MutableList<Commit>? {
-        val owner = studentDAO.findByOwnerGithub(ownerRepository)
-        if (owner.isEmpty) throw InvalidAttributeValueException("The student with owner $ownerRepository is not registered")
-        if (owner.get().getTokenGithub()
-                .isNullOrBlank()
-        ) throw InvalidAttributeValueException("The student with token is not registered")
-
-
         val mapper = ObjectMapper()
         val root: JsonNode = mapper.readTree(
             executeRequest(
-                owner.get().getOwnerGithub()!!,
+                ownerRepository,
                 nameRepository,
-                owner.get().getTokenGithub()!!,
+                token,
                 "commits"
             ).body
         )
@@ -271,9 +243,9 @@ open class RepositoryServiceImpl : RepositoryService {
             if (owner.get().getTokenGithub()
                     .isNullOrBlank()
             ) throw InvalidAttributeValueException("The student with token is not registered")
-
+            token = owner.get().getTokenGithub()!!
             val url = "https://api.github.com/repos/$ownerRepository/$nameRepository"
-            val repository = makeRequest(url, owner.get().getTokenGithub()!!)
+            val repository = makeRequest(url, token)
             val mapper = ObjectMapper()
             return mapper.readTree(repository.body)
         } catch (e: HttpClientErrorException.NotFound) {
