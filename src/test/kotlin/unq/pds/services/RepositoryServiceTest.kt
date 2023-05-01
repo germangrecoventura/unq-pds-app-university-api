@@ -45,13 +45,25 @@ class RepositoryServiceTest {
     }
 
     @Test
+    fun `should throw an exception if owner is empty`() {
+        var request = aRepositoryDTO().withOwner("").build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
+
+        Assertions.assertEquals(
+            "Repository owner cannot be empty",
+            thrown!!.message
+        )
+    }
+
+    @Test
     fun `should throw an exception if name is empty`() {
         var request = aRepositoryDTO().withName("").build()
         val thrown: InvalidAttributeValueException? =
             Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
 
         Assertions.assertEquals(
-            "Name repository cannot be empty",
+            "Repository name cannot be empty",
             thrown!!.message
         )
     }
@@ -63,7 +75,7 @@ class RepositoryServiceTest {
             Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
 
         Assertions.assertEquals(
-            "The name repository cannot contain special characters except - and _",
+            "The repository name cannot contain special characters except - and _",
             thrown!!.message
         )
     }
@@ -83,71 +95,6 @@ class RepositoryServiceTest {
     }
 
     @Test
-    fun `should throw an exception if that updates a repository that does not exist`() {
-        studentService.save(aStudentDTO().withTokenGithub(token).build())
-        val thrown: NoSuchElementException? =
-            Assertions.assertThrows(NoSuchElementException::class.java) { repositoryService.update(aRepositoryDTO().build()) }
-
-        Assertions.assertEquals(
-            "Repository does not exist",
-            thrown!!.message
-        )
-    }
-
-    @Test
-    fun `should update the repository with a valid name`() {
-        studentService.save(aStudentDTO().withTokenGithub(token).build())
-
-        repositoryService.save(aRepositoryDTO().build())
-
-        assertDoesNotThrow { repositoryService.update(aRepositoryDTO().build()) }
-
-    }
-
-
-    @Test
-    fun `should return a repository when searched for by id`() {
-        studentService.save(aStudentDTO().withTokenGithub(token).build())
-        var repository = repositoryService.save(aRepositoryDTO().build())
-        var repositoryRecovery = repositoryService.findById(repository.id)
-
-        Assertions.assertTrue(repositoryRecovery.id == repository.id)
-    }
-
-    @Test
-    fun `should throw an exception if the repository does not exist`() {
-        val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { repositoryService.findById(-1) }
-
-        Assertions.assertEquals(
-            "Not found the repository with id -1",
-            thrown.message
-        )
-    }
-
-
-    @Test
-    fun `should delete a repository if it exists`() {
-        studentService.save(aStudentDTO().withTokenGithub(token).build())
-
-        var repository = repositoryService.save(aRepositoryDTO().build())
-        repositoryService.deleteById(repository.id)
-        Assertions.assertTrue(repositoryService.count() == 0)
-    }
-
-
-    @Test
-    fun `should throw an exception when deleting a non-existent repository`() {
-        val thrown: NoSuchElementException =
-            Assertions.assertThrows(NoSuchElementException::class.java) { repositoryService.deleteById(-1) }
-
-        Assertions.assertEquals(
-            "The repository with id -1 is not registered",
-            thrown.message
-        )
-    }
-
-    @Test
     fun `should throw exception when repository owner not found`() {
         var request = aRepositoryDTO().build()
         val thrown: InvalidAttributeValueException? =
@@ -155,6 +102,19 @@ class RepositoryServiceTest {
 
         Assertions.assertEquals(
             "The student with owner germangrecoventura is not registered",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should throw exception when token not found`() {
+        studentService.save(aStudentDTO().build())
+        var request = aRepositoryDTO().build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
+
+        Assertions.assertEquals(
+            "The student with token is not registered",
             thrown!!.message
         )
     }
@@ -173,6 +133,83 @@ class RepositoryServiceTest {
     }
 
     @Test
+    fun `should throw exception when the user is not authenticated`() {
+        studentService.save(aStudentDTO().withTokenGithub("token").build())
+        var request = aRepositoryDTO().build()
+        val thrown: RuntimeException? =
+            Assertions.assertThrows(RuntimeException::class.java) { repositoryService.save(request) }
+
+        Assertions.assertEquals(
+            "Not authenticated",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should update the repository with a valid name`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+
+        repositoryService.save(aRepositoryDTO().build())
+
+        assertDoesNotThrow { repositoryService.update(aRepositoryDTO().build()) }
+
+    }
+
+    @Test
+    fun `should throw an exception if that updates a repository and the name is null`() {
+        var request = aRepositoryDTO().withName(null).build()
+        Assertions.assertThrows(RuntimeException::class.java) { repositoryService.update(request) }
+    }
+
+    @Test
+    fun `should throw an exception if that updates a repository and the owner is empty`() {
+        var request = aRepositoryDTO().withOwner("").build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.update(request) }
+
+        Assertions.assertEquals(
+            "Repository owner cannot be empty",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should throw an exception if that updates a repository and the name is empty`() {
+        var request = aRepositoryDTO().withName("").build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.update(request) }
+
+        Assertions.assertEquals(
+            "Repository name cannot be empty",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should throw an exception if that updates a repository and the name has special character not valid`() {
+        var request = aRepositoryDTO().withName("Ap#").build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.update(request) }
+
+        Assertions.assertEquals(
+            "The repository name cannot contain special characters except - and _",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should throw an exception if that updates a repository that does not exist`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        val thrown: NoSuchElementException? =
+            Assertions.assertThrows(NoSuchElementException::class.java) { repositoryService.update(aRepositoryDTO().build()) }
+
+        Assertions.assertEquals(
+            "Repository does not exist",
+            thrown!!.message
+        )
+    }
+
+    @Test
     fun `should throw exception when trying to update a repository and the owner not found`() {
         var request = aRepositoryDTO().build()
         val thrown: InvalidAttributeValueException? =
@@ -180,6 +217,19 @@ class RepositoryServiceTest {
 
         Assertions.assertEquals(
             "The student with owner germangrecoventura is not registered",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should throw exception when trying to update a repository and the token not found`() {
+        studentService.save(aStudentDTO().build())
+        var request = aRepositoryDTO().build()
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.update(request) }
+
+        Assertions.assertEquals(
+            "The student with token is not registered",
             thrown!!.message
         )
     }
@@ -195,5 +245,92 @@ class RepositoryServiceTest {
             "Owner or repository not found",
             thrown!!.message
         )
+    }
+
+    @Test
+    fun `should throw exception when trying to update a repository and the user is not authenticated`() {
+        studentService.save(aStudentDTO().withTokenGithub("token").build())
+        var request = aRepositoryDTO().build()
+        val thrown: RuntimeException? =
+            Assertions.assertThrows(RuntimeException::class.java) { repositoryService.update(request) }
+
+        Assertions.assertEquals(
+            "Not authenticated",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should return a repository when searched for by id`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        var repository = repositoryService.save(aRepositoryDTO().build())
+        var repositoryRecovery = repositoryService.findById(repository.id)
+
+        Assertions.assertTrue(repositoryRecovery.id == repository.id)
+    }
+
+    @Test
+    fun `should throw an exception if the repository does not exist`() {
+        val thrown: NoSuchElementException =
+            Assertions.assertThrows(NoSuchElementException::class.java) { repositoryService.findById(-1) }
+
+        Assertions.assertEquals(
+            "Not found the repository with id -1",
+            thrown.message
+        )
+    }
+
+    @Test
+    fun `should return a repository when searched for by name`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        val repository = repositoryService.save(aRepositoryDTO().build())
+        val repositoryRecovered = repositoryService.findByName(repository.name)
+
+        Assertions.assertEquals(repository.id, repositoryRecovered.id)
+    }
+
+    @Test
+    fun `should throw an exception if the repository with a name does not exist`() {
+        val thrown: NoSuchElementException =
+            Assertions.assertThrows(NoSuchElementException::class.java) { repositoryService.findByName("un repo") }
+
+        Assertions.assertEquals("Not found the repository with name un repo", thrown.message)
+    }
+
+    @Test
+    fun `should delete a repository if it exists`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+
+        var repository = repositoryService.save(aRepositoryDTO().build())
+        repositoryService.deleteById(repository.id)
+        Assertions.assertTrue(repositoryService.count() == 0)
+    }
+
+    @Test
+    fun `should throw an exception when deleting a non-existent repository`() {
+        val thrown: NoSuchElementException =
+            Assertions.assertThrows(NoSuchElementException::class.java) { repositoryService.deleteById(-1) }
+
+        Assertions.assertEquals(
+            "The repository with id -1 is not registered",
+            thrown.message
+        )
+    }
+
+    @Test
+    fun `should recover an empty list of repositories when recover all and there is no persistence`() {
+        Assertions.assertEquals(0, repositoryService.findByAll().size)
+    }
+
+    @Test
+    fun `should recover a list with two repositories when recover all and there are exactly two persisted`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        repositoryService.save(aRepositoryDTO().build())
+        repositoryService.save(aRepositoryDTO().withName("unq-pds-app-university-web").build())
+        val repositories = repositoryService.findByAll()
+
+        Assertions.assertEquals(2, repositories.size)
+        Assertions.assertTrue(repositories.any { it.name == "unq-pds-app-university-api" })
+        Assertions.assertTrue(repositories.any { it.name == "unq-pds-app-university-web" })
     }
 }

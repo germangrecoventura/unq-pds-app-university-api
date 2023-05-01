@@ -98,8 +98,9 @@ open class RepositoryServiceImpl : RepositoryService {
             .orElseThrow { NoSuchElementException("Not found the repository with id $repositoryId") }
     }
 
-    override fun findByName(name: String): Optional<Repository> {
+    override fun findByName(name: String): Repository {
         return repositoryDAO.findByName(name)
+            .orElseThrow { kotlin.NoSuchElementException("Not found the repository with name $name") }
     }
 
     override fun findByAll(): List<Repository> {
@@ -267,8 +268,8 @@ open class RepositoryServiceImpl : RepositoryService {
     }
 
     private fun validation(ownerRepository: String, nameRepository: String) {
-        if (ownerRepository.isNullOrBlank()) throw InvalidAttributeValueException("Created repository cannot be empty")
-        if (nameRepository.isNullOrBlank()) throw InvalidAttributeValueException("Name repository cannot be empty")
-        if (Validator.containsSpecialCharacterGithub(nameRepository)) throw InvalidAttributeValueException("The name repository cannot contain special characters except - and _")
+        if (ownerRepository.isNullOrBlank()) throw InvalidAttributeValueException("Repository owner cannot be empty")
+        if (nameRepository.isNullOrBlank()) throw InvalidAttributeValueException("Repository name cannot be empty")
+        if (Validator.containsSpecialCharacterGithub(nameRepository)) throw InvalidAttributeValueException("The repository name cannot contain special characters except - and _")
     }
 }
