@@ -39,7 +39,7 @@ class AuthController(private val studentService: StudentService, private val tea
         cookie.isHttpOnly = true
         cookie.maxAge = 0
         response.addCookie(cookie)
-        return ResponseEntity("You successfully logged out", HttpStatus.OK)
+        return ResponseEntity(MessageDTO("You successfully logged out"), HttpStatus.OK)
     }
 
     @GetMapping("user-logged")
@@ -60,7 +60,8 @@ class AuthController(private val studentService: StudentService, private val tea
         val issuer = student.getEmail().toString()
         val role = student.getRole()
         addCookie(role, issuer, response)
-        return ResponseEntity("You are logged in correctly", HttpStatus.OK)
+
+        return ResponseEntity(MessageDTO("You are logged in correctly"), HttpStatus.OK)
     }
 
 
@@ -72,7 +73,7 @@ class AuthController(private val studentService: StudentService, private val tea
         val issuer = teacher.getEmail()
         val role = teacher.getRole()
         addCookie(role, issuer, response)
-        return ResponseEntity("You are logged in correctly", HttpStatus.OK)
+        return ResponseEntity(MessageDTO("You are logged in correctly"), HttpStatus.OK)
     }
 
     private fun addCookie(role: String, issuer: String, response: HttpServletResponse) {
