@@ -1,10 +1,15 @@
 package unq.pds.api.controller
 
-import org.springframework.http.*
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
-import org.springframework.validation.*
-import org.springframework.web.bind.*
-import org.springframework.web.bind.annotation.*
+import org.springframework.validation.FieldError
+import org.springframework.validation.ObjectError
+import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingServletRequestParameterException
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.exceptions.AlreadyRegisteredException
@@ -55,7 +60,8 @@ class BaseController {
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
     fun handleMethodArgumentTypeMismatchException(ex: MethodArgumentTypeMismatchException): ResponseEntity<MessageDTO> {
-        val errorMessage = "Required request parameter '" + ex.name + "' for method parameter type " + ex.requiredType + " is not present"
+        val errorMessage =
+            "Required request parameter '" + ex.name + "' for method parameter type " + ex.requiredType + " is not present"
         return ResponseEntity.badRequest().body(MessageDTO(errorMessage))
     }
 
@@ -78,15 +84,16 @@ class BaseController {
     }
 
     @ExceptionHandler(NotAuthenticatedException::class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     fun handleNotAuthenticatedException(ex: NotAuthenticatedException): ResponseEntity<MessageDTO> {
-        return ResponseEntity.badRequest().body(MessageDTO(ex.message))
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(MessageDTO(ex.message))
     }
 
     @ExceptionHandler(SQLIntegrityConstraintViolationException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleSQLIntegrityConstraintViolationException(ex: SQLIntegrityConstraintViolationException): ResponseEntity<MessageDTO> {
-        return ResponseEntity.badRequest().body(MessageDTO("The entity cannot be deleted because it is related to another entity"))
+        return ResponseEntity.badRequest()
+            .body(MessageDTO("The entity cannot be deleted because it is related to another entity"))
     }
 
     @ExceptionHandler(NoSuchElementException::class)
