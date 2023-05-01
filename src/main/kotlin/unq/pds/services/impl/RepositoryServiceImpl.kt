@@ -15,6 +15,7 @@ import unq.pds.api.Validator
 import unq.pds.api.dtos.RepositoryDTO
 import unq.pds.model.*
 import unq.pds.model.exceptions.AlreadyRegisteredException
+import unq.pds.model.exceptions.NotAuthenticatedException
 import unq.pds.persistence.RepositoryDAO
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.RepositoryService
@@ -252,7 +253,7 @@ open class RepositoryServiceImpl : RepositoryService {
         } catch (e: HttpClientErrorException.NotFound) {
             throw InvalidAttributeValueException("Owner or repository not found")
         } catch (e: HttpClientErrorException.Unauthorized) {
-            throw RuntimeException("Not authenticated")
+            throw NotAuthenticatedException()
         }
     }
 

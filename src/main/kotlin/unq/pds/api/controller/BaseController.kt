@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.exceptions.AlreadyRegisteredException
+import unq.pds.model.exceptions.NotAuthenticatedException
 import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import java.util.function.Consumer
 import javax.management.InvalidAttributeValueException
@@ -72,6 +73,12 @@ class BaseController {
     @ExceptionHandler(ProjectAlreadyHasAnOwnerException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleProjectAlreadyHasAnOwnerException(ex: ProjectAlreadyHasAnOwnerException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.badRequest().body(MessageDTO(ex.message))
+    }
+
+    @ExceptionHandler(NotAuthenticatedException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleNotAuthenticatedException(ex: NotAuthenticatedException): ResponseEntity<MessageDTO> {
         return ResponseEntity.badRequest().body(MessageDTO(ex.message))
     }
 

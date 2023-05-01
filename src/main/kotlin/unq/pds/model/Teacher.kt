@@ -97,8 +97,12 @@ class Teacher(
         email = emailAddress!!
     }
 
-    fun getPassword(): String? {
+    fun getPassword(): String {
         return password
+    }
+
+    fun setPassword(password: String) {
+        this.password = password
     }
 
     fun getRole(): String {

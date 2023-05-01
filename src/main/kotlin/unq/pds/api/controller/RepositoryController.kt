@@ -134,7 +134,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 )]
             )]
     )
-    fun updateRepository(@RequestBody repository: RepositoryDTO): ResponseEntity<Any> {
+    fun updateRepository(@RequestBody @Valid repository: RepositoryDTO): ResponseEntity<Any> {
         return ResponseEntity(repositoryService.update(repository), HttpStatus.OK)
     }
 

@@ -39,6 +39,7 @@ open class TeacherServiceImpl : TeacherService {
         teacherRecovery.setFirstName(teacher.getFirstName())
         teacherRecovery.setLastName(teacher.getLastName())
         teacherRecovery.setEmail(teacher.getEmail())
+        teacherRecovery.setPassword(BCryptPasswordEncoder().encode(teacher.getPassword()))
         return teacherDAO.save(teacherRecovery)
     }
 
