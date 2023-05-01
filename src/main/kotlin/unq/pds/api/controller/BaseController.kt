@@ -10,6 +10,7 @@ import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.model.exceptions.NotAuthenticatedException
 import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
+import java.sql.SQLIntegrityConstraintViolationException
 import java.util.function.Consumer
 import javax.management.InvalidAttributeValueException
 
@@ -80,6 +81,12 @@ class BaseController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleNotAuthenticatedException(ex: NotAuthenticatedException): ResponseEntity<MessageDTO> {
         return ResponseEntity.badRequest().body(MessageDTO(ex.message))
+    }
+
+    @ExceptionHandler(SQLIntegrityConstraintViolationException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleSQLIntegrityConstraintViolationException(ex: SQLIntegrityConstraintViolationException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.badRequest().body(MessageDTO("The entity cannot be deleted because it is related to another entity"))
     }
 
     @ExceptionHandler(NoSuchElementException::class)
