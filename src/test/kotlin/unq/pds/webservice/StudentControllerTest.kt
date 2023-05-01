@@ -15,8 +15,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
 import unq.pds.model.builder.BuilderStudent.Companion.aStudent
+import unq.pds.security.LoginDTO
+import unq.pds.services.builder.BuilderLoginDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
+import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
 import unq.pds.services.impl.StudentServiceImpl
+import unq.pds.services.impl.TeacherServiceImpl
+import javax.servlet.http.Cookie
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
@@ -28,6 +33,9 @@ class StudentControllerTest {
 
     @Autowired
     lateinit var studentService: StudentServiceImpl
+
+    @Autowired
+    lateinit var teacherService: TeacherServiceImpl
     private val mapper = ObjectMapper()
 
     @Autowired
@@ -40,152 +48,228 @@ class StudentControllerTest {
     }
 
     @Test
-    fun `should throw a 200 status when a valid student is created`() {
+    fun `should throw a 401 status when not logged in`() {
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().build()))
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 200 status when a student does not have permissions to create students`() {
+        studentService.save(aStudentDTO().build())
+        var login = BuilderLoginDTO().withRole("STUDENT").build()
+        val response = mockMvc.perform(
+            MockMvcRequestBuilders.post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(login))
+                .accept("application/json")
+        ).andExpect(status().isOk)
+
+        val cookie = response.andReturn().response.cookies[0]
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aStudentDTO().build()))
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 200 status when a valid student is created`() {
+        val cookie = cookies()
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aStudentDTO().build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isOk)
     }
 
     @Test
     fun `should throw a 400 status when the student has a null firstname`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withFirstName(null).build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the student has a empty first name`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withFirstName("").build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the student has numbers in his first name`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withFirstName("G3rman").build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the student has a special character in his first name`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withFirstName("Germ@n").build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the student has a null last name`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withLastName(null).build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the student has a empty last name`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withLastName("").build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the student has numbers in his last name`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withLastName("G3rman").build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the student has a special character in his last name`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withLastName("Germ@n").build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the student has a null email`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withEmail(null).build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the student has a empty email`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withEmail("").build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the student has a null password`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withPassword(null).build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the student has a empty password`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withPassword("").build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the student has an invalid email`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withEmail("german.com").build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the email is already registered`() {
+        val cookie = cookies()
+
         studentService.save(aStudentDTO().build())
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
@@ -193,7 +277,9 @@ class StudentControllerTest {
 
     @Test
     fun `should throw a 400 status when you save a student with owner is already registered`() {
-         studentService.save(aStudentDTO().build())
+        val cookie = cookies()
+
+        studentService.save(aStudentDTO().build())
         var student2 = aStudentDTO().withEmail("prueba@gmail.com").build()
 
         mockMvc.perform(
@@ -202,6 +288,7 @@ class StudentControllerTest {
                 .content(
                     mapper.writeValueAsString(student2)
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
@@ -209,14 +296,18 @@ class StudentControllerTest {
 
     @Test
     fun `should throw a 400 status when you save a student with token is already registered`() {
+        val cookie = cookies()
+
         var student = studentService.save(aStudentDTO().withTokenGithub("prueba").build())
-        var student2 = aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").withTokenGithub(student.getTokenGithub()).build()
+        var student2 = aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba")
+            .withTokenGithub(student.getTokenGithub()).build()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     mapper.writeValueAsString(student2)
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
@@ -224,20 +315,23 @@ class StudentControllerTest {
 
     @Test
     fun `should throw a 200 status when you are looking for a student if it exists`() {
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
-                .param("id", student.getId().toString())
+                .param("id", student.getId().toString()).cookie(cookie)
         )
             .andExpect(status().isOk)
     }
 
     @Test
     fun `should throw a 404 status when you are looking for a student does not exist`() {
+        val cookie = cookies()
+
         mockMvc.perform(
             MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
-                .param("id", 2.toString())
+                .param("id", 2.toString()).cookie(cookie)
         )
             .andExpect(status().isNotFound)
     }
@@ -245,6 +339,8 @@ class StudentControllerTest {
 
     @Test
     fun `should throw a 200 status when you update a student who exists and with valid credentials`() {
+        val cookie = cookies()
+
         var student = studentService.save(aStudentDTO().build())
 
         student.setFirstName("Jose")
@@ -252,17 +348,21 @@ class StudentControllerTest {
             MockMvcRequestBuilders.put("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(student))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isOk)
     }
 
     @Test
     fun `should throw a 404 status when you update a student that does not exist`() {
+        val cookie = cookies()
+
         var student = aStudent().build()
         mockMvc.perform(
             MockMvcRequestBuilders.put("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(student))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isNotFound)
     }
@@ -270,6 +370,8 @@ class StudentControllerTest {
 
     @Test
     fun `should throw a 400 status when you update a student with first name null`() {
+        val cookie = cookies()
+
         var student = studentService.save(aStudentDTO().build())
 
         mockMvc.perform(
@@ -283,13 +385,15 @@ class StudentControllerTest {
                             "  \"firstName\": ${null},\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
-                )
+                ).cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when you update a student with first name empty`() {
+        val cookie = cookies()
+
         var student = studentService.save(aStudentDTO().build())
 
         mockMvc.perform(
@@ -304,12 +408,14 @@ class StudentControllerTest {
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when you update a student with first name with numbers`() {
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().build())
 
         mockMvc.perform(
@@ -324,12 +430,14 @@ class StudentControllerTest {
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when you update a student with first name with special character`() {
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().build())
 
         mockMvc.perform(
@@ -344,6 +452,7 @@ class StudentControllerTest {
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
@@ -351,6 +460,7 @@ class StudentControllerTest {
 
     @Test
     fun `should throw a 400 status when you update a student with last name null`() {
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().build())
 
         mockMvc.perform(
@@ -365,12 +475,14 @@ class StudentControllerTest {
                             "  \"lastName\": \"${null}\"\n" +
                             "}"
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when you update a student with last name empty`() {
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().build())
 
         mockMvc.perform(
@@ -385,12 +497,14 @@ class StudentControllerTest {
                             "  \"lastName\": \"${""}\"\n" +
                             "}"
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when you update a student with last name with numbers`() {
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().build())
 
         mockMvc.perform(
@@ -405,12 +519,14 @@ class StudentControllerTest {
                             "  \"lastName\": \"${"G2erman"}\"\n" +
                             "}"
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when you update a student with last name with special character`() {
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().build())
 
         mockMvc.perform(
@@ -425,6 +541,7 @@ class StudentControllerTest {
                             "  \"lastName\": \"${"G@rman"}\"\n" +
                             "}"
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
@@ -432,6 +549,7 @@ class StudentControllerTest {
 
     @Test
     fun `should throw a 400 status when you update a student with mail null`() {
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().build())
 
         mockMvc.perform(
@@ -446,12 +564,14 @@ class StudentControllerTest {
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when you update a student with mail empty`() {
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().build())
 
         mockMvc.perform(
@@ -466,12 +586,14 @@ class StudentControllerTest {
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when you update a student with an invalid email`() {
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().build())
 
         mockMvc.perform(
@@ -486,12 +608,15 @@ class StudentControllerTest {
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when you update a student with already registered email`() {
+
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().build())
         var student2 = studentService.save(aStudentDTO().withEmail("hola@gmail.com").withOwnerGithub("prueba").build())
 
@@ -507,6 +632,7 @@ class StudentControllerTest {
                             "  \"lastName\": \"${student2.getLastName()}\"\n" +
                             "}"
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
@@ -514,6 +640,7 @@ class StudentControllerTest {
 
     @Test
     fun `should throw a 400 status when you update a student with owner is already registered`() {
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().build())
         var student2 =
             studentService.save(aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").build())
@@ -525,6 +652,7 @@ class StudentControllerTest {
                 .content(
                     mapper.writeValueAsString(student2)
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
@@ -532,6 +660,7 @@ class StudentControllerTest {
 
     @Test
     fun `should throw a 400 status when you update a student with token is already registered`() {
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().withTokenGithub("prueba").build())
         var student2 =
             studentService.save(aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").build())
@@ -543,6 +672,7 @@ class StudentControllerTest {
                 .content(
                     mapper.writeValueAsString(student2)
                 )
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
@@ -550,21 +680,36 @@ class StudentControllerTest {
 
     @Test
     fun `should throw a 200 status when you want to delete an existing student`() {
+        val cookie = cookies()
         var student = studentService.save(aStudentDTO().build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/students").accept(MediaType.APPLICATION_JSON)
-                .param("id", student.getId().toString())
+                .param("id", student.getId().toString()).cookie(cookie)
         )
             .andExpect(status().isOk)
     }
 
     @Test
     fun `should throw a 404 status you want to delete a student that does not exist`() {
+        val cookie = cookies()
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/students").accept(MediaType.APPLICATION_JSON)
-                .param("id", 2.toString())
+                .param("id", 2.toString()).cookie(cookie)
         )
             .andExpect(status().isNotFound)
+    }
+
+    private fun cookies(): Cookie? {
+        teacherService.save(aTeacherDTO().build())
+        val login = BuilderLoginDTO().build()
+        val response = mockMvc.perform(
+            MockMvcRequestBuilders.post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(login))
+                .accept("application/json")
+        ).andExpect(status().isOk)
+
+        return response.andReturn().response.cookies[0]
     }
 }
