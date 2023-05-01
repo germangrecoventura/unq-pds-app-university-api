@@ -71,7 +71,10 @@ open class StudentServiceImpl : StudentService {
             throw AlreadyRegisteredException("email")
         }
 
-        if (student.getId() != null && studentDAO.existsById(student.getId()!!)) return studentDAO.save(student)
+        if (student.getId() != null && studentDAO.existsById(student.getId()!!)) {
+            student.setPassword(BCryptPasswordEncoder().encode(student.getPassword()))
+            return studentDAO.save(student)
+        }
         else throw NoSuchElementException("Student does not exist")
     }
 

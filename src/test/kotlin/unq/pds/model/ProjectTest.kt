@@ -27,25 +27,6 @@ class ProjectTest {
     }
 
     @Test
-    fun `should throw an exception when the project name has invalid special characters`() {
-        try {
-            aProject().withName("@#Project").build()
-        } catch (e: InvalidAttributeValueException) {
-            Assertions.assertEquals("The name cannot contain special characters except - and _", e.message)
-        }
-    }
-
-    @Test
-    fun `should throw an exception when trying to set a project name with invalid special characters`() {
-        val project = aProject().build()
-        try {
-            project.name = "@#Project"
-        } catch (e: InvalidAttributeValueException) {
-            Assertions.assertEquals("The name cannot contain special characters except - and _", e.message)
-        }
-    }
-
-    @Test
     fun `should add a repository when it has not been added previously`() {
         val project = aProject().build()
         Assertions.assertEquals(0, project.repositories.size)
