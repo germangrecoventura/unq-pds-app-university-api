@@ -1,12 +1,18 @@
 package unq.pds.api.controller
 
-import io.swagger.v3.oas.annotations.*
-import io.swagger.v3.oas.annotations.media.*
-import io.swagger.v3.oas.annotations.responses.*
-import org.springframework.http.*
+import io.jsonwebtoken.Jwts
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.MatterDTO
+import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.Matter
 import unq.pds.services.MatterService
 import javax.validation.Valid
@@ -46,8 +52,16 @@ class MatterController(private val matterService: MatterService) {
                 )]
             )]
     )
-    fun createMatter(@RequestBody @Valid matter: MatterDTO): ResponseEntity<Matter> {
-        return ResponseEntity(matterService.save(matter.fromDTOToModel()), HttpStatus.OK)
+    fun createMatter(@CookieValue("jwt") jwt: String?, @RequestBody @Valid matter: MatterDTO): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT") ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"),
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(matterService.save(matter.fromDTOToModel()), HttpStatus.OK)
     }
 
     @GetMapping
@@ -90,7 +104,10 @@ class MatterController(private val matterService: MatterService) {
                 )]
             )]
     )
-    fun getMatter(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+    fun getMatter(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
         return ResponseEntity(matterService.read(id), HttpStatus.OK)
     }
 
@@ -134,8 +151,16 @@ class MatterController(private val matterService: MatterService) {
                 )]
             )]
     )
-    fun updateMatter(@RequestBody matter: Matter): ResponseEntity<Any> {
-        return ResponseEntity(matterService.update(matter), HttpStatus.OK)
+    fun updateMatter(@CookieValue("jwt") jwt: String?, @RequestBody matter: Matter): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT") ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"),
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(matterService.update(matter), HttpStatus.OK)
     }
 
     @DeleteMapping
@@ -180,7 +205,16 @@ class MatterController(private val matterService: MatterService) {
                 )]
             )]
     )
-    fun deleteMatter(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+    fun deleteMatter(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if (body["role"] == "STUDENT") return ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"),
+            HttpStatus.UNAUTHORIZED
+        )
+
         matterService.delete(id)
         return ResponseEntity(MessageDTO("Matter has been deleted successfully"), HttpStatus.OK)
     }
@@ -203,7 +237,10 @@ class MatterController(private val matterService: MatterService) {
                 ]
             )]
     )
-    fun getAll(): ResponseEntity<List<Matter>> {
+    fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
         return ResponseEntity(matterService.readAll(), HttpStatus.OK)
     }
 }
