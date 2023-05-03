@@ -108,12 +108,7 @@ class GroupController(private val groupService: GroupService) {
         if (jwt.isNullOrBlank()) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT") ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"),
-            HttpStatus.UNAUTHORIZED
-        )
-        else ResponseEntity(groupService.read(id), HttpStatus.OK)
+        return ResponseEntity(groupService.read(id), HttpStatus.OK)
     }
 
     @PutMapping
@@ -413,11 +408,6 @@ class GroupController(private val groupService: GroupService) {
         if (jwt.isNullOrBlank()) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT") ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"),
-            HttpStatus.UNAUTHORIZED
-        )
-        else ResponseEntity(groupService.readAll(), HttpStatus.OK)
+        return ResponseEntity(groupService.readAll(), HttpStatus.OK)
     }
 }

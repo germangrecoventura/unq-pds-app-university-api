@@ -20,7 +20,7 @@ class ProjectServiceTest {
     @Autowired
     lateinit var initializer: Initializer
 
-    private var token: String = "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"
+    private var token: String = ""
 
     @Autowired
     lateinit var studentService: StudentService
