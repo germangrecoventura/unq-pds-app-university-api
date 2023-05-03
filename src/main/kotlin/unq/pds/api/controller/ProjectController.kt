@@ -1,5 +1,6 @@
 package unq.pds.api.controller
 
+import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
@@ -51,8 +52,16 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             )]
     )
-    fun createProject(@RequestBody @Valid project: ProjectDTO): ResponseEntity<Any> {
-        return ResponseEntity(projectService.save(project.fromDTOToModel()), HttpStatus.OK)
+    fun createProject(@CookieValue("jwt") jwt: String?, @RequestBody @Valid project: ProjectDTO): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT") ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"),
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(projectService.save(project.fromDTOToModel()), HttpStatus.OK)
     }
 
     @GetMapping
@@ -95,7 +104,10 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             )]
     )
-    fun getProject(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+    fun getProject(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
         return ResponseEntity(projectService.read(id), HttpStatus.OK)
     }
 
@@ -139,8 +151,16 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             )]
     )
-    fun updateProject(@RequestBody project: Project): ResponseEntity<Any> {
-        return ResponseEntity(projectService.update(project), HttpStatus.OK)
+    fun updateProject(@CookieValue("jwt") jwt: String?, @RequestBody project: Project): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT") ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"),
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(projectService.update(project), HttpStatus.OK)
     }
 
     @DeleteMapping
@@ -185,7 +205,15 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             )]
     )
-    fun deleteProject(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+    fun deleteProject(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if (body["role"] == "STUDENT") return ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"),
+            HttpStatus.UNAUTHORIZED
+        )
         projectService.delete(id)
         return ResponseEntity(MessageDTO("Project has been deleted successfully"), HttpStatus.OK)
     }
@@ -230,8 +258,20 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             )]
     )
-    fun addRepository(@NotBlank @PathVariable projectId: Long, @NotBlank @PathVariable repositoryId: Long): ResponseEntity<Any> {
-        return ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
+    fun addRepository(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @PathVariable projectId: Long,
+        @NotBlank @PathVariable repositoryId: Long
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT") ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"),
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
     }
 
     @GetMapping("/getAll")
@@ -252,7 +292,10 @@ class ProjectController(private val projectService: ProjectService) {
                 ]
             )]
     )
-    fun getAll(): ResponseEntity<List<Project>> {
+    fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
         return ResponseEntity(projectService.readAll(), HttpStatus.OK)
     }
 }
