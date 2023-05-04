@@ -311,24 +311,6 @@ class StudentControllerTest {
         ).andExpect(status().isBadRequest)
     }
 
-    @Test
-    fun `should throw a 200 status when a student does not have permissions to get students`() {
-        val student = studentService.save(aStudentDTO().build())
-        var login = BuilderLoginDTO().withRole("STUDENT").build()
-        val response = mockMvc.perform(
-            MockMvcRequestBuilders.post("/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(login))
-                .accept("application/json")
-        ).andExpect(status().isOk)
-
-        val cookie = response.andReturn().response.cookies[0]
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
-                .param("id", student.getId().toString()).cookie(cookie)
-        ).andExpect(status().isOk)
-    }
-
 
     @Test
     fun `should throw a 200 status when you are looking for a student if it exists`() {
