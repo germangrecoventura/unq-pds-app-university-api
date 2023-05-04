@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
 import unq.pds.model.builder.BuilderStudent.Companion.aStudent
-import unq.pds.security.LoginDTO
 import unq.pds.services.builder.BuilderLoginDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
@@ -58,7 +57,7 @@ class StudentControllerTest {
     }
 
     @Test
-    fun `should throw a 200 status when a student does not have permissions to create students`() {
+    fun `should throw a 401 status when a student does not have permissions to create students`() {
         studentService.save(aStudentDTO().build())
         var login = BuilderLoginDTO().withRole("STUDENT").build()
         val response = mockMvc.perform(
@@ -312,6 +311,24 @@ class StudentControllerTest {
         ).andExpect(status().isBadRequest)
     }
 
+    @Test
+    fun `should throw a 200 status when a student does not have permissions to get students`() {
+        val student = studentService.save(aStudentDTO().build())
+        var login = BuilderLoginDTO().withRole("STUDENT").build()
+        val response = mockMvc.perform(
+            MockMvcRequestBuilders.post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(login))
+                .accept("application/json")
+        ).andExpect(status().isOk)
+
+        val cookie = response.andReturn().response.cookies[0]
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
+                .param("id", student.getId().toString()).cookie(cookie)
+        ).andExpect(status().isOk)
+    }
+
 
     @Test
     fun `should throw a 200 status when you are looking for a student if it exists`() {
@@ -334,6 +351,30 @@ class StudentControllerTest {
                 .param("id", 2.toString()).cookie(cookie)
         )
             .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `should throw a 401 status when a student does not have permissions to update students`() {
+        val student = studentService.save(aStudentDTO().build())
+        var login = BuilderLoginDTO().withRole("STUDENT").build()
+        val response = mockMvc.perform(
+            MockMvcRequestBuilders.post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(login))
+                .accept("application/json")
+        ).andExpect(status().isOk)
+
+        val cookie = response.andReturn().response.cookies[0]
+        var student2 = studentService.save(aStudentDTO().withEmail("jose@gmail.com").withOwnerGithub("prueba").build())
+
+        student2.setFirstName("Jose")
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(student2))
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
     }
 
 
@@ -675,6 +716,26 @@ class StudentControllerTest {
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `should throw a 401 status when a student does not have permissions to delete students`() {
+        studentService.save(aStudentDTO().build())
+        var login = BuilderLoginDTO().withRole("STUDENT").build()
+        val response = mockMvc.perform(
+            MockMvcRequestBuilders.post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(login))
+                .accept("application/json")
+        ).andExpect(status().isOk)
+
+        val cookie = response.andReturn().response.cookies[0]
+        var student2 = studentService.save(aStudentDTO().withEmail("jose@gmail.com").withOwnerGithub("prueba").build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.delete("/students").accept(MediaType.APPLICATION_JSON)
+                .param("id", student2.getId().toString()).cookie(cookie)
+        )
+            .andExpect(status().isUnauthorized)
     }
 
 

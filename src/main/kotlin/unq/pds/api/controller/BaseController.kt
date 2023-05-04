@@ -1,5 +1,6 @@
 package unq.pds.api.controller
 
+import io.jsonwebtoken.ExpiredJwtException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -18,6 +19,8 @@ import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import java.sql.SQLIntegrityConstraintViolationException
 import java.util.function.Consumer
 import javax.management.InvalidAttributeValueException
+import javax.servlet.http.Cookie
+import javax.servlet.http.HttpServletResponse
 
 @RestControllerAdvice
 class BaseController {
@@ -100,5 +103,15 @@ class BaseController {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     fun handleNoSuchElementException(ex: NoSuchElementException): ResponseEntity<MessageDTO> {
         return ResponseEntity(MessageDTO(ex.message!!), HttpStatus.NOT_FOUND)
+    }
+
+    @ExceptionHandler(ExpiredJwtException::class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    fun handleExpiredJwtException(ex: ExpiredJwtException, response: HttpServletResponse): ResponseEntity<MessageDTO> {
+        val cookie = Cookie("jwt", null)
+        cookie.isHttpOnly = true
+        cookie.maxAge = 0
+        response.addCookie(cookie)
+        return ResponseEntity(MessageDTO("Your token expired"), HttpStatus.UNAUTHORIZED)
     }
 }
