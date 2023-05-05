@@ -1,6 +1,8 @@
 package unq.pds.api.controller
 
+import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
@@ -9,10 +11,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import unq.pds.api.dtos.ErrorDTO
+import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.TeacherCreateRequestDTO
 import unq.pds.model.Teacher
-import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.services.TeacherService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -53,9 +54,19 @@ class TeacherController {
                     )]
                 )]
         )
-        fun createTeacher(@RequestBody @Valid teacher: TeacherCreateRequestDTO): ResponseEntity<Teacher> {
-            var teacherSaved = teacherService.save(teacher)
-            return ResponseEntity(teacherSaved, HttpStatus.OK)
+        fun createTeacher(
+            @CookieValue("jwt") jwt: String?,
+            @RequestBody @Valid teacher: TeacherCreateRequestDTO
+        ): ResponseEntity<Any> {
+            if (jwt.isNullOrBlank()) {
+                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            }
+            val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+            return if (body["role"] == "STUDENT") ResponseEntity(
+                MessageDTO("You do not have permissions to access this resource"),
+                HttpStatus.UNAUTHORIZED
+            )
+            else ResponseEntity(teacherService.save(teacher), HttpStatus.OK)
         }
 
         @GetMapping
@@ -92,20 +103,18 @@ class TeacherController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"teacher\": \"Not found teacher with id\"\n" +
+                                    "  \"teacher\": \"Not found the teacher with id\"\n" +
                                     "}"
                         )]
                     )]
                 )]
         )
-        fun getTeacher(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-            return try {
-                ResponseEntity(teacherService.findById(id), HttpStatus.OK)
-            } catch (e: NoSuchElementException) {
-                ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+        fun getTeacher(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+            if (jwt.isNullOrBlank()) {
+                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
             }
+            return ResponseEntity(teacherService.findById(id), HttpStatus.OK)
         }
-
 
         @PutMapping
         @Operation(
@@ -141,24 +150,22 @@ class TeacherController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"teacher\": \"Not found teacher with id\"\n" +
+                                    "  \"teacher\": \"Not found the teacher with id\"\n" +
                                     "}"
                         )]
                     )]
                 )]
         )
-        fun updateTeacher(@RequestBody teacher: Teacher): ResponseEntity<Any> {
-            return try {
-                ResponseEntity(teacherService.update(teacher), HttpStatus.OK)
-            } catch (e: AlreadyRegisteredException) {
-                ResponseEntity(
-                    "{\n" +
-                            "  \"message\": \"${e.message}\"\n" +
-                            "}", HttpStatus.BAD_REQUEST
-                )
-            } catch (e: NoSuchElementException) {
-                ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+        fun updateTeacher(@CookieValue("jwt") jwt: String?, @RequestBody teacher: Teacher): ResponseEntity<Any> {
+            if (jwt.isNullOrBlank()) {
+                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
             }
+            val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+            return if (body["role"] == "STUDENT") ResponseEntity(
+                MessageDTO("You do not have permissions to access this resource"),
+                HttpStatus.UNAUTHORIZED
+            )
+            else ResponseEntity(teacherService.update(teacher), HttpStatus.OK)
         }
 
         @DeleteMapping
@@ -186,7 +193,7 @@ class TeacherController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"teacher\": \"Not found teacher with id\"\n" +
+                                    "  \"teacher\": \"Required request parameter 'id' for method parameter type long is not present\"\n" +
                                     "}"
                         )]
                     )]
@@ -197,24 +204,48 @@ class TeacherController {
                     content = [Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"teacher\": \"Not found teacher with id\"\n" +
+                                    "  \"message\": \"The teacher with id is not registered\"\n" +
                                     "}"
                         )]
                     )]
                 )]
         )
-        fun deleteTeacher(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-            return try {
-                teacherService.deleteById(id)
-
-                ResponseEntity(
-                    "{\n" +
-                            "  \"message\": \"Teacher has been deleted successfully\"\n" +
-                            "}", HttpStatus.OK
-                )
-            } catch (e: NoSuchElementException) {
-                ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+        fun deleteTeacher(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+            if (jwt.isNullOrBlank()) {
+                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
             }
+            val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+            if (body["role"] == "STUDENT") return ResponseEntity(
+                MessageDTO("You do not have permissions to access this resource"),
+                HttpStatus.UNAUTHORIZED
+            )
+            teacherService.deleteById(id)
+            return ResponseEntity(MessageDTO("Teacher has been deleted successfully"), HttpStatus.OK)
+        }
+
+        @GetMapping("/getAll")
+        @Operation(
+            summary = "Get all teachers",
+            description = "Get all teachers",
+        )
+        @ApiResponses(
+            value = [
+                ApiResponse(
+                    responseCode = "200",
+                    description = "Success",
+                    content = [
+                        Content(
+                            mediaType = "application/json",
+                            array = ArraySchema(schema = Schema(implementation = Teacher::class)),
+                        )
+                    ]
+                )]
+        )
+        fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
+            if (jwt.isNullOrBlank()) {
+                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            }
+            return ResponseEntity(teacherService.readAll(), HttpStatus.OK)
         }
     }
 }

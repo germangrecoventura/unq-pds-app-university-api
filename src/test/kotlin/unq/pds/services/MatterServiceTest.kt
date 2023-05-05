@@ -3,6 +3,7 @@ package unq.pds.services
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import unq.pds.Initializer
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
 import unq.pds.model.exceptions.AlreadyRegisteredException
 
@@ -10,11 +11,17 @@ import unq.pds.model.exceptions.AlreadyRegisteredException
 class MatterServiceTest {
 
     @Autowired lateinit var matterService: MatterService
+    @Autowired lateinit var initializer: Initializer
+
+    @BeforeEach
+    fun tearDown() {
+        initializer.cleanDataBase()
+    }
 
     @Test
     fun `should be create a matter when it has valid credentials`() {
         val matter = matterService.save(aMatter().build())
-        Assertions.assertNotNull(matter.id)
+        Assertions.assertNotNull(matter.getId())
     }
 
     @Test
@@ -30,7 +37,7 @@ class MatterServiceTest {
     @Test
     fun `should recover a matter when it exists`() {
         val matter = matterService.save(aMatter().build())
-        val recoverMatter = matterService.read(matter.id!!)
+        val recoverMatter = matterService.read(matter.getId()!!)
         Assertions.assertEquals(matter.name, recoverMatter.name)
     }
 
@@ -56,7 +63,7 @@ class MatterServiceTest {
         try {
             matterService.update(aMatter().build())
         } catch (e:NoSuchElementException) {
-            Assertions.assertEquals("Matter does not exists", e.message)
+            Assertions.assertEquals("Matter does not exist", e.message)
         }
     }
 
@@ -64,7 +71,7 @@ class MatterServiceTest {
     fun `should throw an exception when trying to update a matter with a name registered`() {
         matterService.save(aMatter().build())
         val matterToUpdate = matterService.save(aMatter().withName("PDeS").build())
-        matterToUpdate.name = "Practica de Desarrollo de Software"
+        matterToUpdate.name = "Software development practice"
         try {
             matterService.update(matterToUpdate)
         } catch (e:AlreadyRegisteredException) {
@@ -75,7 +82,7 @@ class MatterServiceTest {
     @Test
     fun `should delete a matter when it exists`() {
         val matter = matterService.save(aMatter().build())
-        matterService.delete(matter.id!!)
+        matterService.delete(matter.getId()!!)
         Assertions.assertEquals(0, matterService.count())
     }
 
@@ -92,7 +99,7 @@ class MatterServiceTest {
     fun `should return a matter when searched with a name registered`() {
         val matter = matterService.save(aMatter().build())
         val matterWithName = matterService.findByName(matter.name)
-        Assertions.assertEquals(matter.id, matterWithName.id)
+        Assertions.assertEquals(matter.getId(), matterWithName.getId())
         Assertions.assertEquals(matter.name, matterWithName.name)
     }
 
@@ -105,8 +112,19 @@ class MatterServiceTest {
         }
     }
 
-    @AfterEach
-    fun tearDown() {
-        matterService.clearMatters()
+    @Test
+    fun `should recover an empty list of matters when recover all and there is no persistence`() {
+        Assertions.assertEquals(0, matterService.readAll().size)
+    }
+
+    @Test
+    fun `should recover a list with two matters when recover all and there are exactly two persisted`() {
+        matterService.save(aMatter().build())
+        matterService.save(aMatter().withName("Applications development").build())
+        val matters = matterService.readAll()
+
+        Assertions.assertEquals(2, matters.size)
+        Assertions.assertTrue(matters.any { it.name == "Software development practice" })
+        Assertions.assertTrue(matters.any { it.name == "Applications development" })
     }
 }

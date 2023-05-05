@@ -8,6 +8,7 @@ interface MatterService {
     fun read(matterId: Long): Matter
     fun delete(matterId: Long)
     fun findByName(name: String): Matter
+    fun readAll(): List<Matter>
     fun count(): Int
     fun clearMatters()
 }

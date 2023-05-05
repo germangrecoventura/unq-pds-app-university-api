@@ -1,6 +1,7 @@
 package unq.pds.services.impl
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.TeacherCreateRequestDTO
@@ -8,6 +9,7 @@ import unq.pds.model.Teacher
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.persistence.TeacherDAO
 import unq.pds.services.TeacherService
+import javax.management.InvalidAttributeValueException
 
 @Service
 @Transactional
@@ -19,11 +21,11 @@ open class TeacherServiceImpl : TeacherService {
         if (teacherDAO.findByEmail(teacherCreateRequestDTO.email!!).isPresent) {
             throw AlreadyRegisteredException("email")
         }
-
         val teacher = Teacher(
             teacherCreateRequestDTO.firstName!!,
             teacherCreateRequestDTO.lastName!!,
-            teacherCreateRequestDTO.email!!
+            teacherCreateRequestDTO.email!!,
+            BCryptPasswordEncoder().encode(teacherCreateRequestDTO.password)
         )
         return teacherDAO.save(teacher)
     }
@@ -37,6 +39,7 @@ open class TeacherServiceImpl : TeacherService {
         teacherRecovery.setFirstName(teacher.getFirstName())
         teacherRecovery.setLastName(teacher.getLastName())
         teacherRecovery.setEmail(teacher.getEmail())
+        teacherRecovery.setPassword(BCryptPasswordEncoder().encode(teacher.getPassword()))
         return teacherDAO.save(teacherRecovery)
     }
 
@@ -59,6 +62,10 @@ open class TeacherServiceImpl : TeacherService {
     override fun findByEmail(email: String): Teacher {
         return teacherDAO.findByEmail(email)
             .orElseThrow { NoSuchElementException("Not found the teacher with email $email") }
+    }
+
+    override fun readAll(): List<Teacher> {
+        return teacherDAO.findAll().toList()
     }
 
     override fun clearTeachers() {

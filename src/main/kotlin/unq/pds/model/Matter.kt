@@ -17,7 +17,7 @@ class Matter(
     @JsonProperty
     @NotBlank(message = "Name cannot be empty")
     @Pattern(regexp = "[a-zA-Z0-9 ]+")
-    @Schema(example = "Matematica")
+    @Schema(example = "Math")
     var name = name
         set(value) {
             this.validateName(value)
@@ -25,10 +25,12 @@ class Matter(
         }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonProperty
     @Schema(example = "1")
-    var id: Long? = null
+    private var id: Long? = null
+
+    fun getId() = id
 
     init { this.validateCreation() }
 

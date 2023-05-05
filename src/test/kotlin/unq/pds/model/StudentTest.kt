@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.model.builder.BuilderStudent.Companion.aStudent
+import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import javax.management.InvalidAttributeValueException
 
 @SpringBootTest
@@ -290,6 +291,44 @@ class StudentTest {
             { student.setEmail("hola") }
         Assertions.assertEquals(
             "The email is not valid",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should add a project when it has not been added previously`() {
+        val student = aStudent().build()
+        Assertions.assertEquals(0, student.projects.size)
+        student.addProject(aProject().build())
+        Assertions.assertEquals(1, student.projects.size)
+    }
+
+    @Test
+    fun `should throw an exception when trying to add the same project to a student twice`() {
+        val student = aStudent().build()
+        student.addProject(aProject().build())
+        try {
+            student.addProject(aProject().build())
+        } catch (e: CloneNotSupportedException) {
+            Assertions.assertEquals("The project has already been added", e.message)
+        }
+    }
+
+    @Test
+    fun `should throw an exception if the password is null`() {
+        Assertions.assertThrows(RuntimeException::class.java) { aStudent().withPassword(null).build() }
+    }
+
+    @Test
+    fun `should throw an exception if the password is empty`() {
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(
+                InvalidAttributeValueException::class.java
+            )
+            { aStudent().withPassword("").build() }
+
+        Assertions.assertEquals(
+            "The password cannot be empty",
             thrown!!.message
         )
     }

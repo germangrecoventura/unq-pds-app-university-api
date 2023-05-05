@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.model.Group
+import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import unq.pds.persistence.GroupDAO
 import unq.pds.services.GroupService
+import unq.pds.services.ProjectService
 import unq.pds.services.StudentService
 
 @Service
@@ -14,14 +16,15 @@ open class GroupServiceImpl : GroupService {
 
     @Autowired private lateinit var groupDAO: GroupDAO
     @Autowired private lateinit var studentService: StudentService
+    @Autowired private lateinit var projectService: ProjectService
 
     override fun save(group: Group): Group {
         return groupDAO.save(group)
     }
 
     override fun update(group: Group): Group {
-        if (group.id != null && groupDAO.existsById(group.id!!)) return groupDAO.save(group)
-         else throw NoSuchElementException("Group does not exists")
+        if (group.getId() != null && groupDAO.existsById(group.getId()!!)) return groupDAO.save(group)
+         else throw NoSuchElementException("Group does not exist")
     }
 
     override fun read(groupId: Long): Group {
@@ -47,6 +50,21 @@ open class GroupServiceImpl : GroupService {
         group.removeMember(student)
 
         return this.update(group)
+    }
+
+    override fun addProject(groupId: Long, projectId: Long): Group {
+        val group = this.read(groupId)
+        val project = projectService.read(projectId)
+        if (groupDAO.projectOwnerOfTheProject(project).isPresent) {
+            throw ProjectAlreadyHasAnOwnerException()
+        }
+        group.addProject(project)
+
+        return this.update(group)
+    }
+
+    override fun readAll(): List<Group> {
+        return groupDAO.findAll().toList()
     }
 
     override fun count(): Int {

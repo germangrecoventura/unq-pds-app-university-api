@@ -1,18 +1,27 @@
 package unq.pds.services
 
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import unq.pds.Initializer
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
 import unq.pds.services.impl.TeacherServiceImpl
 import javax.management.InvalidAttributeValueException
 
 @SpringBootTest
 class TeacherServiceTest {
+
     @Autowired
     lateinit var teacherService: TeacherServiceImpl
+    @Autowired
+    lateinit var initializer: Initializer
+
+    @BeforeEach
+    fun tearDown() {
+        initializer.cleanDataBase()
+    }
 
     @Test
     fun `should be create a teacher when when it has valid credentials`() {
@@ -154,7 +163,6 @@ class TeacherServiceTest {
         )
     }
 
-
     @Test
     fun `should update teacher name when firstname is valid`() {
         var request = aTeacherDTO().withEmail("prueba@gmail.com").build()
@@ -276,8 +284,19 @@ class TeacherServiceTest {
         )
     }
 
-    @AfterEach
-    fun tearDown() {
-        teacherService.clearTeachers()
+    @Test
+    fun `should recover an empty list of teachers when recover all and there is no persistence`() {
+        Assertions.assertEquals(0, teacherService.readAll().size)
+    }
+
+    @Test
+    fun `should recover a list with two teachers when recover all and there are exactly two persisted`() {
+        teacherService.save(aTeacherDTO().build())
+        teacherService.save(aTeacherDTO().withEmail("germanF@gmail.com").build())
+        val teachers = teacherService.readAll()
+
+        Assertions.assertEquals(2, teachers.size)
+        Assertions.assertTrue(teachers.any { it.getEmail() == "german@gmail.com" })
+        Assertions.assertTrue(teachers.any { it.getEmail() == "germanF@gmail.com" })
     }
 }
