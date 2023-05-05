@@ -1,12 +1,18 @@
 package unq.pds.api.controller
 
-import io.swagger.v3.oas.annotations.*
-import io.swagger.v3.oas.annotations.media.*
-import io.swagger.v3.oas.annotations.responses.*
-import org.springframework.http.*
+import io.jsonwebtoken.Jwts
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import unq.pds.api.dtos.ErrorDTO
 import unq.pds.api.dtos.GroupDTO
+import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.Group
 import unq.pds.services.GroupService
 import javax.validation.Valid
@@ -26,7 +32,7 @@ class GroupController(private val groupService: GroupService) {
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "success",
+                description = "Success",
                 content = [
                     Content(
                         mediaType = "application/json",
@@ -46,8 +52,16 @@ class GroupController(private val groupService: GroupService) {
                 )]
             )]
     )
-    fun createGroup(@RequestBody @Valid group: GroupDTO): ResponseEntity<Group> {
-        return ResponseEntity(groupService.save(group.fromDTOToModel()), HttpStatus.OK)
+    fun createGroup(@CookieValue("jwt") jwt: String?, @RequestBody @Valid group: GroupDTO): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT") ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"),
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(groupService.save(group.fromDTOToModel()), HttpStatus.OK)
     }
 
     @GetMapping
@@ -90,12 +104,11 @@ class GroupController(private val groupService: GroupService) {
                 )]
             )]
     )
-    fun getGroup(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(groupService.read(id), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+    fun getGroup(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
+        return ResponseEntity(groupService.read(id), HttpStatus.OK)
     }
 
     @PutMapping
@@ -121,7 +134,7 @@ class GroupController(private val groupService: GroupService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"string\"\n" +
+                                "  \"message\": \"Name cannot be empty\"\n" +
                                 "}"
                     )]
                 )]
@@ -132,18 +145,22 @@ class GroupController(private val groupService: GroupService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"Group does not exists\"\n" +
+                                "  \"message\": \"Group does not exist\"\n" +
                                 "}"
                     )]
                 )]
             )]
     )
-    fun updateGroup(@RequestBody group: Group): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(groupService.update(group), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+    fun updateGroup(@CookieValue("jwt") jwt: String?, @RequestBody group: Group): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT") ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"),
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(groupService.update(group), HttpStatus.OK)
     }
 
     @DeleteMapping
@@ -188,17 +205,17 @@ class GroupController(private val groupService: GroupService) {
                 )]
             )]
     )
-    fun deleteMatter(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        return try {
-            groupService.delete(id)
-            ResponseEntity(
-                "{\n" +
-                        "  \"message\": \"Group has been deleted successfully\"\n" +
-                        "}", HttpStatus.OK
-            )
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+    fun deleteGroup(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if (body["role"] == "STUDENT") return ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"),
+            HttpStatus.UNAUTHORIZED
+        )
+        groupService.delete(id)
+        return ResponseEntity(MessageDTO("Group has been deleted successfully"), HttpStatus.OK)
     }
 
     @PutMapping("/addMember/{groupId}/{studentId}")
@@ -241,12 +258,20 @@ class GroupController(private val groupService: GroupService) {
                 )]
             )]
     )
-    fun addMember(@NotBlank @PathVariable groupId: Long, @NotBlank @PathVariable studentId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(groupService.addMember(groupId, studentId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+    fun addMember(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @PathVariable groupId: Long,
+        @NotBlank @PathVariable studentId: Long
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT") ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"),
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(groupService.addMember(groupId, studentId), HttpStatus.OK)
     }
 
     @PutMapping("/removeMember/{groupId}/{studentId}")
@@ -289,11 +314,100 @@ class GroupController(private val groupService: GroupService) {
                 )]
             )]
     )
-    fun removeMember(@NotBlank @PathVariable groupId: Long, @NotBlank @PathVariable studentId: Long): ResponseEntity<Any> {
-        return try {
-            ResponseEntity(groupService.removeMember(groupId, studentId), HttpStatus.OK)
-        } catch (e: NoSuchElementException) {
-            ResponseEntity(ErrorDTO(e.message!!), HttpStatus.NOT_FOUND)
+    fun removeMember(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @PathVariable groupId: Long,
+        @NotBlank @PathVariable studentId: Long
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT") ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"),
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(groupService.removeMember(groupId, studentId), HttpStatus.OK)
+    }
+
+    @PutMapping("/addProject/{groupId}/{projectId}")
+    @Operation(
+        summary = "Add a project to a group",
+        description = "Add a project to a group",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = Group::class),
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            )]
+    )
+    fun addProject(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @PathVariable groupId: Long,
+        @NotBlank @PathVariable projectId: Long
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT") ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"),
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(groupService.addProject(groupId, projectId), HttpStatus.OK)
+    }
+
+    @GetMapping("/getAll")
+    @Operation(
+        summary = "Get all groups",
+        description = "Get all groups",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        array = ArraySchema(schema = Schema(implementation = Group::class)),
+                    )
+                ]
+            )]
+    )
+    fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        }
+        return ResponseEntity(groupService.readAll(), HttpStatus.OK)
     }
 }

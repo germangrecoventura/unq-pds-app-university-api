@@ -1,15 +1,26 @@
 package unq.pds.api.controller
 
-import org.springframework.http.*
+import io.jsonwebtoken.ExpiredJwtException
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
-import org.springframework.validation.*
-import org.springframework.web.bind.*
-import org.springframework.web.bind.annotation.*
+import org.springframework.validation.FieldError
+import org.springframework.validation.ObjectError
+import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingServletRequestParameterException
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
-import unq.pds.api.dtos.ErrorDTO
+import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.exceptions.AlreadyRegisteredException
+import unq.pds.model.exceptions.NotAuthenticatedException
+import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
+import java.sql.SQLIntegrityConstraintViolationException
 import java.util.function.Consumer
 import javax.management.InvalidAttributeValueException
+import javax.servlet.http.Cookie
+import javax.servlet.http.HttpServletResponse
 
 @RestControllerAdvice
 class BaseController {
@@ -28,44 +39,79 @@ class BaseController {
 
     @ExceptionHandler(AlreadyRegisteredException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleAlreadyRegisteredException(ex: AlreadyRegisteredException): ResponseEntity<ErrorDTO> {
-        return ResponseEntity.badRequest().body(ErrorDTO(ex.message))
+    fun handleAlreadyRegisteredException(ex: AlreadyRegisteredException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.badRequest().body(MessageDTO(ex.message))
     }
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleHttpMessageNotReadableException(ex: HttpMessageNotReadableException): ResponseEntity<ErrorDTO> {
-        val messageTotal = ex.message!!.split("value")
-        var finalMessage = messageTotal[2]
+    fun handleHttpMessageNotReadableException(ex: HttpMessageNotReadableException): ResponseEntity<MessageDTO> {
+        val messageTotal = ex.message!!.split("problem")
+        var finalMessage = messageTotal[1].substring(2, 50)
         while (finalMessage.contains(";".single())) {
             finalMessage = finalMessage.dropLast(1)
         }
-        finalMessage = "Value$finalMessage"
-        return ResponseEntity.badRequest().body(ErrorDTO(finalMessage))
+        return ResponseEntity.badRequest().body(MessageDTO(finalMessage))
     }
 
     @ExceptionHandler(MissingServletRequestParameterException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleMissingParameterException(ex: MissingServletRequestParameterException): ResponseEntity<ErrorDTO> {
-        return ResponseEntity.badRequest().body(ErrorDTO(ex.message!!))
+    fun handleMissingParameterException(ex: MissingServletRequestParameterException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.badRequest().body(MessageDTO(ex.message!!))
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
-    fun handleMethodArgumentTypeMismatchException(ex: MethodArgumentTypeMismatchException): ResponseEntity<ErrorDTO> {
-        val errorMessage = "Required request parameter '" + ex.name + "' for method parameter type " + ex.requiredType + " is not present"
-        return ResponseEntity.badRequest().body(ErrorDTO(errorMessage))
+    fun handleMethodArgumentTypeMismatchException(ex: MethodArgumentTypeMismatchException): ResponseEntity<MessageDTO> {
+        val errorMessage =
+            "Required request parameter '" + ex.name + "' for method parameter type " + ex.requiredType + " is not present"
+        return ResponseEntity.badRequest().body(MessageDTO(errorMessage))
     }
 
     @ExceptionHandler(InvalidAttributeValueException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleInvalidAttributeValueException(ex: InvalidAttributeValueException): ResponseEntity<ErrorDTO> {
-        return ResponseEntity.badRequest().body(ErrorDTO(ex.message!!))
+    fun handleInvalidAttributeValueException(ex: InvalidAttributeValueException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.badRequest().body(MessageDTO(ex.message!!))
     }
 
     @ExceptionHandler(CloneNotSupportedException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleCloneNotSupportedException(ex: CloneNotSupportedException): ResponseEntity<ErrorDTO> {
-        return ResponseEntity.badRequest().body(ErrorDTO(ex.message!!))
+    fun handleCloneNotSupportedException(ex: CloneNotSupportedException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.badRequest().body(MessageDTO(ex.message!!))
+    }
+
+    @ExceptionHandler(ProjectAlreadyHasAnOwnerException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleProjectAlreadyHasAnOwnerException(ex: ProjectAlreadyHasAnOwnerException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.badRequest().body(MessageDTO(ex.message))
+    }
+
+    @ExceptionHandler(NotAuthenticatedException::class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    fun handleNotAuthenticatedException(ex: NotAuthenticatedException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(MessageDTO(ex.message))
+    }
+
+    @ExceptionHandler(SQLIntegrityConstraintViolationException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleSQLIntegrityConstraintViolationException(ex: SQLIntegrityConstraintViolationException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.badRequest()
+            .body(MessageDTO("The entity cannot be deleted because it is related to another entity"))
+    }
+
+    @ExceptionHandler(NoSuchElementException::class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    fun handleNoSuchElementException(ex: NoSuchElementException): ResponseEntity<MessageDTO> {
+        return ResponseEntity(MessageDTO(ex.message!!), HttpStatus.NOT_FOUND)
+    }
+
+    @ExceptionHandler(ExpiredJwtException::class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    fun handleExpiredJwtException(ex: ExpiredJwtException, response: HttpServletResponse): ResponseEntity<MessageDTO> {
+        val cookie = Cookie("jwt", null)
+        cookie.isHttpOnly = true
+        cookie.maxAge = 0
+        response.addCookie(cookie)
+        return ResponseEntity(MessageDTO("Your token expired"), HttpStatus.UNAUTHORIZED)
     }
 }
