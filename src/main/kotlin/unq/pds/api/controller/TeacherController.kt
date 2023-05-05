@@ -62,7 +62,7 @@ class TeacherController {
                 return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
             }
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] == "STUDENT") ResponseEntity(
+            return if (body["role"] != "ADMIN") ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
             )
@@ -164,8 +164,14 @@ class TeacherController {
             return if (body["role"] == "STUDENT") ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
-            )
-            else ResponseEntity(teacherService.update(teacher), HttpStatus.OK)
+            ) else if (body["role"] == "TEACHER" && teacherService.findById(body["id"].toString().toLong())
+                    .getId() != teacher.getId()
+            ) {
+                ResponseEntity(
+                    MessageDTO("You do not have permissions to update teachers except yourself"),
+                    HttpStatus.UNAUTHORIZED
+                )
+            } else ResponseEntity(teacherService.update(teacher), HttpStatus.OK)
         }
 
         @DeleteMapping
@@ -215,7 +221,7 @@ class TeacherController {
                 return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
             }
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            if (body["role"] == "STUDENT") return ResponseEntity(
+            if (body["role"] != "ADMIN") return ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
             )
