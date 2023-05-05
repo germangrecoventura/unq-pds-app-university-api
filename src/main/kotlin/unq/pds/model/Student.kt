@@ -1,5 +1,6 @@
 package unq.pds.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import io.swagger.v3.oas.annotations.media.Schema
@@ -20,7 +21,7 @@ class Student(
         nullable = false,
         unique = true
     ) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String,
-    @field:Schema(example = "$" + "2a" + "$" + "CIymVbnbW.QfAyLP2mcw1ugKSpHbXn/N07sBhLjxUD1XqdlBNzHQi") private var password: String,
+    @JsonProperty @field:Schema(example = "$" + "2a" + "$" + "CIymVbnbW.QfAyLP2mcw1ugKSpHbXn/N07sBhLjxUD1XqdlBNzHQi") private var password: String,
     @Column(
         nullable = true,
         unique = true
@@ -116,6 +117,7 @@ class Student(
     }
 
     fun setPassword(password: String) {
+        validatePassword(password)
         this.password = password
     }
 

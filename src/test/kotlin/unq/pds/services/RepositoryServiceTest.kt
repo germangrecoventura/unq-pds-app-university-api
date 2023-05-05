@@ -22,7 +22,7 @@ class RepositoryServiceTest {
     @Autowired
     lateinit var studentService: StudentService
 
-    private var token: String = ""
+    private var token: String = "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"
 
     @Autowired
     lateinit var initializer: Initializer
