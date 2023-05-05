@@ -7,6 +7,7 @@ import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
 import unq.pds.model.builder.GroupBuilder.Companion.aGroup
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
 import unq.pds.services.*
+import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
 import unq.pds.services.builder.BuilderStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
 
@@ -33,6 +34,9 @@ class Initializer {
     @Autowired
     lateinit var projectService: ProjectService
 
+    @Autowired
+    lateinit var adminService: AdminService
+
     fun cleanDataBase() {
         commissionService.clearCommissions()
         groupService.clearGroups()
@@ -41,14 +45,21 @@ class Initializer {
         matterService.clearMatters()
         projectService.clearProjects()
         repositoryService.clearRepositories()
+        adminService.clearAdmins()
     }
 
     fun loadData() {
+        loadAdmins()
         loadStudents()
         loadTeachers()
         loadMatters()
         loadGroups()
         loadCommissions()
+    }
+
+    private fun loadAdmins() {
+        adminService.save(aAdminDTO().build())
+
     }
 
 
