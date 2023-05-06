@@ -164,9 +164,7 @@ class StudentController {
             return if (body["role"] == "TEACHER") ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "STUDENT" && studentService.findById(body["id"].toString().toLong())
-                    .getId() != student.getId()
-            ) {
+            ) else if (body["role"] == "STUDENT" && body["id"] != student.getId()) {
                 ResponseEntity(
                     MessageDTO("You do not have permissions to update students except yourself"),
                     HttpStatus.UNAUTHORIZED
@@ -281,9 +279,7 @@ class StudentController {
             return if (body["role"] == "TEACHER") ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "STUDENT" && studentService.findById(body["id"].toString().toLong())
-                    .getId() != studentService.findById(studentId).getId()
-            )
+            ) else if (body["role"] == "STUDENT" && body["id"] != studentId)
                 ResponseEntity(
                     MessageDTO("You do not have permissions to update students except yourself"),
                     HttpStatus.UNAUTHORIZED
