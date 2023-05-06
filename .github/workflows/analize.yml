@@ -1,0 +1,55 @@
+name: Test and Analyze
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+    types: [ opened, synchronize, reopened ]
+
+env:
+  #PASSWORD_USER: aA#1as
+
+jobs:
+  build:
+    name: Test and Analyze
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: app-universidad
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: 'zulu' # Alternative distribution options are available
+      - name: Cache SonarCloud Packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@8d49e559aae34d3e0eb16cde532684bc9702762b  # v1.0.6
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@6095a76664413da4c8c134ee32e8a8ae900f0f1f  # v2.4.0
+      - name: Run Unit Tests
+        run: ./gradlew test
+      - name: Generate Coverage Report
+        run: ./gradlew jacocoTestReport
+      - name: Analyze with SonarCloud
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar --info

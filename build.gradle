@@ -7,6 +7,8 @@ plugins {
     id "org.jetbrains.kotlin.plugin.noarg" version "1.7.10"
     id "org.jetbrains.kotlin.plugin.allopen" version "1.7.10"
     id 'war'
+    id("org.sonarqube") version "4.0.0.2929"
+    id("jacoco")
 }
 
 group 'org.app-universidad'
@@ -61,4 +63,29 @@ compileTestKotlin {
 
 test {
     useJUnitPlatform()
+}
+
+sonarqube {
+    properties {
+        property("sonar.projectKey", "germangrecoventura_unq-pds-app-university-api")
+        property("sonar.organization", "germangrecoventura")
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/test")
+        property(
+                "sonar.test.exclusions",
+                "src/test/kotlin/unq/pds/webservice/**, src/test/kotlin/unq/pds/services/RepositoryServiceTest.kt, src/test/kotlin/unq/pds/services/ProjectServiceTest.kt"
+        )
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.8"
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.required.set(false)
+    }
 }
