@@ -88,7 +88,7 @@ class TeacherControllerTest {
     }
 
     @Test
-    fun `should throw a 404 status when if firstname is null to create`() {
+    fun `should throw a 400 status when if firstname is null to create`() {
         val cookies = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/teachers")
@@ -100,7 +100,7 @@ class TeacherControllerTest {
     }
 
     @Test
-    fun `should throw a 404 status when if firstname is empty to create`() {
+    fun `should throw a 400 status when if firstname is empty to create`() {
         val cookies = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/teachers")
@@ -112,7 +112,7 @@ class TeacherControllerTest {
     }
 
     @Test
-    fun `should throw a 404 status when if the firstname has any special characters to create`() {
+    fun `should throw a 400 status when if the firstname has any special characters to create`() {
         val cookies = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/teachers")
@@ -125,7 +125,7 @@ class TeacherControllerTest {
 
 
     @Test
-    fun `should throw a 404 status when if the firstname has any number to create`() {
+    fun `should throw a 400 status when if the firstname has any number to create`() {
         val cookies = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/teachers")
@@ -137,7 +137,7 @@ class TeacherControllerTest {
     }
 
     @Test
-    fun `should throw a 404 status when if lastname is null to create`() {
+    fun `should throw a 400 status when if lastname is null to create`() {
         val cookies = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/teachers")
@@ -149,7 +149,7 @@ class TeacherControllerTest {
     }
 
     @Test
-    fun `should throw a 404 status when if lastname is empty to create`() {
+    fun `should throw a 400 status when if lastname is empty to create`() {
         val cookies = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/teachers")
@@ -161,7 +161,7 @@ class TeacherControllerTest {
     }
 
     @Test
-    fun `should throw a 404 status when if the lastname has any special characters to create`() {
+    fun `should throw a 400 status when if the lastname has any special characters to create`() {
         val cookies = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/teachers")
@@ -174,7 +174,7 @@ class TeacherControllerTest {
 
 
     @Test
-    fun `should throw a 404 status when if the lastname has any number to create`() {
+    fun `should throw a 400 status when if the lastname has any number to create`() {
         val cookies = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/teachers")
@@ -187,7 +187,7 @@ class TeacherControllerTest {
 
 
     @Test
-    fun `should throw a 404 status when if email is null to create`() {
+    fun `should throw a 400 status when if email is null to create`() {
         val cookies = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/teachers")
@@ -199,7 +199,7 @@ class TeacherControllerTest {
     }
 
     @Test
-    fun `should throw a 404 status when if email is empty to create`() {
+    fun `should throw a 400 status when if email is empty to create`() {
         val cookies = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/teachers")
@@ -211,7 +211,7 @@ class TeacherControllerTest {
     }
 
     @Test
-    fun `should throw a 404 status when the email is already registered to create`() {
+    fun `should throw a 400 status when the email is already registered to create`() {
         val cookies = cookiesAdmin()
         teacherService.save(aTeacherDTO().build())
         mockMvc.perform(
@@ -224,7 +224,7 @@ class TeacherControllerTest {
     }
 
     @Test
-    fun `should throw a 404 status when the email is not valid to create`() {
+    fun `should throw a 400 status when the email is not valid to create`() {
         val cookies = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/teachers")
@@ -270,7 +270,7 @@ class TeacherControllerTest {
 
     @Test
     fun `should throw a 404 status when a student are looking for a teacher does not exist`() {
-        val cookie = cookiesTeacher()
+        val cookie = cookiesStudent()
 
         mockMvc.perform(
             MockMvcRequestBuilders.get("/teachers").accept(MediaType.APPLICATION_JSON)
@@ -318,7 +318,7 @@ class TeacherControllerTest {
 
     @Test
     fun `should throw a 401 status when a teacher does not have permissions to update teacher except yourself`() {
-        val cookie = cookiesStudent()
+        val cookie = cookiesTeacher()
         var teacher = teacherService.save(aTeacherDTO().build())
 
         teacher.setFirstName("Jose")
