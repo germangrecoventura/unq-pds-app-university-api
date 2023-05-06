@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.*
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.management.InvalidAttributeValueException
 import javax.persistence.*
+import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Pattern
 
 @Entity
@@ -14,6 +15,7 @@ class Matter(
 ) {
     @Column(nullable = false, unique = true)
     @JsonProperty
+    @NotBlank(message = "Name cannot be empty")
     @Pattern(regexp = "[a-zA-Z0-9 ]+")
     @Schema(example = "Math")
     var name = name
@@ -37,7 +39,7 @@ class Matter(
     }
 
     private fun validateName(name: String) {
-        if (name.isBlank()) throw InvalidAttributeValueException("Name cannot be empty")
+        if (name.isNullOrBlank()) throw InvalidAttributeValueException("Name cannot be empty")
         if (name.any { !(it.isLetterOrDigit() or it.isWhitespace())}) throw InvalidAttributeValueException("Name cannot contain special characters")
     }
 }

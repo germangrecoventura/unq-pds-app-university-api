@@ -32,7 +32,7 @@ class MatterController(private val matterService: MatterService) {
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "success",
+                description = "Success",
                 content = [
                     Content(
                         mediaType = "application/json",
@@ -57,7 +57,7 @@ class MatterController(private val matterService: MatterService) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT") ResponseEntity(
+        return if (body["role"] != "ADMIN") ResponseEntity(
             MessageDTO("You do not have permissions to access this resource"),
             HttpStatus.UNAUTHORIZED
         )
@@ -120,7 +120,7 @@ class MatterController(private val matterService: MatterService) {
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "success",
+                description = "Success",
                 content = [
                     Content(
                         mediaType = "application/json",
@@ -156,7 +156,7 @@ class MatterController(private val matterService: MatterService) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT") ResponseEntity(
+        return if (body["role"] != "ADMIN") ResponseEntity(
             MessageDTO("You do not have permissions to access this resource"),
             HttpStatus.UNAUTHORIZED
         )
@@ -172,7 +172,7 @@ class MatterController(private val matterService: MatterService) {
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "success",
+                description = "Success",
                 content = [
                     Content(
                         mediaType = "application/json", examples = [ExampleObject(
@@ -210,7 +210,7 @@ class MatterController(private val matterService: MatterService) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        if (body["role"] == "STUDENT") return ResponseEntity(
+        if (body["role"] != "ADMIN") return ResponseEntity(
             MessageDTO("You do not have permissions to access this resource"),
             HttpStatus.UNAUTHORIZED
         )
