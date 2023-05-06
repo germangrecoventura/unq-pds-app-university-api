@@ -2,12 +2,10 @@ name: Test and Analyze
 on:
   push:
     branches:
-      - main
-      - dev
+      [main, dev]
   pull_request:
     branches:
-      - main
-      - dev
+      [main, dev]
     types: [ opened, synchronize, reopened ]
 
 env:
@@ -19,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:latest
         env:
           MYSQL_DATABASE: app-universidad
           MYSQL_ROOT_PASSWORD: root
