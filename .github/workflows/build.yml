@@ -6,9 +6,6 @@ on:
   pull_request:
     types: [ opened, synchronize, reopened ]
 
-env:
-  #PASSWORD_USER: aA#1as
-
 jobs:
   build:
     name: Test and Analyze
