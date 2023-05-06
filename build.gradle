@@ -70,7 +70,7 @@ sonarqube {
         property("sonar.projectKey", "germangrecoventura_unq-pds-app-university-api")
         property("sonar.organization", "germangrecoventura")
         property("sonar.host.url", "https://sonarcloud.io")
-        property 'sonar.coverage.jacoco.xmlReportPaths', "${project.buildDir}/reports/jacoco.xml"
+       // property 'sonar.coverage.jacoco.xmlReportPaths', "${project.buildDir}/reports/jacoco.xml"
         property(
                 "sonar.test.exclusions",
                 "src/test/kotlin/unq/pds/webservice/**, src/test/kotlin/unq/pds/services/RepositoryServiceTest.kt, src/test/kotlin/unq/pds/services/ProjectServiceTest.kt"
@@ -78,18 +78,8 @@ sonarqube {
     }
 }
 
-jacoco {
-    toolVersion = "0.8.8"
-}
-
 jacocoTestReport {
-    group = "Reporting"
     reports {
         xml.enabled true
-        csv.enabled false
-        //to create coverage report in html
-        html.destination file("${buildDir}/reports/coverage")
-        //for XML
-        xml.destination file("${buildDir}/reports/jacoco.xml")
     }
 }

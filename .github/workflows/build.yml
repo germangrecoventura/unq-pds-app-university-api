@@ -41,12 +41,8 @@ jobs:
         uses: gradle/gradle-build-action@6095a76664413da4c8c134ee32e8a8ae900f0f1f  # v2.4.0
       - name: Make gradlew executable
         run: chmod +x ./gradlew
-      - name: Run Unit Tests
-        run: ./gradlew test
-      - name: Generate Coverage Report
-        run: ./gradlew jacocoTestReport
-      - name: Analyze with SonarCloud
+      - name: Run Unit Tests + Coverage report + Analyze with SonarCloud
+        run: ./gradlew test jacocoTestReport sonarqube --info
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew sonar --info
