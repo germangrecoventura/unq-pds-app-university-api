@@ -337,19 +337,44 @@ class CommissionServiceTest {
     }
 
     @Test
-    fun `should be true to have a teacher with email when the teacher was added previously`() {
+    fun `should be true to have a commission with a teacher with email and a group with id when both were added previously`() {
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        val teacher = teacherService.save(aTeacherDTO().build())
+        val group = groupService.save(aGroup().build())
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        Assertions.assertTrue(commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(teacher.getEmail(), group.getId()!!))
+    }
+
+    @Test
+    fun `should be false to have a commission with a teacher with email and a group with id when both were not added`() {
+        matterService.save(aMatter().build())
+        commissionService.save(aCommission().build())
+        Assertions.assertFalse(commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId("emailFalso", -1))
+    }
+
+    @Test
+    fun `should be false to have a commission with a teacher with email and a group with an id when the group was not added`() {
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val teacher = teacherService.save(aTeacherDTO().build())
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
-        Assertions.assertTrue(commissionService.hasATeacherWithEmail(commission.getId()!!, teacher.getEmail()))
+        Assertions.assertFalse(commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(teacher.getEmail(), -1))
     }
 
     @Test
-    fun `should be false to have a teacher with email when it was not added`() {
+    fun `should be false to have a commission with a teacher with email and a group with id when the teacher has not been added`() {
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        Assertions.assertFalse(commissionService.hasATeacherWithEmail(commission.getId()!!, "emailFalso"))
+        val group = groupService.save(aGroup().build())
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        Assertions.assertFalse(commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId("emailFalso", group.getId()!!))
+    }
+
+    @Test
+    fun `should be false to have a commission with a teacher with email and a group with id when there is no commissions`() {
+        Assertions.assertFalse(commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId("emailFalso", -1))
     }
 
     @Test

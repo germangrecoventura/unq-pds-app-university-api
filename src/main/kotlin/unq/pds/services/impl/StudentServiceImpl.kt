@@ -52,28 +52,36 @@ open class StudentServiceImpl : StudentService {
         return studentDAO.save(student)
     }
 
-    override fun update(student: Student): Student {
-        if (student.getOwnerGithub() != null) {
-            var studentWithOwnerGithub = studentDAO.findByOwnerGithub(student.getOwnerGithub()!!)
-            if (studentWithOwnerGithub.isPresent && student.getId() != studentWithOwnerGithub.get().getId()) {
+    override fun update(student: StudentCreateRequestDTO): Student {
+        if (student.ownerGithub != null) {
+            var studentWithOwnerGithub = studentDAO.findByOwnerGithub(student.ownerGithub!!)
+            if (studentWithOwnerGithub.isPresent && student.id != studentWithOwnerGithub.get().getId()) {
                 throw AlreadyRegisteredException("owner github")
             }
         }
-        if (student.getTokenGithub() != null) {
-            var studentWithToken = studentDAO.findByTokenGithub(student.getTokenGithub()!!)
-            if (studentWithToken.isPresent && student.getId() != studentWithToken.get().getId()) {
+        if (student.tokenGithub != null) {
+            var studentWithToken = studentDAO.findByTokenGithub(student.tokenGithub!!)
+            if (studentWithToken.isPresent && student.id != studentWithToken.get().getId()) {
                 throw AlreadyRegisteredException("token github")
             }
         }
 
-        var studentWithEmail = studentDAO.findByEmail(student.getEmail()!!)
-        if (studentWithEmail.isPresent && student.getId() != studentWithEmail.get().getId()) {
+        var studentWithEmail = studentDAO.findByEmail(student.email!!)
+        if (studentWithEmail.isPresent && student.id != studentWithEmail.get().getId()) {
             throw AlreadyRegisteredException("email")
         }
 
-        if (student.getId() != null && studentDAO.existsById(student.getId()!!)) {
-            student.setPassword(BCryptPasswordEncoder().encode(student.getPassword()))
-            return studentDAO.save(student)
+        if (student.id != null && studentDAO.existsById(student.id!!)) {
+            val studentFind = studentDAO.findById(student.id!!).get()
+            studentFind.apply {
+                setFirstName(student.firstName)
+                setLastName(student.lastName)
+                setEmail(student.email)
+                setPassword(BCryptPasswordEncoder().encode(student.password))
+                setOwnerGithub(student.ownerGithub)
+                setTokenGithub(student.tokenGithub)
+            }
+            return studentDAO.save(studentFind)
         }
         else throw NoSuchElementException("Student does not exist")
     }
@@ -107,7 +115,7 @@ open class StudentServiceImpl : StudentService {
         }
         student.addProject(project)
 
-        return this.update(student)
+        return studentDAO.save(student)
     }
 
     override fun readAll(): List<Student> {

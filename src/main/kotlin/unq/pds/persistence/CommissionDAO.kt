@@ -14,4 +14,15 @@ interface CommissionDAO : JpaRepository<Commission, Long> {
         """
     )
     fun hasATeacherWithEmail(commissionId: Long, email: String): Boolean
+
+    @Query(
+        """
+            SELECT COUNT(c) > 0
+            FROM Commission c
+            JOIN c.teachers t
+            JOIN c.groupsStudents gs
+            WHERE t.email = ?1 AND gs.id = ?2
+        """
+    )
+    fun thereIsACommissionWithATeacherWithEmailAndGroupWithId(email: String, groupId: Long): Boolean
 }

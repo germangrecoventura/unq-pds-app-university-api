@@ -13,6 +13,7 @@ interface CommissionService {
     fun addGroup(commissionId: Long, groupId: Long): Commission
     fun removeGroup(commissionId: Long, groupId: Long): Commission
     fun hasATeacherWithEmail(commissionId: Long, email: String): Boolean
+    fun thereIsACommissionWithATeacherWithEmailAndGroupWithId(email: String, groupId: Long): Boolean
     fun readAll(): List<Commission>
     fun count(): Int
     fun clearCommissions()

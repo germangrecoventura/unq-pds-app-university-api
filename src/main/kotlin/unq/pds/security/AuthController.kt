@@ -51,8 +51,12 @@ class AuthController(
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT") ResponseEntity(studentService.findByEmail(body.issuer), HttpStatus.OK)
-        else ResponseEntity(teacherService.findByEmail(body.issuer), HttpStatus.OK)
+        return when (body["role"]) {
+            "STUDENT" -> ResponseEntity(studentService.findByEmail(body.issuer), HttpStatus.OK)
+            "TEACHER" -> ResponseEntity(teacherService.findByEmail(body.issuer), HttpStatus.OK)
+            "ADMIN" -> ResponseEntity(adminService.findByEmail(body.issuer), HttpStatus.OK)
+            else -> return ResponseEntity(MessageDTO("It is not an allowed role in the system"), HttpStatus.BAD_REQUEST)
+        }
     }
 
     private fun studentLogin(body: LoginDTO, response: HttpServletResponse): ResponseEntity<Any> {

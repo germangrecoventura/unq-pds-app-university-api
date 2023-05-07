@@ -33,6 +33,10 @@ class Group (name: String): ProjectOwner() {
         members.remove(member)
     }
 
+    fun hasAMemberWithEmail(email: String): Boolean {
+        return members.any { it.getEmail() == email }
+    }
+
     init { this.validateCreation() }
 
     private fun validateCreation() {
@@ -40,7 +44,7 @@ class Group (name: String): ProjectOwner() {
     }
 
     private fun validateName(name: String) {
-        if (name.isBlank()) throw InvalidAttributeValueException("Name cannot be empty")
+        if (name.isNullOrBlank()) throw InvalidAttributeValueException("Name cannot be empty")
     }
 
     private fun isMember(member: Student): Boolean {

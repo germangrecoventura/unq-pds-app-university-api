@@ -4,6 +4,7 @@ import unq.pds.api.dtos.StudentCreateRequestDTO
 
 
 class BuilderStudentDTO {
+    private var id: Long? = null
     private var firstName: String? = "German"
     private var lastName: String? = "Fernandez"
     private var emailAddress: String? = "german@gmail.com"
@@ -13,6 +14,7 @@ class BuilderStudentDTO {
 
     fun build(): StudentCreateRequestDTO {
         var studentRequest = StudentCreateRequestDTO()
+        studentRequest.id = id
         studentRequest.firstName = firstName
         studentRequest.lastName = lastName
         studentRequest.email = emailAddress
@@ -21,6 +23,11 @@ class BuilderStudentDTO {
         studentRequest.tokenGithub = tokenGithub
 
         return studentRequest
+    }
+
+    fun withId(id: Long?): BuilderStudentDTO {
+        this.id = id
+        return this
     }
 
     fun withFirstName(name: String?): BuilderStudentDTO {
