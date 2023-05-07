@@ -58,7 +58,6 @@ sonarqube {
         property "sonar.projectKey", "germangrecoventura_unq-pds-app-university-api"
         property "sonar.organization", "germangrecoventura"
         property "sonar.host.url", "https://sonarcloud.io"
-        property "sonar.login", "756fb9c1aaec2103f4f34b9a9ec24d5c291f83e2"
         property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/test/jacocoTestReport.xml"
     }
 }
