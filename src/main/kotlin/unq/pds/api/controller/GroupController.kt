@@ -187,14 +187,12 @@ class GroupController(private val groupService: GroupService, private val commis
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        val findCommision = commissionService.readAll().find { com -> com.groupsStudents.contains(group) }
         return if (body["role"] == "STUDENT" && !group.hasAMemberWithEmail(body.issuer))
             ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" && (
-                    findCommision == null || findCommision.teachers.find { t -> t.getEmail() == body.issuer } != null)
-        ) {
+            ) else if (body["role"] == "TEACHER" &&
+                !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.issuer, group.getId()!!)) {
             ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
@@ -331,16 +329,13 @@ class GroupController(private val groupService: GroupService, private val commis
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        val group = groupService.read(groupId)
-        val findCommision = commissionService.readAll().find { com -> com.groupsStudents.contains(group) }
         return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupId, body.issuer)
             && body["id"].toString().toLong() != studentId)
             ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" && (
-                    findCommision == null || findCommision.teachers.find { t -> t.getEmail() == body.issuer } != null)
-        ) {
+            ) else if (body["role"] == "TEACHER" &&
+                    !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.issuer, groupId)) {
             ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
@@ -409,15 +404,12 @@ class GroupController(private val groupService: GroupService, private val commis
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        val group = groupService.read(groupId)
-        val findCommision = commissionService.readAll().find { com -> com.groupsStudents.contains(group) }
         return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupId, body.issuer))
             ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" && (
-                    findCommision == null || findCommision.teachers.find { t -> t.getEmail() == body.issuer } != null)
-        ) {
+            ) else if (body["role"] == "TEACHER" &&
+                !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.issuer, groupId)) {
             ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
@@ -486,15 +478,12 @@ class GroupController(private val groupService: GroupService, private val commis
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        val group = groupService.read(groupId)
-        val findCommision = commissionService.readAll().find { com -> com.groupsStudents.contains(group) }
         return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupId, body.issuer))
             ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" && (
-                    findCommision == null || findCommision.teachers.find { t -> t.getEmail() == body.issuer } != null)
-        ) {
+            ) else if (body["role"] == "TEACHER" &&
+                    !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.issuer, groupId)) {
             ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
