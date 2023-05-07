@@ -33,6 +33,10 @@ class Group (name: String): ProjectOwner() {
         members.remove(member)
     }
 
+    fun hasAMemberWithEmail(email: String): Boolean {
+        return members.any { it.getEmail() == email }
+    }
+
     init { this.validateCreation() }
 
     private fun validateCreation() {

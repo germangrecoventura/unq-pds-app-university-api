@@ -217,6 +217,20 @@ class GroupServiceTest {
     }
 
     @Test
+    fun `should be true to have a member with email when the member was added previously`() {
+        val group = groupService.save(aGroup().build())
+        val student = studentService.save(aStudentDTO().build())
+        groupService.addMember(group.getId()!!, student.getId()!!)
+        Assertions.assertTrue(groupService.hasAMemberWithEmail(group.getId()!!, student.getEmail()!!))
+    }
+
+    @Test
+    fun `should be false to have a member with email when it was not added`() {
+        val group = groupService.save(aGroup().build())
+        Assertions.assertFalse(groupService.hasAMemberWithEmail(group.getId()!!, "emailFalso"))
+    }
+
+    @Test
     fun `should recover an empty list of groups when recover all and there is no persistence`() {
         Assertions.assertEquals(0, groupService.readAll().size)
     }

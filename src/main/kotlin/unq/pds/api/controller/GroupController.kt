@@ -188,9 +188,7 @@ class GroupController(private val groupService: GroupService, private val commis
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         val findCommision = commissionService.readAll().find { com -> com.groupsStudents.contains(group) }
-
-        val findMember = group.members.find { member -> member.getEmail() == body.issuer }
-        return if (body["role"] == "STUDENT" && findMember == null)
+        return if (body["role"] == "STUDENT" && !group.hasAMemberWithEmail(body.issuer))
             ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
@@ -335,8 +333,8 @@ class GroupController(private val groupService: GroupService, private val commis
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         val group = groupService.read(groupId)
         val findCommision = commissionService.readAll().find { com -> com.groupsStudents.contains(group) }
-        val findMember = group.members.find { member -> member.getEmail() == body.issuer }
-        return if (body["role"] == "STUDENT" && findMember == null)
+        return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupId, body.issuer)
+            && body["id"].toString().toLong() != studentId)
             ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
@@ -413,8 +411,7 @@ class GroupController(private val groupService: GroupService, private val commis
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         val group = groupService.read(groupId)
         val findCommision = commissionService.readAll().find { com -> com.groupsStudents.contains(group) }
-        val findMember = group.members.find { member -> member.getEmail() == body.issuer }
-        return if (body["role"] == "STUDENT" && findMember == null)
+        return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupId, body.issuer))
             ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
@@ -491,8 +488,7 @@ class GroupController(private val groupService: GroupService, private val commis
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         val group = groupService.read(groupId)
         val findCommision = commissionService.readAll().find { com -> com.groupsStudents.contains(group) }
-        val findMember = group.members.find { member -> member.getEmail() == body.issuer }
-        return if (body["role"] == "STUDENT" && findMember == null)
+        return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupId, body.issuer))
             ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED

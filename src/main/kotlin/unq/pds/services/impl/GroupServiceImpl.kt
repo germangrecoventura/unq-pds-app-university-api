@@ -63,6 +63,10 @@ open class GroupServiceImpl : GroupService {
         return this.update(group)
     }
 
+    override fun hasAMemberWithEmail(groupId: Long, email: String): Boolean {
+        return groupDAO.hasAMemberWithEmail(groupId, email)
+    }
+
     override fun readAll(): List<Group> {
         return groupDAO.findAll().toList()
     }
