@@ -70,7 +70,7 @@ sonarqube {
         property("sonar.projectKey", "germangrecoventura_unq-pds-app-university-api")
         property("sonar.organization", "germangrecoventura")
         property("sonar.host.url", "https://sonarcloud.io")
-        property 'sonar.coverage.jacoco.xmlReportPaths', "$buildDir/reports/jacoco/test/jacocoTestReport.xml"
+        property 'sonar.coverage.jacoco.xmlReportPaths', "$buildDir/reports/jacoco"
         property(
                 "sonar.test.exclusions",
                 "src/test/kotlin/unq/pds/webservice/**, src/test/kotlin/unq/pds/services/RepositoryServiceTest.kt, src/test/kotlin/unq/pds/services/ProjectServiceTest.kt"
