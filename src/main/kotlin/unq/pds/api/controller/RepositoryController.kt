@@ -206,7 +206,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        if (body["role"] == "STUDENT") return ResponseEntity(
+        if (body["role"] != "ADMIN") return ResponseEntity(
             MessageDTO("You do not have permissions to access this resource"),
             HttpStatus.UNAUTHORIZED
         )
