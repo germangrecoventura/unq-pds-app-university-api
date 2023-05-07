@@ -110,6 +110,10 @@ open class StudentServiceImpl : StudentService {
         return this.update(student)
     }
 
+    override fun isHisProject(studentId: Long, projectId: Long): Boolean {
+        return studentDAO.isHisProject(studentId, projectId)
+    }
+
     override fun readAll(): List<Student> {
         return studentDAO.findAll().toList()
     }
