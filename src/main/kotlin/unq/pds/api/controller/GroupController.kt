@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.GroupDTO
+import unq.pds.api.dtos.GroupUpdateDTO
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.Group
 import unq.pds.services.CommissionService
@@ -182,11 +183,12 @@ class GroupController(private val groupService: GroupService, private val commis
                 )]
             )]
     )
-    fun updateGroup(@CookieValue("jwt") jwt: String?, @RequestBody group: Group): ResponseEntity<Any> {
+    fun updateGroup(@CookieValue("jwt") jwt: String?, @RequestBody groupUpdateDTO: GroupUpdateDTO): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        val group = groupService.read(groupUpdateDTO.id!!)
         return if (body["role"] == "STUDENT" && !group.hasAMemberWithEmail(body.issuer))
             ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
@@ -197,7 +199,7 @@ class GroupController(private val groupService: GroupService, private val commis
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
             )
-        } else ResponseEntity(groupService.update(group), HttpStatus.OK)
+        } else ResponseEntity(groupService.update(groupUpdateDTO), HttpStatus.OK)
     }
 
 
