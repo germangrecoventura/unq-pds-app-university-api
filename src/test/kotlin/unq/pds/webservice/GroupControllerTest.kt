@@ -14,12 +14,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
+import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
 import unq.pds.model.builder.GroupBuilder.Companion.aGroup
+import unq.pds.model.builder.MatterBuilder.Companion.aMatter
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.services.*
-import unq.pds.services.builder.BuilderAdminDTO
+import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
 import unq.pds.services.builder.BuilderGroupDTO.Companion.aGroupDTO
-import unq.pds.services.builder.BuilderLoginDTO
+import unq.pds.services.builder.BuilderLoginDTO.Companion.aLoginDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
 import javax.servlet.http.Cookie
@@ -46,6 +48,12 @@ class GroupControllerTest {
 
     @Autowired
     lateinit var projectService: ProjectService
+
+    @Autowired
+    lateinit var matterService: MatterService
+
+    @Autowired
+    lateinit var commissionService: CommissionService
 
     @Autowired
     lateinit var initializer: Initializer
@@ -95,6 +103,16 @@ class GroupControllerTest {
     }
 
     @Test
+    fun `should throw a 401 status when trying to create a group and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/groups")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aGroupDTO().build()))
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
     fun `should throw a 400 status when the group has a null name`() {
         val cookie = cookiesAdmin()
         mockMvc.perform(
@@ -117,27 +135,6 @@ class GroupControllerTest {
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
-
-    @Test
-    fun `should throw a 200 status when saving groups with the same name`() {
-        val cookie = cookiesAdmin()
-        mockMvc.perform(
-            MockMvcRequestBuilders.post("/groups")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aGroupDTO().withName("The Pcs").build()))
-                .cookie(cookie)
-                .accept("application/json")
-        ).andExpect(status().isOk)
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.post("/groups")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aGroupDTO().withName("BugFix").build()))
-                .cookie(cookie)
-                .accept("application/json")
-        ).andExpect(status().isOk)
-    }
-
 
     // TODO GET
 
@@ -181,6 +178,14 @@ class GroupControllerTest {
     }
 
     @Test
+    fun `should throw a 401 status when trying to get a group and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/groups").accept(MediaType.APPLICATION_JSON)
+                .param("id", "1")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
     fun `should throw a 400 status when the id is null`() {
         val cookie = cookiesAdmin()
         groupService.save(aGroup().build())
@@ -220,7 +225,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 404 status when the id is not the proper type`() {
+    fun `should throw a 400 status when trying to get a group and the id is not the proper type`() {
         val cookie = cookiesAdmin()
 
         mockMvc.perform(
@@ -232,6 +237,16 @@ class GroupControllerTest {
     }
 
     // TODO GET
+
+    @Test
+    fun `should throw a 401 status when trying to update a group and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("/groups")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aGroup().build()))
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
 
     @Test
     fun `should throw a 401 status when a student does not have permissions to update group except yourself`() {
@@ -264,7 +279,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 200 status when a admin does have permissions to update group `() {
+    fun `should throw a 200 status when a admin does have permissions to update group`() {
         val cookie = cookiesAdmin()
         val group = groupService.save(aGroup().build())
 
@@ -282,9 +297,27 @@ class GroupControllerTest {
     fun `should throw a 200 status when a student does have permissions to update group`() {
         val cookie = cookiesStudent()
         val student = studentService.findByEmail("german@gmail.com")
-        var group = groupService.save(aGroup().build())
-        group.addMember(student)
-        groupService.save(group)
+        val group = groupService.save(aGroup().build())
+        val groupUpdated = groupService.addMember(group.getId()!!, student.getId()!!)
+        groupUpdated.name = "New name"
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("/groups")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(groupUpdated))
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `should throw a 200 status when a teacher does have permissions to update group`() {
+        val cookie = cookiesTeacher()
+        val teacher = teacherService.findByEmail("german@gmail.com")
+        val group = groupService.save(aGroup().build())
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
         group.name = "New name"
         mockMvc.perform(
             MockMvcRequestBuilders.put("/groups")
@@ -293,6 +326,14 @@ class GroupControllerTest {
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `should throw a 401 status when trying to delete a group and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.delete("/groups").accept(MediaType.APPLICATION_JSON)
+                .param("id", "1")
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -318,7 +359,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 401 status when a admin does have permissions to delete groups`() {
+    fun `should throw a 200 status when a admin does have permissions to delete groups`() {
         val cookie = cookiesAdmin()
         val group = groupService.save(aGroup().build())
         mockMvc.perform(
@@ -340,7 +381,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 400 status when the id is not the proper type`() {
+    fun `should throw a 400 status when trying to delete a group and the id is not the proper type`() {
         val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/groups").accept(MediaType.APPLICATION_JSON)
@@ -362,7 +403,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 200 status when a student does have permissions to get all students`() {
+    fun `should throw a 200 status when a student does have permissions to get all groups`() {
         val cookie = cookiesStudent()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/groups/getAll").accept(MediaType.APPLICATION_JSON)
@@ -372,7 +413,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 200 status when a teacher does have permissions to get all students`() {
+    fun `should throw a 200 status when a teacher does have permissions to get all groups`() {
         val cookie = cookiesTeacher()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/groups/getAll").accept(MediaType.APPLICATION_JSON)
@@ -382,7 +423,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 200 status when a admin does have permissions to get all students`() {
+    fun `should throw a 200 status when a admin does have permissions to get all groups`() {
         val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/groups/getAll").accept(MediaType.APPLICATION_JSON)
@@ -391,6 +432,24 @@ class GroupControllerTest {
             .andExpect(status().isOk)
     }
 
+    @Test
+    fun `should throw a 401 status when trying to get all groups and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/groups/getAll").accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when trying to add member to a group and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/groups/addMember/{groupId}/{studentId}",
+                1, 1
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
 
     @Test
     fun `should throw a 401 status when a student does have not permissions to add member to group except yourself`() {
@@ -414,8 +473,7 @@ class GroupControllerTest {
         val cookie = cookiesStudent()
         var group = groupService.save(aGroup().build())
         val studentFind = studentService.findByEmail("german@gmail.com")
-        group.addMember(studentFind)
-        groupService.save(group)
+        groupService.addMember(group.getId()!!, studentFind.getId()!!)
 
         var student = studentService.save(aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").build())
         mockMvc.perform(
@@ -449,6 +507,28 @@ class GroupControllerTest {
     }
 
     @Test
+    fun `should throw a 200 status when a teacher does have permissions to add member to group except yourself`() {
+        val cookie = cookiesTeacher()
+        val teacher = teacherService.findByEmail("german@gmail.com")
+        val group = groupService.save(aGroup().build())
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        val student = studentService.save(aStudentDTO().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/groups/addMember/{groupId}/{studentId}",
+                group.getId(),
+                student.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isOk)
+    }
+
+    @Test
     fun `should throw a 200 status when a admin does have permissions to add member to group`() {
         val cookie = cookiesAdmin()
         var group = groupService.save(aGroup().build())
@@ -466,20 +546,19 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 200 status when a admin does have permissions to add member to group `() {
+    fun `should throw a 404 status when add a non-existent group`() {
         val cookie = cookiesAdmin()
-        var group = groupService.save(aGroup().build())
         var student = studentService.save(aStudentDTO().build())
         mockMvc.perform(
             MockMvcRequestBuilders.put(
                 "/groups/addMember/{groupId}/{studentId}",
-                group.getId(),
+                -1,
                 student.getId()
             )
                 .contentType(MediaType.APPLICATION_JSON)
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(status().isOk)
+        ).andExpect(status().isNotFound)
     }
 
     @Test
@@ -499,6 +578,18 @@ class GroupControllerTest {
     }
 
     @Test
+    fun `should throw a 401 status when trying to remove member of a group and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/groups/removeMember/{groupId}/{studentId}",
+                1, 1
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
     fun `should throw a 401 status when a student does have not permissions to remove member to group except yourself`() {
         val cookie = cookiesStudent()
         var group = groupService.save(aGroup().build())
@@ -514,6 +605,65 @@ class GroupControllerTest {
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 200 status when a student does have permissions to remove member to group except yourself`() {
+        val cookie = cookiesStudent()
+        val group = groupService.save(aGroup().build())
+        val student = studentService.findByEmail("german@gmail.com")
+        groupService.addMember(group.getId()!!, student.getId()!!)
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/groups/removeMember/{groupId}/{studentId}",
+                group.getId(),
+                student.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `should throw a 401 status when a teacher does have not permissions to remove member to group except yourself`() {
+        val cookie = cookiesTeacher()
+        val group = groupService.save(aGroup().build())
+        val student = studentService.save(aStudentDTO().build())
+        groupService.addMember(group.getId()!!, student.getId()!!)
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/groups/removeMember/{groupId}/{studentId}",
+                group.getId(),
+                student.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 200 status when a teacher does have permissions to remove member to group except yourself`() {
+        val cookie = cookiesTeacher()
+        val teacher = teacherService.findByEmail("german@gmail.com")
+        val group = groupService.save(aGroup().build())
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        val student = studentService.save(aStudentDTO().build())
+        groupService.addMember(group.getId()!!, student.getId()!!)
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/groups/removeMember/{groupId}/{studentId}",
+                group.getId(),
+                student.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -566,6 +716,17 @@ class GroupControllerTest {
         ).andExpect(status().isNotFound)
     }
 
+    @Test
+    fun `should throw a 401 status when trying to add project to a group and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/groups/addProject/{groupId}/{projectId}",
+                1, 1
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
 
     @Test
     fun `should throw a 401 status when a student does have not permissions to add project to group except yourself`() {
@@ -622,6 +783,28 @@ class GroupControllerTest {
     }
 
     @Test
+    fun `should throw a 200 status when a teacher does have permissions to add project to group except yourself`() {
+        val cookie = cookiesTeacher()
+        val project = projectService.save(aProject().build())
+        val teacher = teacherService.findByEmail("german@gmail.com")
+        val group = groupService.save(aGroup().build())
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/groups/addProject/{groupId}/{projectId}",
+                group.getId(),
+                project.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isOk)
+    }
+
+    @Test
     fun `should throw a 200 status when a admin does have permissions to add project to group`() {
         val cookie = cookiesAdmin()
         val project = projectService.save(aProject().build())
@@ -636,6 +819,22 @@ class GroupControllerTest {
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `should throw a 404 status when trying to add a project in a non-existent group`() {
+        val cookie = cookiesAdmin()
+        val project = projectService.save(aProject().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/groups/addProject/{groupId}/{projectId}",
+                -5,
+                project.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isNotFound)
     }
 
     @Test
@@ -656,7 +855,7 @@ class GroupControllerTest {
 
     private fun cookiesStudent(): Cookie? {
         val student = studentService.save(aStudentDTO().build())
-        val login = BuilderLoginDTO().withEmail(student.getEmail()).withPassword("funciona").withRole("STUDENT").build()
+        val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").withRole("STUDENT").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -669,7 +868,7 @@ class GroupControllerTest {
 
     private fun cookiesTeacher(): Cookie? {
         val teacher = teacherService.save(aTeacherDTO().build())
-        val login = BuilderLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").withRole("TEACHER").build()
+        val login = aLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").withRole("TEACHER").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -681,8 +880,8 @@ class GroupControllerTest {
     }
 
     private fun cookiesAdmin(): Cookie? {
-        val admin = adminService.save(BuilderAdminDTO.aAdminDTO().build())
-        val login = BuilderLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").withRole("ADMIN").build()
+        val admin = adminService.save(aAdminDTO().build())
+        val login = aLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").withRole("ADMIN").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
