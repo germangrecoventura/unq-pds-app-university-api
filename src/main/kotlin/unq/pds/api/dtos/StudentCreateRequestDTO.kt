@@ -1,11 +1,16 @@
 package unq.pds.api.dtos
 
 import io.swagger.v3.oas.annotations.media.Schema
+import unq.pds.model.Student
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Pattern
 
 class StudentCreateRequestDTO {
+
+    @Schema(example = "1")
+    var id: Long? = null
+
     @NotBlank(message = "The first name cannot be blank")
     @Pattern(regexp = "[a-zA-Z ]+", message = "The first name cannot contain special characters or numbers")
     @Schema(example = "German")

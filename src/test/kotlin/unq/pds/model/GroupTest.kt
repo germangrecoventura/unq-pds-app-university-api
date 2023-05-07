@@ -85,4 +85,18 @@ class GroupTest {
             Assertions.assertEquals("The project has already been added", e.message)
         }
     }
+
+    @Test
+    fun `should be true to have a member with email when the member was added previously`() {
+        val group = aGroup().build()
+        val student = aStudent().build()
+        group.addMember(student)
+        Assertions.assertTrue(group.hasAMemberWithEmail(student.getEmail()!!))
+    }
+
+    @Test
+    fun `should be false to have a member with email when it was not added`() {
+        val group = aGroup().build()
+        Assertions.assertFalse(group.hasAMemberWithEmail("emailFalso"))
+    }
 }
