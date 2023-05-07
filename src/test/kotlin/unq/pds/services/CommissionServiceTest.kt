@@ -356,6 +356,22 @@ class CommissionServiceTest {
     }
 
     @Test
+    fun `should be true to have a teacher with email when the teacher was added previously`() {
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        val teacher = teacherService.save(aTeacherDTO().build())
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        Assertions.assertTrue(commissionService.hasATeacherWithEmail(commission.getId()!!, teacher.getEmail()))
+    }
+
+    @Test
+    fun `should be false to have a teacher with email when it was not added`() {
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        Assertions.assertFalse(commissionService.hasATeacherWithEmail(commission.getId()!!, "emailFalso"))
+    }
+
+    @Test
     fun `should recover an empty list of commissions when recover all and there is no persistence`() {
         Assertions.assertEquals(0, commissionService.readAll().size)
     }
