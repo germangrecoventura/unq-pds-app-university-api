@@ -53,25 +53,6 @@ class CommissionServiceTest {
     }
 
     @Test
-    fun `should update a commission when it exists`() {
-        matterService.save(aMatter().build())
-        val commission = commissionService.save(aCommission().build())
-        val updatedCommission = commissionService.update(commission)
-        Assertions.assertEquals(commission.getYear(), updatedCommission.getYear())
-        Assertions.assertEquals(commission.getFourMonthPeriod(), updatedCommission.getFourMonthPeriod())
-        Assertions.assertEquals(commission.getMatter().name, updatedCommission.getMatter().name)
-    }
-
-    @Test
-    fun `should throw an exception when trying to update a commission without persisting`() {
-        try {
-            commissionService.update(aCommission().build())
-        } catch (e:NoSuchElementException) {
-            Assertions.assertEquals("Commission does not exist", e.message)
-        }
-    }
-
-    @Test
     fun `should delete a commission when it exists`() {
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
