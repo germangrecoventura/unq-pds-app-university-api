@@ -4,7 +4,6 @@ import unq.pds.model.Commission
 
 interface CommissionService {
     fun save(commission: Commission): Commission
-    fun update(commission: Commission): Commission
     fun read(commissionId: Long): Commission
     fun delete(commissionId: Long)
     fun addStudent(commissionId: Long, studentId: Long): Commission
