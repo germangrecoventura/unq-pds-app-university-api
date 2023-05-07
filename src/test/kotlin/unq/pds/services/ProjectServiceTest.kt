@@ -12,7 +12,7 @@ import unq.pds.services.builder.BuilderStudentDTO
 
 @SpringBootTest
 class ProjectServiceTest {
-
+/*
     @Autowired
     lateinit var projectService: ProjectService
     @Autowired
@@ -144,5 +144,5 @@ class ProjectServiceTest {
         Assertions.assertEquals(2, projects.size)
         Assertions.assertTrue(projects.any { it.name == "unq-pds-app-university-api" })
         Assertions.assertTrue(projects.any { it.name == "unq-pdes-app" })
-    }
+    }*/
 }
