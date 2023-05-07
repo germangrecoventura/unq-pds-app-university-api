@@ -23,7 +23,11 @@ open class GroupServiceImpl : GroupService {
     }
 
     override fun update(group: Group): Group {
-        if (group.getId() != null && groupDAO.existsById(group.getId()!!)) return groupDAO.save(group)
+        if (group.getId() != null && groupDAO.existsById(group.getId()!!)) {
+            val groupFind = groupDAO.findById(group.getId()!!).get()
+            groupFind.name = group.name
+            return groupDAO.save(groupFind)
+        }
          else throw NoSuchElementException("Group does not exist")
     }
 
@@ -41,7 +45,7 @@ open class GroupServiceImpl : GroupService {
         val student = studentService.findById(studentId)
         group.addMember(student)
 
-        return this.update(group)
+        return groupDAO.save(group)
     }
 
     override fun removeMember(groupId: Long, studentId: Long): Group {
@@ -49,7 +53,7 @@ open class GroupServiceImpl : GroupService {
         val student = studentService.findById(studentId)
         group.removeMember(student)
 
-        return this.update(group)
+        return groupDAO.save(group)
     }
 
     override fun addProject(groupId: Long, projectId: Long): Group {
@@ -60,7 +64,7 @@ open class GroupServiceImpl : GroupService {
         }
         group.addProject(project)
 
-        return this.update(group)
+        return groupDAO.save(group)
     }
 
     override fun hasAMemberWithEmail(groupId: Long, email: String): Boolean {
