@@ -482,16 +482,16 @@ class StudentControllerTest {
         val cookie = cookiesAdmin()
 
         var student = studentService.save(aStudentDTO().build())
+        val studentToUpdate = aStudentDTO().withId(student.getId()).build()
         mockMvc.perform(
             MockMvcRequestBuilders.put("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{\n" +
-                            "  \"id\": ${student.getId()},\n" +
-                            "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"projects\": \"${student.projects}\",\n" +
+                            "  \"id\": ${studentToUpdate.id},\n" +
+                            "  \"email\": \"${studentToUpdate.email}\",\n" +
                             "  \"firstName\": ${null},\n" +
-                            "  \"lastName\": \"${student.getLastName()}\"\n" +
+                            "  \"lastName\": \"${studentToUpdate.lastName}\"\n" +
                             "}"
                 ).cookie(cookie)
                 .accept("application/json")

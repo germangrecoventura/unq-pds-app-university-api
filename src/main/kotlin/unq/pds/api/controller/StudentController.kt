@@ -156,7 +156,7 @@ class StudentController {
                     )]
                 )]
         )
-        fun updateStudent(@CookieValue("jwt") jwt: String?, @RequestBody student: Student): ResponseEntity<Any> {
+        fun updateStudent(@CookieValue("jwt") jwt: String?, @RequestBody student: StudentCreateRequestDTO): ResponseEntity<Any> {
             if (jwt.isNullOrBlank()) {
                 return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
             }
@@ -164,7 +164,7 @@ class StudentController {
             return if (body["role"] == "TEACHER") ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "STUDENT" && body["id"] != student.getId()) {
+            ) else if (body["role"] == "STUDENT" && body["id"] != student.id) {
                 ResponseEntity(
                     MessageDTO("You do not have permissions to update students except yourself"),
                     HttpStatus.UNAUTHORIZED
