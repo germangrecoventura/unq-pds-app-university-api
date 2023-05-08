@@ -6,6 +6,9 @@ import javax.validation.constraints.NotBlank
 
 class ProjectDTO {
 
+    @Schema(example = "1")
+    var id: Long? = null
+
     @NotBlank(message = "Name cannot be empty")
     @Schema(example = "unq pds")
     var name: String? = null

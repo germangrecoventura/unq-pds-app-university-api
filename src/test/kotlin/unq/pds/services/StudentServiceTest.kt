@@ -430,6 +430,21 @@ class StudentServiceTest {
     }
 
     @Test
+    fun `should be true to have a project when the project was added previously`() {
+        val student = studentService.save(aStudentDTO().build())
+        val project = projectService.save(aProject().build())
+        studentService.addProject(student.getId()!!, project.getId()!!)
+        Assertions.assertTrue(studentService.isHisProject(student.getId()!!, project.getId()!!))
+    }
+
+    @Test
+    fun `should be false to have a project when it was not added`() {
+        val student = studentService.save(aStudentDTO().build())
+        val project = projectService.save(aProject().build())
+        Assertions.assertFalse(studentService.isHisProject(student.getId()!!, project.getId()!!))
+    }
+
+    @Test
     fun `should recover an empty list of students when recover all and there is no persistence`() {
         Assertions.assertEquals(0, studentService.readAll().size)
     }

@@ -118,6 +118,10 @@ open class StudentServiceImpl : StudentService {
         return studentDAO.save(student)
     }
 
+    override fun isHisProject(studentId: Long, projectId: Long): Boolean {
+        return studentDAO.isHisProject(studentId, projectId)
+    }
+
     override fun readAll(): List<Student> {
         return studentDAO.findAll().toList()
     }

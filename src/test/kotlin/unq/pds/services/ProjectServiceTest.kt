@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
+import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
+import unq.pds.services.builder.BuilderProjectDTO.Companion.aProjectDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
 import unq.pds.services.builder.BuilderStudentDTO
 
@@ -56,15 +58,17 @@ class ProjectServiceTest {
     @Test
     fun `should update a project when it exists`() {
         val project = projectService.save(aProject().build())
-        project.name = "unq-pdes-app"
-        val updatedProject = projectService.update(project)
-        Assertions.assertEquals(project.name, updatedProject.name)
+        val projectDTO = ProjectDTO()
+        projectDTO.id = project.getId()
+        projectDTO.name = "unq-pdes-app"
+        val updatedProject = projectService.update(projectDTO)
+        Assertions.assertEquals(projectDTO.name, updatedProject.name)
     }
 
     @Test
     fun `should throw an exception when trying to update a project without persisting`() {
         try {
-            projectService.update(aProject().build())
+            projectService.update(aProjectDTO().build())
         } catch (e: NoSuchElementException) {
             Assertions.assertEquals("Project does not exist", e.message)
         }

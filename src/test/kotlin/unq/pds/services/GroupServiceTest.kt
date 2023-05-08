@@ -235,6 +235,40 @@ class GroupServiceTest {
     }
 
     @Test
+    fun `should be true to have a group with a student with id and a project with id when both were added previously`() {
+        val group = groupService.save(aGroup().build())
+        val student = studentService.save(aStudentDTO().build())
+        val project = projectService.save(aProject().build())
+        groupService.addProject(group.getId()!!, project.getId()!!)
+        groupService.addMember(group.getId()!!, student.getId()!!)
+        Assertions.assertTrue(groupService.thereIsAGroupWithThisProjectAndThisMember(project.getId()!!,
+            student.getId()!!))
+    }
+
+    @Test
+    fun `should be false to have a group with a student with id and a project with id when both were not added`() {
+        groupService.save(aGroup().build())
+        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMember(-1,-1))
+    }
+
+    @Test
+    fun `should be false to have a group with a student with id and a project with id when the project was not been added`() {
+        val group = groupService.save(aGroup().build())
+        val student = studentService.save(aStudentDTO().build())
+        groupService.addMember(group.getId()!!, student.getId()!!)
+        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMember(-1,
+            student.getId()!!))
+    }
+
+    @Test
+    fun `should be false to have a group with a student with id and a project with id when the student was not been added`() {
+        val group = groupService.save(aGroup().build())
+        val project = projectService.save(aProject().build())
+        groupService.addProject(group.getId()!!, project.getId()!!)
+        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMember(project.getId()!!,-1))
+    }
+
+    @Test
     fun `should recover an empty list of groups when recover all and there is no persistence`() {
         Assertions.assertEquals(0, groupService.readAll().size)
     }

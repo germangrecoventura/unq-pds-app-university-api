@@ -72,6 +72,10 @@ open class GroupServiceImpl : GroupService {
         return groupDAO.hasAMemberWithEmail(groupId, email)
     }
 
+    override fun thereIsAGroupWithThisProjectAndThisMember(projectId: Long, studentId: Long): Boolean {
+        return groupDAO.thereIsAGroupWithThisProjectAndThisMember(projectId, studentId)
+    }
+
     override fun readAll(): List<Group> {
         return groupDAO.findAll().toList()
     }
