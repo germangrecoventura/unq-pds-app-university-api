@@ -150,7 +150,7 @@ class ProjectController(private val projectService: ProjectService,
                 )]
             )]
     )
-    fun updateProject(@CookieValue("jwt") jwt: String?, @RequestBody project: Project): ResponseEntity<Any> {
+    fun updateProject(@CookieValue("jwt") jwt: String?, @RequestBody project: ProjectDTO): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
@@ -159,8 +159,8 @@ class ProjectController(private val projectService: ProjectService,
             MessageDTO("You do not have permissions to access this resource"),
             HttpStatus.UNAUTHORIZED
         ) else if (body["role"] == "STUDENT" &&
-            !studentService.isHisProject(body["id"].toString().toLong(), project.getId()!!) &&
-            !groupService.thereIsAGroupWithThisProjectAndThisMember(project.getId()!!, body["id"].toString().toLong()))
+            !studentService.isHisProject(body["id"].toString().toLong(), project.id!!) &&
+            !groupService.thereIsAGroupWithThisProjectAndThisMember(project.id!!, body["id"].toString().toLong()))
                 ResponseEntity(
                     MessageDTO("You do not have permissions to access this resource"),
                     HttpStatus.UNAUTHORIZED
