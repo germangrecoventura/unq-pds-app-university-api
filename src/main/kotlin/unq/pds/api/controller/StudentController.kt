@@ -52,6 +52,18 @@ class StudentController {
                                     "}"
                         )]
                     )]
+                ),
+                ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
                 )]
         )
         fun createStudent(
@@ -96,6 +108,18 @@ class StudentController {
                                     "}"
                         )]
                     )]
+                ),
+                ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
                 ),
                 ApiResponse(
                     responseCode = "404",
@@ -145,6 +169,18 @@ class StudentController {
                     )]
                 ),
                 ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
+                ),
+                ApiResponse(
                     responseCode = "404",
                     description = "Not found",
                     content = [Content(
@@ -156,7 +192,10 @@ class StudentController {
                     )]
                 )]
         )
-        fun updateStudent(@CookieValue("jwt") jwt: String?, @RequestBody student: StudentCreateRequestDTO): ResponseEntity<Any> {
+        fun updateStudent(
+            @CookieValue("jwt") jwt: String?,
+            @RequestBody student: StudentCreateRequestDTO
+        ): ResponseEntity<Any> {
             if (jwt.isNullOrBlank()) {
                 return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
             }
@@ -201,6 +240,18 @@ class StudentController {
                                     "}"
                         )]
                     )]
+                ),
+                ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
                 ),
                 ApiResponse(
                     responseCode = "404",
@@ -256,6 +307,18 @@ class StudentController {
                     )]
                 ),
                 ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
+                ),
+                ApiResponse(
                     responseCode = "404",
                     description = "Not found",
                     content = [Content(
@@ -302,6 +365,17 @@ class StudentController {
                             mediaType = "application/json",
                             array = ArraySchema(schema = Schema(implementation = Student::class)),
                         )
+                    ]
+                ), ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
                     ]
                 )]
         )

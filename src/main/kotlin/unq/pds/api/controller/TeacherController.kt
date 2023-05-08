@@ -52,6 +52,17 @@ class TeacherController {
                                     "}"
                         )]
                     )]
+                ), ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
                 )]
         )
         fun createTeacher(
@@ -96,6 +107,18 @@ class TeacherController {
                                     "}"
                         )]
                     )]
+                ),
+                ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
                 ),
                 ApiResponse(
                     responseCode = "404",
@@ -143,6 +166,18 @@ class TeacherController {
                                     "}"
                         )]
                     )]
+                ),
+                ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
                 ),
                 ApiResponse(
                     responseCode = "404",
@@ -203,6 +238,18 @@ class TeacherController {
                     )]
                 ),
                 ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
+                ),
+                ApiResponse(
                     responseCode = "404",
                     description = "Not Found",
                     content = [Content(
@@ -242,6 +289,17 @@ class TeacherController {
                             mediaType = "application/json",
                             array = ArraySchema(schema = Schema(implementation = Teacher::class)),
                         )
+                    ]
+                ), ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
                     ]
                 )]
         )

@@ -50,6 +50,18 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             )]
     )
     fun createRepository(
@@ -91,6 +103,18 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -106,7 +130,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
         if (jwt.isNullOrBlank()) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
-        return  ResponseEntity(repositoryService.findById(id), HttpStatus.OK)
+        return ResponseEntity(repositoryService.findById(id), HttpStatus.OK)
     }
 
     @PutMapping
@@ -138,6 +162,18 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -156,7 +192,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
         if (jwt.isNullOrBlank()) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
-        return  ResponseEntity(repositoryService.update(repository), HttpStatus.OK)
+        return ResponseEntity(repositoryService.update(repository), HttpStatus.OK)
     }
 
     @DeleteMapping
@@ -188,6 +224,18 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             ),
             ApiResponse(
                 responseCode = "404",
@@ -229,6 +277,17 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                         mediaType = "application/json",
                         array = ArraySchema(schema = Schema(implementation = Repository::class)),
                     )
+                ]
+            ), ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
                 ]
             )]
     )

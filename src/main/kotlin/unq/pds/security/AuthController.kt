@@ -2,6 +2,11 @@ package unq.pds.security
 
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -23,6 +28,49 @@ class AuthController(
 ) {
 
     @PostMapping("/login")
+    @Operation(
+        summary = "Log in the page",
+        description = "log in depending on the role in the system",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"additionalProp1\": \"string\",\n" +
+                                "  \"additionalProp2\": \"string\",\n" +
+                                "  \"additionalProp3\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            ), ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            )]
+    )
     fun login(@Valid @RequestBody body: LoginDTO, response: HttpServletResponse): ResponseEntity<Any> {
         return when (body.role) {
             "STUDENT" -> studentLogin(body, response)
@@ -34,6 +82,37 @@ class AuthController(
 
 
     @PostMapping("/logout")
+    @Operation(
+        summary = "Log out the page",
+        description = "Log out the system",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            )]
+    )
     fun logout(@CookieValue("jwt") jwt: String?, response: HttpServletResponse): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
@@ -46,6 +125,63 @@ class AuthController(
     }
 
     @GetMapping("user-logged")
+    @Operation(
+        summary = "Get user logged",
+        description = "Gets the user from the jwt",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"additionalProp1\": \"string\",\n" +
+                                "  \"additionalProp2\": \"string\",\n" +
+                                "  \"additionalProp3\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not Found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            )
+        ]
+    )
     fun user(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)

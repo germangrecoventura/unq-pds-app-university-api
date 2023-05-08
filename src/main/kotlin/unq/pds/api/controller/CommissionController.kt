@@ -52,6 +52,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -107,6 +119,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -154,6 +178,18 @@ class CommissionController(private val commissionService: CommissionService) {
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             ),
             ApiResponse(
                 responseCode = "404",
@@ -207,6 +243,18 @@ class CommissionController(private val commissionService: CommissionService) {
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             ),
             ApiResponse(
                 responseCode = "404",
@@ -269,6 +317,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -329,6 +389,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -385,6 +457,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -439,6 +523,18 @@ class CommissionController(private val commissionService: CommissionService) {
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             ),
             ApiResponse(
                 responseCode = "404",
@@ -501,6 +597,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -547,6 +655,18 @@ class CommissionController(private val commissionService: CommissionService) {
                         mediaType = "application/json",
                         array = ArraySchema(schema = Schema(implementation = Commission::class)),
                     )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
                 ]
             )]
     )

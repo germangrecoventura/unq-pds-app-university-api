@@ -50,6 +50,18 @@ class MatterController(private val matterService: MatterService) {
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             )]
     )
     fun createMatter(@CookieValue("jwt") jwt: String?, @RequestBody @Valid matter: MatterDTO): ResponseEntity<Any> {
@@ -91,6 +103,18 @@ class MatterController(private val matterService: MatterService) {
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             ),
             ApiResponse(
                 responseCode = "404",
@@ -138,6 +162,18 @@ class MatterController(private val matterService: MatterService) {
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             ),
             ApiResponse(
                 responseCode = "404",
@@ -194,6 +230,18 @@ class MatterController(private val matterService: MatterService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not Found",
                 content = [Content(
@@ -234,6 +282,17 @@ class MatterController(private val matterService: MatterService) {
                         mediaType = "application/json",
                         array = ArraySchema(schema = Schema(implementation = Matter::class)),
                     )
+                ]
+            ), ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
                 ]
             )]
     )
