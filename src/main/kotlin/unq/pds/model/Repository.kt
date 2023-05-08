@@ -46,6 +46,14 @@ class Repository(id: Long, name: String, owner: String, url: String) {
     @OneToMany(cascade = [CascadeType.ALL])
     var pullRequests: MutableList<PullRequest> = mutableListOf()
 
+    @OneToMany(cascade = [CascadeType.ALL])
+    var commentsTeacher: MutableList<Comment> = mutableListOf()
+
+    fun addComment(comment: Comment) {
+        if (commentsTeacher.contains(comment)) throw CloneNotSupportedException("The comment has already been added")
+        commentsTeacher.add(comment)
+    }
+
     private fun validateId(id: Long) {
         if (id.toString().isNullOrBlank()) throw InvalidAttributeValueException("Id cannot be empty")
     }

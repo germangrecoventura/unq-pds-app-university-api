@@ -4,18 +4,31 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import unq.pds.api.dtos.CommentCreateRequestDTO
 import unq.pds.api.dtos.TeacherCreateRequestDTO
+import unq.pds.model.Comment
 import unq.pds.model.Teacher
 import unq.pds.model.exceptions.AlreadyRegisteredException
-import unq.pds.persistence.TeacherDAO
+import unq.pds.persistence.*
 import unq.pds.services.TeacherService
-import javax.management.InvalidAttributeValueException
 
 @Service
 @Transactional
 open class TeacherServiceImpl : TeacherService {
     @Autowired
     lateinit var teacherDAO: TeacherDAO
+
+    @Autowired
+    lateinit var studentDAO: StudentDAO
+
+    @Autowired
+    lateinit var repositoryDAO: RepositoryDAO
+
+    @Autowired
+    lateinit var commentDAO: CommentDAO
+
+    @Autowired
+    lateinit var groupDAO: GroupDAO
 
     override fun save(teacherCreateRequestDTO: TeacherCreateRequestDTO): Teacher {
         if (teacherDAO.findByEmail(teacherCreateRequestDTO.email!!).isPresent) {
@@ -29,6 +42,7 @@ open class TeacherServiceImpl : TeacherService {
         )
         return teacherDAO.save(teacher)
     }
+
 
     override fun update(teacher: Teacher): Teacher {
         var teacherRecovery = findById(teacher.getId()!!)
@@ -70,5 +84,35 @@ open class TeacherServiceImpl : TeacherService {
 
     override fun clearTeachers() {
         teacherDAO.deleteAll()
+    }
+
+    override fun addCommentToStudent(commentDTO: CommentCreateRequestDTO): Comment {
+        val studentRecovery = studentDAO.findById(commentDTO.idToComment)
+            .orElseThrow { NoSuchElementException("Not found the student with id ${commentDTO.idToComment}") }
+        val repositoryRecovery = repositoryDAO.findByName(commentDTO.nameRepository!!)
+            .orElseThrow { NoSuchElementException("Not found the repository with name ${commentDTO.nameRepository}") }
+        val project = studentRecovery.projects.find { project -> project.repositories.contains(repositoryRecovery) }
+        if (project == null) NoSuchElementException("Not found the repository with student")
+
+        val comment = Comment(commentDTO.comment!!)
+        val commentSaved = commentDAO.save(comment)
+        repositoryRecovery.addComment(commentSaved)
+        repositoryDAO.save(repositoryRecovery)
+        return commentSaved
+    }
+
+    override fun addCommentToGroup(commentDTO: CommentCreateRequestDTO): Comment {
+        val groupRecovery = groupDAO.findById(commentDTO.idToComment)
+            .orElseThrow { NoSuchElementException("Not found the group with id ${commentDTO.idToComment}") }
+        val repositoryRecovery = repositoryDAO.findByName(commentDTO.nameRepository!!)
+            .orElseThrow { NoSuchElementException("Not found the repository with name ${commentDTO.nameRepository}") }
+        val project = groupRecovery.projects.find { project -> project.repositories.contains(repositoryRecovery) }
+        if (project == null) NoSuchElementException("Not found the repository with group")
+
+        val comment = Comment(commentDTO.comment!!)
+        val commentSaved = commentDAO.save(comment)
+        repositoryRecovery.addComment(commentSaved)
+        repositoryDAO.save(repositoryRecovery)
+        return commentSaved
     }
 }

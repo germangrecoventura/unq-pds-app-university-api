@@ -29,6 +29,9 @@ class Admin(
     @Schema(example = "1")
     private var id: Long? = null
 
+    init {
+        this.validateCreate()
+    }
     private fun validateCreate() {
         validateEmail(email)
         validatePassword(password)

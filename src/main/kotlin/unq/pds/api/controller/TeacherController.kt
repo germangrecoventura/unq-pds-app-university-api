@@ -11,9 +11,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import unq.pds.api.dtos.CommentCreateRequestDTO
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.TeacherCreateRequestDTO
+import unq.pds.model.Comment
 import unq.pds.model.Teacher
+import unq.pds.services.CommissionService
 import unq.pds.services.TeacherService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -22,7 +25,10 @@ class TeacherController {
     @RestController
     @CrossOrigin
     @RequestMapping("teachers")
-    class TeacherController(private val teacherService: TeacherService) {
+    class TeacherController(
+        private val teacherService: TeacherService,
+        private val commissionService: CommissionService
+    ) {
         @PostMapping
         @Operation(
             summary = "Registers a teacher",
@@ -308,6 +314,158 @@ class TeacherController {
                 return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
             }
             return ResponseEntity(teacherService.readAll(), HttpStatus.OK)
+        }
+
+        @PostMapping("/addCommentStudent")
+        @Operation(
+            summary = "Registers a teacher",
+            description = "Registers a teacher using the email address as the unique identifier",
+        )
+        @ApiResponses(
+            value = [
+                ApiResponse(
+                    responseCode = "200",
+                    description = "Success",
+                    content = [
+                        Content(
+                            mediaType = "application/json",
+                            schema = Schema(implementation = Comment::class),
+                        )
+                    ]
+                ),
+                ApiResponse(
+                    responseCode = "400",
+                    description = "Bad request",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"additionalProp1\": \"string\",\n" +
+                                    "  \"additionalProp2\": \"string\",\n" +
+                                    "  \"additionalProp3\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )]
+                ), ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
+                ),
+                ApiResponse(
+                    responseCode = "404",
+                    description = "Not Found",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
+                )]
+        )
+        fun addCommentToStudent(
+            @CookieValue("jwt") jwt: String?,
+            @RequestBody @Valid comment: CommentCreateRequestDTO
+        ): ResponseEntity<Any> {
+            if (jwt.isNullOrBlank()) {
+                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            }
+            val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+            return if (body["role"] == "STUDENT") ResponseEntity(
+                MessageDTO("You do not have permissions to access this resource"),
+                HttpStatus.UNAUTHORIZED
+            ) else if (body["role"] == "TEACHER" && commissionService.thereIsACommissionWithATeacherWithEmailAndStudentWithId(
+                    body.issuer,
+                    comment.idToComment!!
+                )
+            ) ResponseEntity(
+                MessageDTO("You do not have permissions to access this resource"),
+                HttpStatus.UNAUTHORIZED
+            )
+            else ResponseEntity(teacherService.addCommentToStudent(comment), HttpStatus.OK)
+        }
+
+        @PostMapping("/addCommentGroup")
+        @Operation(
+            summary = "Registers a teacher",
+            description = "Registers a teacher using the email address as the unique identifier",
+        )
+        @ApiResponses(
+            value = [
+                ApiResponse(
+                    responseCode = "200",
+                    description = "Success",
+                    content = [
+                        Content(
+                            mediaType = "application/json",
+                            schema = Schema(implementation = Comment::class),
+                        )
+                    ]
+                ),
+                ApiResponse(
+                    responseCode = "400",
+                    description = "Bad request",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"additionalProp1\": \"string\",\n" +
+                                    "  \"additionalProp2\": \"string\",\n" +
+                                    "  \"additionalProp3\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )]
+                ), ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
+                ),
+                ApiResponse(
+                    responseCode = "404",
+                    description = "Not Found",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
+                )]
+        )
+        fun addCommentToGroup(
+            @CookieValue("jwt") jwt: String?,
+            @RequestBody @Valid comment: CommentCreateRequestDTO
+        ): ResponseEntity<Any> {
+            if (jwt.isNullOrBlank()) {
+                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            }
+            val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+            return if (body["role"] == "STUDENT") ResponseEntity(
+                MessageDTO("You do not have permissions to access this resource"),
+                HttpStatus.UNAUTHORIZED
+            ) else if (body["role"] == "TEACHER" && commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(
+                    body.issuer,
+                    comment.idToComment!!
+                )
+            ) ResponseEntity(
+                MessageDTO("You do not have permissions to access this resource"),
+                HttpStatus.UNAUTHORIZED
+            )
+            else ResponseEntity(teacherService.addCommentToGroup(comment), HttpStatus.OK)
         }
     }
 }
