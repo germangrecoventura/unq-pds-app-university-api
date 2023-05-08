@@ -210,7 +210,7 @@ open class RepositoryServiceImpl : RepositoryService {
         operation: String
     ): ResponseEntity<String> {
         validation(ownerRepository, nameRepository)
-        val url = "https://api.github.com/repos/$ownerRepository/$nameRepository/$operation?state=all&direction=asc"
+        val url = "https://api.github.com/repos/$ownerRepository/$nameRepository/$operation?state=all"
         return makeRequest(url, token)
     }
 
