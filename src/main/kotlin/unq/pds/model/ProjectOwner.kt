@@ -14,7 +14,7 @@ abstract class ProjectOwner {
     @Schema(example = "1")
     private var id: Long? = null
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     var projects: MutableSet<Project> = mutableSetOf()
 
     fun addProject(project: Project) {

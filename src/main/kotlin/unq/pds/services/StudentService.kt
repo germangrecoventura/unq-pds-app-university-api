@@ -5,7 +5,7 @@ import unq.pds.model.Student
 
 interface StudentService {
     fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student
-    fun update(student: Student): Student
+    fun update(student: StudentCreateRequestDTO): Student
     fun deleteById(id: Long)
     fun count(): Int
     fun findById(id: Long): Student

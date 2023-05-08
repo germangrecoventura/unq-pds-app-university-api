@@ -22,11 +22,6 @@ open class CommissionServiceImpl : CommissionService {
         return commissionDAO.save(commission)
     }
 
-    override fun update(commission: Commission): Commission {
-        if (commission.getId() != null && commissionDAO.existsById(commission.getId()!!)) return commissionDAO.save(commission)
-         else throw NoSuchElementException("Commission does not exist")
-    }
-
     override fun read(commissionId: Long): Commission {
         return commissionDAO.findById(commissionId).orElseThrow { NoSuchElementException("There is no commission with that id") }
     }
@@ -41,7 +36,7 @@ open class CommissionServiceImpl : CommissionService {
         val student = studentService.findById(studentId)
         commission.addStudent(student)
 
-        return this.update(commission)
+        return commissionDAO.save(commission)
     }
 
     override fun removeStudent(commissionId: Long, studentId: Long): Commission {
@@ -49,7 +44,7 @@ open class CommissionServiceImpl : CommissionService {
         val student = studentService.findById(studentId)
         commission.removeStudent(student)
 
-        return this.update(commission)
+        return commissionDAO.save(commission)
     }
 
     override fun addTeacher(commissionId: Long, teacherId: Long): Commission {
@@ -57,7 +52,7 @@ open class CommissionServiceImpl : CommissionService {
         val teacher = teacherService.findById(teacherId)
         commission.addTeacher(teacher)
 
-        return this.update(commission)
+        return commissionDAO.save(commission)
     }
 
     override fun removeTeacher(commissionId: Long, teacherId: Long): Commission {
@@ -65,7 +60,7 @@ open class CommissionServiceImpl : CommissionService {
         val teacher = teacherService.findById(teacherId)
         commission.removeTeacher(teacher)
 
-        return this.update(commission)
+        return commissionDAO.save(commission)
     }
 
     override fun addGroup(commissionId: Long, groupId: Long): Commission {
@@ -73,7 +68,7 @@ open class CommissionServiceImpl : CommissionService {
         val group = groupService.read(groupId)
         commission.addGroup(group)
 
-        return this.update(commission)
+        return commissionDAO.save(commission)
     }
 
     override fun removeGroup(commissionId: Long, groupId: Long): Commission {
@@ -81,7 +76,15 @@ open class CommissionServiceImpl : CommissionService {
         val group = groupService.read(groupId)
         commission.removeGroup(group)
 
-        return this.update(commission)
+        return commissionDAO.save(commission)
+    }
+
+    override fun hasATeacherWithEmail(commissionId: Long, email: String): Boolean {
+        return commissionDAO.hasATeacherWithEmail(commissionId, email)
+    }
+
+    override fun thereIsACommissionWithATeacherWithEmailAndGroupWithId(email: String, groupId: Long): Boolean {
+        return commissionDAO.thereIsACommissionWithATeacherWithEmailAndGroupWithId(email, groupId)
     }
 
     override fun readAll(): List<Commission> {
