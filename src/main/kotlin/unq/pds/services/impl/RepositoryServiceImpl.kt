@@ -142,6 +142,7 @@ open class RepositoryServiceImpl : RepositoryService {
             issue.status = i.path("state").asText()
             list.add(issue)
         }
+        list.sortBy { it.id }
         return list
     }
 
@@ -164,6 +165,7 @@ open class RepositoryServiceImpl : RepositoryService {
             pr.title = i.path("title").asText()
             list.add(pr)
         }
+        list.sortBy { it.id }
         return list
     }
 
@@ -232,6 +234,7 @@ open class RepositoryServiceImpl : RepositoryService {
             commit.url = i.path("html_url").asText()
             list.add(commit)
         }
+        list.sortBy { it.nodeId }
         return list
     }
 
