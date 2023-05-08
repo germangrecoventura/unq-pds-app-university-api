@@ -164,7 +164,7 @@ class TeacherController {
             return if (body["role"] == "STUDENT") ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" && body["id"] != teacher.getId()) {
+            ) else if (body["role"] == "TEACHER" && body["id"].toString().toLong() != teacher.getId()) {
                 ResponseEntity(
                     MessageDTO("You do not have permissions to update teachers except yourself"),
                     HttpStatus.UNAUTHORIZED
