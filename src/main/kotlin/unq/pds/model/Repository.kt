@@ -46,11 +46,10 @@ class Repository(id: Long, name: String, owner: String, url: String) {
     @OneToMany(cascade = [CascadeType.ALL])
     var pullRequests: MutableList<PullRequest> = mutableListOf()
 
-    @OneToMany(cascade = [CascadeType.ALL])
+    @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     var commentsTeacher: MutableList<Comment> = mutableListOf()
 
     fun addComment(comment: Comment) {
-        if (commentsTeacher.contains(comment)) throw CloneNotSupportedException("The comment has already been added")
         commentsTeacher.add(comment)
     }
 

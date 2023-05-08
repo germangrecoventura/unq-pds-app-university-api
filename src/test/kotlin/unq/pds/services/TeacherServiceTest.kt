@@ -6,6 +6,11 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
+import unq.pds.model.builder.GroupBuilder.Companion.aGroup
+import unq.pds.model.builder.ProjectBuilder.Companion.aProject
+import unq.pds.services.builder.BuilderCommentCreateDTO.Companion.aCommentDTO
+import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
+import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
 import unq.pds.services.impl.TeacherServiceImpl
 import javax.management.InvalidAttributeValueException
@@ -15,8 +20,23 @@ class TeacherServiceTest {
 
     @Autowired
     lateinit var teacherService: TeacherServiceImpl
+
+    @Autowired
+    lateinit var studentService: StudentService
+
+    @Autowired
+    lateinit var groupService: GroupService
+
     @Autowired
     lateinit var initializer: Initializer
+
+    private var token: String = ""
+
+    @Autowired
+    lateinit var repositoryService: RepositoryService
+
+    @Autowired
+    lateinit var projectService: ProjectService
 
     @BeforeEach
     fun tearDown() {
@@ -299,4 +319,153 @@ class TeacherServiceTest {
         Assertions.assertTrue(teachers.any { it.getEmail() == "german@gmail.com" })
         Assertions.assertTrue(teachers.any { it.getEmail() == "germanF@gmail.com" })
     }
+
+    @Test
+    fun `should throw an exception when the student to add the comment does not exist`() {
+
+        val thrown: RuntimeException =
+            Assertions.assertThrows(RuntimeException::class.java) {
+                teacherService.addCommentToStudent(
+                    aCommentDTO().withId(
+                        -1
+                    ).build()
+                )
+            }
+
+        Assertions.assertEquals(
+            "Not found the student with id -1",
+            thrown.message
+        )
+    }
+
+    @Test
+    fun `should throw an exception when the repository to add the comment does not exist in student`() {
+        val student = studentService.save(aStudentDTO().build())
+        val thrown: RuntimeException =
+            Assertions.assertThrows(RuntimeException::class.java) {
+                teacherService.addCommentToStudent(
+                    aCommentDTO().withId(
+                        student.getId()
+                    ).withNameRepository("prueba").build()
+                )
+            }
+
+        Assertions.assertEquals(
+            "Not found the repository with name prueba",
+            thrown.message
+        )
+    }
+
+    @Test
+    fun `should throw an exception when the student doesn't have any project with the repository`() {
+        val student = studentService.save(aStudentDTO().withTokenGithub(token).build())
+        val repository = repositoryService.save(aRepositoryDTO().build())
+
+
+        val thrown: RuntimeException =
+            Assertions.assertThrows(RuntimeException::class.java) {
+                teacherService.addCommentToStudent(
+                    aCommentDTO().withId(
+                        student.getId()
+                    ).withNameRepository(repository.name).build()
+                )
+            }
+
+        Assertions.assertEquals(
+            "Not found the repository with student",
+            thrown.message
+        )
+    }
+
+    @Test
+    fun `should add a comment to a project with an existing user repository`() {
+        val student = studentService.save(aStudentDTO().withTokenGithub(token).build())
+        val repository = repositoryService.save(aRepositoryDTO().build())
+        var project = projectService.save(aProject().build())
+        project = projectService.addRepository(project.getId()!!, repository.id)
+        studentService.addProject(student.getId()!!, project.getId()!!)
+        teacherService.addCommentToStudent(
+            aCommentDTO().withId(
+                student.getId()
+            ).withNameRepository(repository.name).build()
+        )
+        val repositoryFind = repositoryService.findById(repository.id)
+        Assertions.assertTrue(repositoryFind.commentsTeacher.size == 1)
+    }
+
+    @Test
+    fun `should throw an exception when the group to add the comment does not exist`() {
+
+        val thrown: RuntimeException =
+            Assertions.assertThrows(RuntimeException::class.java) {
+                teacherService.addCommentToGroup(
+                    aCommentDTO().withId(
+                        -1
+                    ).build()
+                )
+            }
+
+        Assertions.assertEquals(
+            "Not found the group with id -1",
+            thrown.message
+        )
+    }
+
+    @Test
+    fun `should throw an exception when the repository to add the comment does not exist in group`() {
+        val group = groupService.save(aGroup().build())
+        val thrown: RuntimeException =
+            Assertions.assertThrows(RuntimeException::class.java) {
+                teacherService.addCommentToGroup(
+                    aCommentDTO().withId(
+                        group.getId()
+                    ).withNameRepository("prueba").build()
+                )
+            }
+
+        Assertions.assertEquals(
+            "Not found the repository with name prueba",
+            thrown.message
+        )
+    }
+
+    @Test
+    fun `should throw an exception when the group doesn't have any project with the repository`() {
+        val group = groupService.save(aGroup().build())
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        val repository = repositoryService.save(aRepositoryDTO().build())
+
+
+        val thrown: RuntimeException =
+            Assertions.assertThrows(RuntimeException::class.java) {
+                teacherService.addCommentToGroup(
+                    aCommentDTO().withId(
+                        group.getId()
+                    ).withNameRepository(repository.name).build()
+                )
+            }
+
+        Assertions.assertEquals(
+            "Not found the repository with group",
+            thrown.message
+        )
+    }
+
+    @Test
+    fun `should add a comment to a project with an existing group repository`() {
+        val group = groupService.save(aGroup().build())
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        val repository = repositoryService.save(aRepositoryDTO().build())
+        var project = projectService.save(aProject().build())
+        project = projectService.addRepository(project.getId()!!, repository.id)
+        groupService.addProject(group.getId()!!, project.getId()!!)
+        teacherService.addCommentToGroup(
+            aCommentDTO().withId(
+                group.getId()
+            ).withNameRepository(repository.name).build()
+        )
+        val repositoryFind = repositoryService.findById(repository.id)
+        Assertions.assertTrue(repositoryFind.commentsTeacher.size == 1)
+    }
+
 }

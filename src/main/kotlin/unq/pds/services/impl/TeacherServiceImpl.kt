@@ -91,8 +91,8 @@ open class TeacherServiceImpl : TeacherService {
             .orElseThrow { NoSuchElementException("Not found the student with id ${commentDTO.idToComment}") }
         val repositoryRecovery = repositoryDAO.findByName(commentDTO.nameRepository!!)
             .orElseThrow { NoSuchElementException("Not found the repository with name ${commentDTO.nameRepository}") }
-        val project = studentRecovery.projects.find { project -> project.repositories.contains(repositoryRecovery) }
-        if (project == null) NoSuchElementException("Not found the repository with student")
+        studentRecovery.projects.find { project -> project.repositories.contains(repositoryRecovery) }
+            ?: throw NoSuchElementException("Not found the repository with student")
 
         val comment = Comment(commentDTO.comment!!)
         val commentSaved = commentDAO.save(comment)
@@ -106,8 +106,8 @@ open class TeacherServiceImpl : TeacherService {
             .orElseThrow { NoSuchElementException("Not found the group with id ${commentDTO.idToComment}") }
         val repositoryRecovery = repositoryDAO.findByName(commentDTO.nameRepository!!)
             .orElseThrow { NoSuchElementException("Not found the repository with name ${commentDTO.nameRepository}") }
-        val project = groupRecovery.projects.find { project -> project.repositories.contains(repositoryRecovery) }
-        if (project == null) NoSuchElementException("Not found the repository with group")
+        groupRecovery.projects.find { project -> project.repositories.contains(repositoryRecovery) }
+            ?: throw NoSuchElementException("Not found the repository with group")
 
         val comment = Comment(commentDTO.comment!!)
         val commentSaved = commentDAO.save(comment)

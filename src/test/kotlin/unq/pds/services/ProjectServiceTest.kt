@@ -17,8 +17,10 @@ class ProjectServiceTest {
 
     @Autowired
     lateinit var projectService: ProjectService
+
     @Autowired
     lateinit var repositoryService: RepositoryService
+
     @Autowired
     lateinit var initializer: Initializer
 

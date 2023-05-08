@@ -19,9 +19,7 @@ import unq.pds.model.exceptions.NotAuthenticatedException
 import unq.pds.persistence.RepositoryDAO
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.RepositoryService
-import java.util.*
 import javax.management.InvalidAttributeValueException
-import kotlin.NoSuchElementException
 
 
 @Service
@@ -88,6 +86,7 @@ open class RepositoryServiceImpl : RepositoryService {
         repository.tags = tags!!
         repository.branches = branches!!
         repository.commits = commits!!
+        repository.commentsTeacher = repositoryDAO.commentsFfromId(repositoryFind!!.get("id").asLong()).toMutableList()
 
         token = ""
 
@@ -160,9 +159,9 @@ open class RepositoryServiceImpl : RepositoryService {
         for (i in root) {
             val pr = PullRequest()
             pr.id = i.path("id").asInt()
-            var url = i.path("url").asText()
-            pr.url = "https://github.com/${url.substring(29, url.length)}"
+            pr.url = i.path("html_url").asText()
             pr.status = i.path("state").asText()
+            pr.title = i.path("title").asText()
             list.add(pr)
         }
         return list
