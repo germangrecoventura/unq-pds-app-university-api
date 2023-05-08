@@ -17,4 +17,15 @@ interface GroupDAO : JpaRepository<Group, Long> {
         """
     )
     fun projectOwnerOfTheProject(project: Project): Optional<ProjectOwner>
+
+    @Query(
+        """
+            SELECT COUNT(g) = 1
+            FROM Group g
+            JOIN g.projects ps
+            JOIN g.members m
+            WHERE ps.id = ?1 AND m.id = ?2
+        """
+    )
+    fun thereIsAGroupWithThisProjectAndThisMember(projectId: Long, studentId: Long): Boolean
 }
