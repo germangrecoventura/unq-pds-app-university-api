@@ -88,7 +88,7 @@ open class CommissionServiceImpl : CommissionService {
     }
 
     override fun thereIsACommissionWithATeacherWithEmailAndStudentWithId(email: String, studentId: Long): Boolean {
-        return commissionDAO.thereIsACommissionWithATeacherWithEmailAndGroupWithId(email, studentId)
+        return commissionDAO.thereIsACommissionWithATeacherWithEmailAndStudentWithId(email, studentId)
     }
 
     override fun readAll(): List<Commission> {
