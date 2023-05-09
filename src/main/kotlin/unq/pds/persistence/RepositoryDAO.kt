@@ -11,11 +11,11 @@ interface RepositoryDAO : JpaRepository<Repository, Long>{
 
     @Query(
         """
-     SELECT cs
-     FROM Repository r
-     JOIN r.commentsTeacher cs
-     WHERE r.id = ?1
-"""
+            SELECT cs
+            FROM Repository r
+            JOIN r.commentsTeacher cs
+            WHERE r.id = ?1
+        """
     )
-    fun commentsFfromId(id:Long): List<Comment>
+    fun commentsFromId(id:Long): List<Comment>
 }

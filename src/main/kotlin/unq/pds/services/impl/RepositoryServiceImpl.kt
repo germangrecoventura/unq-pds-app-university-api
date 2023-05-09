@@ -86,7 +86,7 @@ open class RepositoryServiceImpl : RepositoryService {
         repository.tags = tags!!
         repository.branches = branches!!
         repository.commits = commits!!
-        repository.commentsTeacher = repositoryDAO.commentsFfromId(repositoryFind!!.get("id").asLong()).toMutableList()
+        repository.commentsTeacher = repositoryDAO.commentsFromId(repository.id).toMutableList()
 
         token = ""
 

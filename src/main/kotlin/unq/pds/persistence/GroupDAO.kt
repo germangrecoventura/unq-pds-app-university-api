@@ -37,4 +37,15 @@ interface GroupDAO : JpaRepository<Group, Long> {
         """
     )
     fun hasAMemberWithEmail(groupId: Long, email: String): Boolean
+
+    @Query(
+        """
+            SELECT COUNT(g) = 1
+            FROM Group g
+            JOIN g.projects ps
+            JOIN ps.repositories rs
+            WHERE g.id = ?1 AND rs.id = ?2
+        """
+    )
+    fun hasThisRepository(groupId: Long, repositoryId: Long): Boolean
 }

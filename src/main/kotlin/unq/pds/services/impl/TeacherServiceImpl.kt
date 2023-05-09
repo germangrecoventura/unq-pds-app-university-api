@@ -87,32 +87,30 @@ open class TeacherServiceImpl : TeacherService {
     }
 
     override fun addCommentToStudent(commentDTO: CommentCreateRequestDTO): Comment {
-        val studentRecovery = studentDAO.findById(commentDTO.idToComment)
+        val studentRecovery = studentDAO.findById(commentDTO.idToComment!!)
             .orElseThrow { NoSuchElementException("Not found the student with id ${commentDTO.idToComment}") }
         val repositoryRecovery = repositoryDAO.findByName(commentDTO.nameRepository!!)
             .orElseThrow { NoSuchElementException("Not found the repository with name ${commentDTO.nameRepository}") }
-        studentRecovery.projects.find { project -> project.repositories.contains(repositoryRecovery) }
-            ?: throw NoSuchElementException("Not found the repository with student")
+        if (!studentDAO.isHisRepository(studentRecovery.getId()!!, repositoryRecovery.id))
+            throw NoSuchElementException("Not found the repository with student")
 
-        val comment = Comment(commentDTO.comment!!)
-        val commentSaved = commentDAO.save(comment)
-        repositoryRecovery.addComment(commentSaved)
+        val comment = commentDAO.save(Comment(commentDTO.comment!!))
+        repositoryRecovery.addComment(comment)
         repositoryDAO.save(repositoryRecovery)
-        return commentSaved
+        return comment
     }
 
     override fun addCommentToGroup(commentDTO: CommentCreateRequestDTO): Comment {
-        val groupRecovery = groupDAO.findById(commentDTO.idToComment)
+        val groupRecovery = groupDAO.findById(commentDTO.idToComment!!)
             .orElseThrow { NoSuchElementException("Not found the group with id ${commentDTO.idToComment}") }
         val repositoryRecovery = repositoryDAO.findByName(commentDTO.nameRepository!!)
             .orElseThrow { NoSuchElementException("Not found the repository with name ${commentDTO.nameRepository}") }
-        groupRecovery.projects.find { project -> project.repositories.contains(repositoryRecovery) }
-            ?: throw NoSuchElementException("Not found the repository with group")
+        if (!groupDAO.hasThisRepository(groupRecovery.getId()!!, repositoryRecovery.id))
+            throw NoSuchElementException("Not found the repository with group")
 
-        val comment = Comment(commentDTO.comment!!)
-        val commentSaved = commentDAO.save(comment)
-        repositoryRecovery.addComment(commentSaved)
+        val comment = commentDAO.save(Comment(commentDTO.comment!!))
+        repositoryRecovery.addComment(comment)
         repositoryDAO.save(repositoryRecovery)
-        return commentSaved
+        return comment
     }
 }
