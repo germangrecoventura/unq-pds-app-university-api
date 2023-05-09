@@ -381,7 +381,7 @@ class TeacherController {
             return if (body["role"] == "STUDENT") ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" && commissionService.thereIsACommissionWithATeacherWithEmailAndStudentWithId(
+            ) else if (body["role"] == "TEACHER" && !commissionService.thereIsACommissionWithATeacherWithEmailAndStudentWithId(
                     body.issuer,
                     comment.idToComment!!
                 )
@@ -457,7 +457,7 @@ class TeacherController {
             return if (body["role"] == "STUDENT") ResponseEntity(
                 MessageDTO("You do not have permissions to access this resource"),
                 HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" && commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(
+            ) else if (body["role"] == "TEACHER" && !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(
                     body.issuer,
                     comment.idToComment!!
                 )
