@@ -318,8 +318,8 @@ class TeacherController {
 
         @PostMapping("/addCommentStudent")
         @Operation(
-            summary = "Registers a teacher",
-            description = "Registers a teacher using the email address as the unique identifier",
+            summary = "Add comment to student",
+            description = "Add comment to student",
         )
         @ApiResponses(
             value = [
@@ -394,8 +394,8 @@ class TeacherController {
 
         @PostMapping("/addCommentGroup")
         @Operation(
-            summary = "Registers a teacher",
-            description = "Registers a teacher using the email address as the unique identifier",
+            summary = "Add comment to group",
+            description = "Add comment to group",
         )
         @ApiResponses(
             value = [
