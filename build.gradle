@@ -57,6 +57,20 @@ sonarqube {
         property "sonar.projectKey", "germangrecoventura_unq-pds-app-university-api"
         property "sonar.organization", "germangrecoventura"
         property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.kotlin.compiler.version", "1.7.22"
+        property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir\\reports\\jacoco\\test\\jacocoTestReport.xml"
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.8"
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.required.set(false)
     }
 }
 
