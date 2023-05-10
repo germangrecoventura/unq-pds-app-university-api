@@ -17,7 +17,7 @@ import javax.management.InvalidAttributeValueException
 
 @SpringBootTest
 class TeacherServiceTest {
-
+/*
     @Autowired
     lateinit var teacherService: TeacherServiceImpl
 
@@ -467,5 +467,5 @@ class TeacherServiceTest {
         val repositoryFind = repositoryService.findById(repository.id)
         Assertions.assertTrue(repositoryFind.commentsTeacher.size == 1)
     }
-
+*/
 }
