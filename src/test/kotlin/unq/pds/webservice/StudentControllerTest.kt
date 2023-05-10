@@ -934,7 +934,7 @@ class StudentControllerTest {
 
     private fun cookiesTeacher(): Cookie? {
         val teacher = teacherService.save(aTeacherDTO().build())
-        val login = aLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").withRole("TEACHER").build()
+        val login = aLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -947,7 +947,7 @@ class StudentControllerTest {
 
     private fun cookiesStudent(): Cookie? {
         val student = studentService.save(aStudentDTO().build())
-        val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").withRole("STUDENT").build()
+        val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -960,7 +960,7 @@ class StudentControllerTest {
 
     private fun cookiesAdmin(): Cookie? {
         val admin = adminService.save(aAdminDTO().build())
-        val login = aLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").withRole("ADMIN").build()
+        val login = aLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)

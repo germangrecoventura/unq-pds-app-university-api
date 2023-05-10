@@ -10,7 +10,4 @@ class LoginDTO {
 
     @NotBlank(message = "The password cannot be blank")
     var password: String? = null
-
-    @NotBlank(message = "The role cannot be blank")
-    var role: String? = null
 }

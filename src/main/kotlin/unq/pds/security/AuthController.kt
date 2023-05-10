@@ -11,9 +11,13 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
+import unq.pds.model.Admin
+import unq.pds.model.Student
+import unq.pds.model.Teacher
 import unq.pds.services.AdminService
 import unq.pds.services.StudentService
 import unq.pds.services.TeacherService
+import unq.pds.services.UserService
 import java.util.*
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletResponse
@@ -24,7 +28,8 @@ import javax.validation.Valid
 class AuthController(
     private val studentService: StudentService,
     private val teacherService: TeacherService,
-    private val adminService: AdminService
+    private val adminService: AdminService,
+    private val userService: UserService
 ) {
 
     @PostMapping("/login")
@@ -72,11 +77,19 @@ class AuthController(
             )]
     )
     fun login(@Valid @RequestBody body: LoginDTO, response: HttpServletResponse): ResponseEntity<Any> {
-        return when (body.role) {
-            "STUDENT" -> studentLogin(body, response)
-            "TEACHER" -> teacherLogin(body, response)
-            "ADMIN" -> adminLogin(body, response)
-            else -> return ResponseEntity(MessageDTO("It is not an allowed role in the system"), HttpStatus.BAD_REQUEST)
+        val student = userService.findStudent(body.email!!)
+        if (student.isPresent) {
+            return studentLogin(student.get(), body.password!!, response)
+        }
+        val teacher = userService.findTeacher(body.email!!)
+        if (teacher.isPresent) {
+            return teacherLogin(teacher.get(), body.password!!, response)
+        }
+        val admin = userService.findAdmin(body.email!!)
+        return if (admin.isEmpty) {
+            ResponseEntity(MessageDTO("Not found the user with email ${body.email}"), HttpStatus.UNAUTHORIZED)
+        } else {
+            adminLogin(admin.get(), body.password!!, response)
         }
     }
 
@@ -191,13 +204,19 @@ class AuthController(
             "STUDENT" -> ResponseEntity(studentService.findByEmail(body.issuer), HttpStatus.OK)
             "TEACHER" -> ResponseEntity(teacherService.findByEmail(body.issuer), HttpStatus.OK)
             "ADMIN" -> ResponseEntity(adminService.findByEmail(body.issuer), HttpStatus.OK)
-            else -> return ResponseEntity(MessageDTO("It is not an allowed role in the system"), HttpStatus.BAD_REQUEST)
+            else -> return ResponseEntity(
+                MessageDTO("It is not an allowed role in the system"),
+                HttpStatus.BAD_REQUEST
+            )
         }
     }
 
-    private fun studentLogin(body: LoginDTO, response: HttpServletResponse): ResponseEntity<Any> {
-        val student = studentService.findByEmail(body.email!!)
-        if (!student.comparePassword(body.password!!)) {
+    private fun studentLogin(
+        student: Student,
+        password: String,
+        response: HttpServletResponse
+    ): ResponseEntity<Any> {
+        if (!student.comparePassword(password)) {
             return ResponseEntity(MessageDTO("Password is incorrect"), HttpStatus.UNAUTHORIZED)
         }
         val issuer = student.getEmail().toString()
@@ -209,9 +228,12 @@ class AuthController(
     }
 
 
-    private fun teacherLogin(body: LoginDTO, response: HttpServletResponse): ResponseEntity<Any> {
-        val teacher = teacherService.findByEmail(body.email!!)
-        if (!teacher.comparePassword(body.password!!)) {
+    private fun teacherLogin(
+        teacher: Teacher,
+        password: String,
+        response: HttpServletResponse
+    ): ResponseEntity<Any> {
+        if (!teacher.comparePassword(password)) {
             return ResponseEntity(MessageDTO("Password is incorrect"), HttpStatus.UNAUTHORIZED)
         }
         val issuer = teacher.getEmail()
@@ -221,9 +243,8 @@ class AuthController(
         return ResponseEntity(MessageDTO("You are logged in correctly"), HttpStatus.OK)
     }
 
-    private fun adminLogin(body: LoginDTO, response: HttpServletResponse): ResponseEntity<Any> {
-        val admin = adminService.findByEmail(body.email!!)
-        if (!admin.comparePassword(body.password!!)) {
+    private fun adminLogin(admin: Admin, password: String, response: HttpServletResponse): ResponseEntity<Any> {
+        if (!admin.comparePassword(password)) {
             return ResponseEntity(MessageDTO("Password is incorrect"), HttpStatus.UNAUTHORIZED)
         }
         val issuer = admin.getEmail()!!
