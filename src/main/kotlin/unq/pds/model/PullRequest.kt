@@ -14,4 +14,6 @@ class PullRequest {
     var url = ""
     @Column
     var status = ""
+    @Column
+    var title = ""
 }

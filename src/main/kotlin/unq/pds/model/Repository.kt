@@ -46,6 +46,13 @@ class Repository(id: Long, name: String, owner: String, url: String) {
     @OneToMany(cascade = [CascadeType.ALL])
     var pullRequests: MutableList<PullRequest> = mutableListOf()
 
+    @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+    var commentsTeacher: MutableList<Comment> = mutableListOf()
+
+    fun addComment(comment: Comment) {
+        commentsTeacher.add(comment)
+    }
+
     private fun validateId(id: Long) {
         if (id.toString().isNullOrBlank()) throw InvalidAttributeValueException("Id cannot be empty")
     }

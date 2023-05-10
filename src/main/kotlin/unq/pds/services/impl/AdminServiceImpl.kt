@@ -9,6 +9,7 @@ import unq.pds.model.Admin
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.persistence.AdminDAO
 import unq.pds.services.AdminService
+import unq.pds.services.UserService
 
 @Service
 @Transactional
@@ -16,10 +17,11 @@ open class AdminServiceImpl : AdminService {
     @Autowired
     lateinit var adminDAO: AdminDAO
 
+    @Autowired
+    lateinit var userService: UserService
+
     override fun save(adminCreateRequestDTO: AdminCreateRequestDTO): Admin {
-        if (adminDAO.findByEmail(adminCreateRequestDTO.email!!).isPresent) {
-            throw AlreadyRegisteredException("email")
-        }
+        if (userService.theEmailIsRegistered(adminCreateRequestDTO.email!!)) throw AlreadyRegisteredException("email")
         val admin = Admin(
             adminCreateRequestDTO.email!!,
             BCryptPasswordEncoder().encode(adminCreateRequestDTO.password)
@@ -30,6 +32,9 @@ open class AdminServiceImpl : AdminService {
     override fun update(admin: Admin): Admin {
         var adminRecovery = findById(admin.getId()!!)
         var adminWithEmail = adminDAO.findByEmail(admin.getEmail()!!)
+        if (userService.theEmailIsRegistered(admin.getEmail()!!) && !adminWithEmail.isPresent) {
+            throw AlreadyRegisteredException("email")
+        }
         if (adminWithEmail.isPresent && adminRecovery.getId() != adminWithEmail.get().getId()) {
             throw AlreadyRegisteredException("email")
         }

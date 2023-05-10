@@ -7,7 +7,6 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
-import unq.pds.model.builder.BuilderRepository.Companion.aRepository
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO

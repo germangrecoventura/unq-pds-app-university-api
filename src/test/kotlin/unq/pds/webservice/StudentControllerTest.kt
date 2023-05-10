@@ -19,7 +19,7 @@ import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.services.AdminService
 import unq.pds.services.ProjectService
 import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
-import unq.pds.services.builder.BuilderLoginDTO
+import unq.pds.services.builder.BuilderLoginDTO.Companion.aLoginDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
 import unq.pds.services.impl.StudentServiceImpl
@@ -55,6 +55,16 @@ class StudentControllerTest {
     fun setUp() {
         initializer.cleanDataBase()
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
+    }
+
+    @Test
+    fun `should throw a 401 status when trying to create a student and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aStudentDTO().withEmail("prueba@gmail.com").build()))
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -299,6 +309,14 @@ class StudentControllerTest {
     }
 
     @Test
+    fun `should throw a 401 status when trying to get a student and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
+                .param("id", "1")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
     fun `should throw a 200 status when a student does have permissions to get student if exist`() {
         val cookie = cookiesStudent()
         var student = studentService.save(aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").build())
@@ -312,7 +330,7 @@ class StudentControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to get student if exist`() {
         val cookie = cookiesTeacher()
-        var student = studentService.save(aStudentDTO().build())
+        var student = studentService.save(aStudentDTO().withEmail("pruebaa@gmail.com").build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
                 .param("id", student.getId().toString()).cookie(cookie)
@@ -332,11 +350,41 @@ class StudentControllerTest {
     }
 
     @Test
+    fun `should throw a 400 status when a student are looking for a student with id null`() {
+        val cookie = cookiesStudent()
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
+                .param("id", null).cookie(cookie)
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `should throw a 400 status when a teacher are looking for a student with id null`() {
+        val cookie = cookiesTeacher()
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
+                .param("id", null).cookie(cookie)
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `should throw a 400 status when a admin are looking for a student with id null`() {
+        val cookie = cookiesAdmin()
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
+                .param("id", null).cookie(cookie)
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
     fun `should throw a 404 status when a student does have permissions to get student if not exist`() {
         val cookie = cookiesStudent()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
-                .param("id", (-1).toString()).cookie(cookie)
+                .param("id", "-1").cookie(cookie)
         )
             .andExpect(status().isNotFound)
     }
@@ -346,7 +394,7 @@ class StudentControllerTest {
         val cookie = cookiesTeacher()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
-                .param("id", (-1).toString()).cookie(cookie)
+                .param("id", "-1").cookie(cookie)
         )
             .andExpect(status().isNotFound)
     }
@@ -356,9 +404,19 @@ class StudentControllerTest {
         val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
-                .param("id", (-1).toString()).cookie(cookie)
+                .param("id", "-1").cookie(cookie)
         )
             .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `should throw a 401 status when trying to update a student and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aStudent().build()))
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -424,16 +482,16 @@ class StudentControllerTest {
         val cookie = cookiesAdmin()
 
         var student = studentService.save(aStudentDTO().build())
+        val studentToUpdate = aStudentDTO().withId(student.getId()).build()
         mockMvc.perform(
             MockMvcRequestBuilders.put("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{\n" +
-                            "  \"id\": ${student.getId()},\n" +
-                            "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"projects\": \"${student.projects}\",\n" +
+                            "  \"id\": ${studentToUpdate.id},\n" +
+                            "  \"email\": \"${studentToUpdate.email}\",\n" +
                             "  \"firstName\": ${null},\n" +
-                            "  \"lastName\": \"${student.getLastName()}\"\n" +
+                            "  \"lastName\": \"${studentToUpdate.lastName}\"\n" +
                             "}"
                 ).cookie(cookie)
                 .accept("application/json")
@@ -726,6 +784,13 @@ class StudentControllerTest {
         ).andExpect(status().isBadRequest)
     }
 
+    @Test
+    fun `should throw a 401 status when trying to delete a student and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.delete("/students").accept(MediaType.APPLICATION_JSON)
+                .param("id", "1")
+        ).andExpect(status().isUnauthorized)
+    }
 
     @Test
     fun `should throw a 401 status when a student does not have permissions to delete students`() {
@@ -763,11 +828,21 @@ class StudentControllerTest {
     }
 
     @Test
+    fun `should throw a 400 status when admin deleting a student with id null`() {
+        val cookie = cookiesAdmin()
+        mockMvc.perform(
+            MockMvcRequestBuilders.delete("/students").accept(MediaType.APPLICATION_JSON)
+                .param("id", null).cookie(cookie)
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
     fun `should throw a 404 status you want to delete a student that does not exist`() {
         val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/students").accept(MediaType.APPLICATION_JSON)
-                .param("id", 2.toString()).cookie(cookie)
+                .param("id", "2").cookie(cookie)
         )
             .andExpect(status().isNotFound)
     }
@@ -850,9 +925,16 @@ class StudentControllerTest {
             .andExpect(status().isOk)
     }
 
+    @Test
+    fun `should throw a 401 status when trying to get all students and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/students/getAll").accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isUnauthorized)
+    }
+
     private fun cookiesTeacher(): Cookie? {
         val teacher = teacherService.save(aTeacherDTO().build())
-        val login = BuilderLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").withRole("TEACHER").build()
+        val login = aLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -865,7 +947,7 @@ class StudentControllerTest {
 
     private fun cookiesStudent(): Cookie? {
         val student = studentService.save(aStudentDTO().build())
-        val login = BuilderLoginDTO().withEmail(student.getEmail()).withPassword("funciona").withRole("STUDENT").build()
+        val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -878,7 +960,7 @@ class StudentControllerTest {
 
     private fun cookiesAdmin(): Cookie? {
         val admin = adminService.save(aAdminDTO().build())
-        val login = BuilderLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").withRole("ADMIN").build()
+        val login = aLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)

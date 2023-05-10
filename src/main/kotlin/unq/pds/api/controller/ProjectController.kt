@@ -14,14 +14,20 @@ import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Project
+import unq.pds.services.GroupService
 import unq.pds.services.ProjectService
+import unq.pds.services.StudentService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 
 @RestController
 @CrossOrigin
 @RequestMapping("projects")
-class ProjectController(private val projectService: ProjectService) {
+class ProjectController(
+    private val projectService: ProjectService,
+    private val studentService: StudentService,
+    private val groupService: GroupService
+) {
 
     @PostMapping
     @Operation(
@@ -50,18 +56,24 @@ class ProjectController(private val projectService: ProjectService) {
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             )]
     )
     fun createProject(@CookieValue("jwt") jwt: String?, @RequestBody @Valid project: ProjectDTO): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
-        }
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT") ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"),
-            HttpStatus.UNAUTHORIZED
-        )
-        else ResponseEntity(projectService.save(project.fromDTOToModel()), HttpStatus.OK)
+        return if (jwt.isNullOrBlank()) {
+            ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+        } else ResponseEntity(projectService.save(project.fromDTOToModel()), HttpStatus.OK)
     }
 
     @GetMapping
@@ -91,6 +103,18 @@ class ProjectController(private val projectService: ProjectService) {
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             ),
             ApiResponse(
                 responseCode = "404",
@@ -140,6 +164,18 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -151,15 +187,22 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             )]
     )
-    fun updateProject(@CookieValue("jwt") jwt: String?, @RequestBody project: Project): ResponseEntity<Any> {
+    fun updateProject(@CookieValue("jwt") jwt: String?, @RequestBody project: ProjectDTO): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT") ResponseEntity(
+        return if (body["role"] == "TEACHER") ResponseEntity(
             MessageDTO("You do not have permissions to access this resource"),
             HttpStatus.UNAUTHORIZED
+        ) else if (body["role"] == "STUDENT" &&
+            !studentService.isHisProject(body["id"].toString().toLong(), project.id!!) &&
+            !groupService.thereIsAGroupWithThisProjectAndThisMember(project.id!!, body["id"].toString().toLong())
         )
+            ResponseEntity(
+                MessageDTO("You do not have permissions to access this resource"),
+                HttpStatus.UNAUTHORIZED
+            )
         else ResponseEntity(projectService.update(project), HttpStatus.OK)
     }
 
@@ -194,6 +237,18 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not Found",
                 content = [Content(
@@ -210,7 +265,7 @@ class ProjectController(private val projectService: ProjectService) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        if (body["role"] == "STUDENT") return ResponseEntity(
+        if (body["role"] != "ADMIN") return ResponseEntity(
             MessageDTO("You do not have permissions to access this resource"),
             HttpStatus.UNAUTHORIZED
         )
@@ -247,6 +302,18 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -267,10 +334,17 @@ class ProjectController(private val projectService: ProjectService) {
             return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT") ResponseEntity(
+        return if (body["role"] == "TEACHER") ResponseEntity(
             MessageDTO("You do not have permissions to access this resource"),
             HttpStatus.UNAUTHORIZED
+        ) else if (body["role"] == "STUDENT" &&
+            !studentService.isHisProject(body["id"].toString().toLong(), projectId) &&
+            !groupService.thereIsAGroupWithThisProjectAndThisMember(projectId, body["id"].toString().toLong())
         )
+            ResponseEntity(
+                MessageDTO("You do not have permissions to access this resource"),
+                HttpStatus.UNAUTHORIZED
+            )
         else ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
     }
 
@@ -289,6 +363,17 @@ class ProjectController(private val projectService: ProjectService) {
                         mediaType = "application/json",
                         array = ArraySchema(schema = Schema(implementation = Project::class)),
                     )
+                ]
+            ), ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
                 ]
             )]
     )

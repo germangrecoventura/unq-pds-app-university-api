@@ -4,6 +4,8 @@ import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
+import unq.pds.api.dtos.GroupDTO
+import unq.pds.api.dtos.GroupUpdateDTO
 import unq.pds.model.builder.GroupBuilder.Companion.aGroup
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
@@ -48,15 +50,17 @@ class GroupServiceTest {
     @Test
     fun `should update a group when it exists`() {
         val group = groupService.save(aGroup().build())
-        group.name = "Group 3"
-        val updatedGroup = groupService.update(group)
-        Assertions.assertEquals(group.name, updatedGroup.name)
+        val groupDTO = GroupUpdateDTO()
+        groupDTO.id = group.getId()
+        groupDTO.name = "Group 3"
+        val updatedGroup = groupService.update(groupDTO)
+        Assertions.assertEquals(groupDTO.name, updatedGroup.name)
     }
 
     @Test
     fun `should throw an exception when trying to update a group without persisting`() {
         try {
-            groupService.update(aGroup().build())
+            groupService.update(GroupUpdateDTO())
         } catch (e:NoSuchElementException) {
             Assertions.assertEquals("Group does not exist", e.message)
         }
@@ -214,6 +218,54 @@ class GroupServiceTest {
         } catch (e: ProjectAlreadyHasAnOwnerException) {
             Assertions.assertEquals("The project already has an owner", e.message)
         }
+    }
+
+    @Test
+    fun `should be true to have a member with email when the member was added previously`() {
+        val group = groupService.save(aGroup().build())
+        val student = studentService.save(aStudentDTO().build())
+        groupService.addMember(group.getId()!!, student.getId()!!)
+        Assertions.assertTrue(groupService.hasAMemberWithEmail(group.getId()!!, student.getEmail()!!))
+    }
+
+    @Test
+    fun `should be false to have a member with email when it was not added`() {
+        val group = groupService.save(aGroup().build())
+        Assertions.assertFalse(groupService.hasAMemberWithEmail(group.getId()!!, "emailFalso"))
+    }
+
+    @Test
+    fun `should be true to have a group with a student with id and a project with id when both were added previously`() {
+        val group = groupService.save(aGroup().build())
+        val student = studentService.save(aStudentDTO().build())
+        val project = projectService.save(aProject().build())
+        groupService.addProject(group.getId()!!, project.getId()!!)
+        groupService.addMember(group.getId()!!, student.getId()!!)
+        Assertions.assertTrue(groupService.thereIsAGroupWithThisProjectAndThisMember(project.getId()!!,
+            student.getId()!!))
+    }
+
+    @Test
+    fun `should be false to have a group with a student with id and a project with id when both were not added`() {
+        groupService.save(aGroup().build())
+        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMember(-1,-1))
+    }
+
+    @Test
+    fun `should be false to have a group with a student with id and a project with id when the project was not been added`() {
+        val group = groupService.save(aGroup().build())
+        val student = studentService.save(aStudentDTO().build())
+        groupService.addMember(group.getId()!!, student.getId()!!)
+        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMember(-1,
+            student.getId()!!))
+    }
+
+    @Test
+    fun `should be false to have a group with a student with id and a project with id when the student was not been added`() {
+        val group = groupService.save(aGroup().build())
+        val project = projectService.save(aProject().build())
+        groupService.addProject(group.getId()!!, project.getId()!!)
+        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMember(project.getId()!!,-1))
     }
 
     @Test

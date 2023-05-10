@@ -6,7 +6,10 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
+import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
+import unq.pds.model.exceptions.RepositoryHasAlreadyBeenAddedException
+import unq.pds.services.builder.BuilderProjectDTO.Companion.aProjectDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
 import unq.pds.services.builder.BuilderStudentDTO
 
@@ -15,8 +18,10 @@ class ProjectServiceTest {
 /*
     @Autowired
     lateinit var projectService: ProjectService
+
     @Autowired
     lateinit var repositoryService: RepositoryService
+
     @Autowired
     lateinit var initializer: Initializer
 
@@ -56,15 +61,17 @@ class ProjectServiceTest {
     @Test
     fun `should update a project when it exists`() {
         val project = projectService.save(aProject().build())
-        project.name = "unq-pdes-app"
-        val updatedProject = projectService.update(project)
-        Assertions.assertEquals(project.name, updatedProject.name)
+        val projectDTO = ProjectDTO()
+        projectDTO.id = project.getId()
+        projectDTO.name = "unq-pdes-app"
+        val updatedProject = projectService.update(projectDTO)
+        Assertions.assertEquals(projectDTO.name, updatedProject.name)
     }
 
     @Test
     fun `should throw an exception when trying to update a project without persisting`() {
         try {
-            projectService.update(aProject().build())
+            projectService.update(aProjectDTO().build())
         } catch (e: NoSuchElementException) {
             Assertions.assertEquals("Project does not exist", e.message)
         }
@@ -102,11 +109,19 @@ class ProjectServiceTest {
         studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
         val repository = repositoryService.save(aRepositoryDTO().build())
         projectService.addRepository(project.getId()!!, repository.id)
-        try {
-            projectService.addRepository(project.getId()!!, repository.id)
-        } catch (e: CloneNotSupportedException) {
-            Assertions.assertEquals("The repository is already in the project", e.message)
-        }
+
+        val thrown: RepositoryHasAlreadyBeenAddedException? =
+            Assertions.assertThrows(RepositoryHasAlreadyBeenAddedException::class.java) {
+                projectService.addRepository(
+                    project.getId()!!,
+                    repository.id
+                )
+            }
+
+        Assertions.assertEquals(
+            "The repository has already been added to a project",
+            thrown!!.message
+        )
     }
 
     @Test

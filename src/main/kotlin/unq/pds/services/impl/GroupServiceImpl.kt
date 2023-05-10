@@ -3,6 +3,7 @@ package unq.pds.services.impl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import unq.pds.api.dtos.GroupUpdateDTO
 import unq.pds.model.Group
 import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import unq.pds.persistence.GroupDAO
@@ -22,8 +23,12 @@ open class GroupServiceImpl : GroupService {
         return groupDAO.save(group)
     }
 
-    override fun update(group: Group): Group {
-        if (group.getId() != null && groupDAO.existsById(group.getId()!!)) return groupDAO.save(group)
+    override fun update(groupUpdateDTO: GroupUpdateDTO): Group {
+        if (groupUpdateDTO.id != null && groupDAO.existsById(groupUpdateDTO.id)) {
+            val groupFind = groupDAO.findById(groupUpdateDTO.id).get()
+            groupFind.name = groupUpdateDTO.name!!
+            return groupDAO.save(groupFind)
+        }
          else throw NoSuchElementException("Group does not exist")
     }
 
@@ -41,7 +46,7 @@ open class GroupServiceImpl : GroupService {
         val student = studentService.findById(studentId)
         group.addMember(student)
 
-        return this.update(group)
+        return groupDAO.save(group)
     }
 
     override fun removeMember(groupId: Long, studentId: Long): Group {
@@ -49,7 +54,7 @@ open class GroupServiceImpl : GroupService {
         val student = studentService.findById(studentId)
         group.removeMember(student)
 
-        return this.update(group)
+        return groupDAO.save(group)
     }
 
     override fun addProject(groupId: Long, projectId: Long): Group {
@@ -60,7 +65,15 @@ open class GroupServiceImpl : GroupService {
         }
         group.addProject(project)
 
-        return this.update(group)
+        return groupDAO.save(group)
+    }
+
+    override fun hasAMemberWithEmail(groupId: Long, email: String): Boolean {
+        return groupDAO.hasAMemberWithEmail(groupId, email)
+    }
+
+    override fun thereIsAGroupWithThisProjectAndThisMember(projectId: Long, studentId: Long): Boolean {
+        return groupDAO.thereIsAGroupWithThisProjectAndThisMember(projectId, studentId)
     }
 
     override fun readAll(): List<Group> {

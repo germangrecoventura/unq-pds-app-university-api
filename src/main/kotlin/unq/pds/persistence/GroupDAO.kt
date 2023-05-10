@@ -8,7 +8,6 @@ import unq.pds.model.ProjectOwner
 import java.util.*
 
 interface GroupDAO : JpaRepository<Group, Long> {
-
     @Query(
         """
             FROM ProjectOwner po
@@ -17,4 +16,36 @@ interface GroupDAO : JpaRepository<Group, Long> {
         """
     )
     fun projectOwnerOfTheProject(project: Project): Optional<ProjectOwner>
+
+    @Query(
+        """
+            SELECT COUNT(g) = 1
+            FROM Group g
+            JOIN g.projects ps
+            JOIN g.members m
+            WHERE ps.id = ?1 AND m.id = ?2
+        """
+    )
+    fun thereIsAGroupWithThisProjectAndThisMember(projectId: Long, studentId: Long): Boolean
+
+    @Query(
+        """
+            SELECT COUNT(g) = 1
+            FROM Group g
+            JOIN g.members m
+            WHERE g.id = ?1 AND m.email = ?2
+        """
+    )
+    fun hasAMemberWithEmail(groupId: Long, email: String): Boolean
+
+    @Query(
+        """
+            SELECT COUNT(g) = 1
+            FROM Group g
+            JOIN g.projects ps
+            JOIN ps.repositories rs
+            WHERE g.id = ?1 AND rs.id = ?2
+        """
+    )
+    fun hasThisRepository(groupId: Long, repositoryId: Long): Boolean
 }

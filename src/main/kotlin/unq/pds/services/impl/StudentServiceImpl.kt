@@ -11,7 +11,7 @@ import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.ProjectService
 import unq.pds.services.StudentService
-import javax.management.InvalidAttributeValueException
+import unq.pds.services.UserService
 
 @Service
 @Transactional
@@ -23,11 +23,11 @@ open class StudentServiceImpl : StudentService {
     @Autowired
     lateinit var projectService: ProjectService
 
-    override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
-        if (studentDAO.findByEmail(studentCreateRequestDTO.email!!).isPresent) {
-            throw AlreadyRegisteredException("email")
-        }
+    @Autowired
+    lateinit var userService: UserService
 
+    override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
+        if (userService.theEmailIsRegistered(studentCreateRequestDTO.email!!)) throw AlreadyRegisteredException("email")
         if (studentCreateRequestDTO.ownerGithub != null) {
             var studentWithOwnerGithub = studentDAO.findByOwnerGithub(studentCreateRequestDTO.ownerGithub!!)
             if (studentWithOwnerGithub.isPresent) {
@@ -52,30 +52,39 @@ open class StudentServiceImpl : StudentService {
         return studentDAO.save(student)
     }
 
-    override fun update(student: Student): Student {
-        if (student.getOwnerGithub() != null) {
-            var studentWithOwnerGithub = studentDAO.findByOwnerGithub(student.getOwnerGithub()!!)
-            if (studentWithOwnerGithub.isPresent && student.getId() != studentWithOwnerGithub.get().getId()) {
+    override fun update(student: StudentCreateRequestDTO): Student {
+        if (student.ownerGithub != null) {
+            var studentWithOwnerGithub = studentDAO.findByOwnerGithub(student.ownerGithub!!)
+            if (studentWithOwnerGithub.isPresent && student.id != studentWithOwnerGithub.get().getId()) {
                 throw AlreadyRegisteredException("owner github")
             }
         }
-        if (student.getTokenGithub() != null) {
-            var studentWithToken = studentDAO.findByTokenGithub(student.getTokenGithub()!!)
-            if (studentWithToken.isPresent && student.getId() != studentWithToken.get().getId()) {
+        if (student.tokenGithub != null) {
+            var studentWithToken = studentDAO.findByTokenGithub(student.tokenGithub!!)
+            if (studentWithToken.isPresent && student.id != studentWithToken.get().getId()) {
                 throw AlreadyRegisteredException("token github")
             }
         }
 
-        var studentWithEmail = studentDAO.findByEmail(student.getEmail()!!)
-        if (studentWithEmail.isPresent && student.getId() != studentWithEmail.get().getId()) {
+        var studentWithEmail = studentDAO.findByEmail(student.email!!)
+        if (userService.theEmailIsRegistered(student.email!!) && !studentWithEmail.isPresent) {
             throw AlreadyRegisteredException("email")
         }
-
-        if (student.getId() != null && studentDAO.existsById(student.getId()!!)) {
-            student.setPassword(BCryptPasswordEncoder().encode(student.getPassword()))
-            return studentDAO.save(student)
+        if (studentWithEmail.isPresent && student.id != studentWithEmail.get().getId()) {
+            throw AlreadyRegisteredException("email")
         }
-        else throw NoSuchElementException("Student does not exist")
+        if (student.id != null && studentDAO.existsById(student.id!!)) {
+            val studentFind = studentDAO.findById(student.id!!).get()
+            studentFind.apply {
+                setFirstName(student.firstName)
+                setLastName(student.lastName)
+                setEmail(student.email)
+                setPassword(BCryptPasswordEncoder().encode(student.password))
+                setOwnerGithub(student.ownerGithub)
+                setTokenGithub(student.tokenGithub)
+            }
+            return studentDAO.save(studentFind)
+        } else throw NoSuchElementException("Student does not exist")
     }
 
     override fun deleteById(id: Long) {
@@ -107,7 +116,11 @@ open class StudentServiceImpl : StudentService {
         }
         student.addProject(project)
 
-        return this.update(student)
+        return studentDAO.save(student)
+    }
+
+    override fun isHisProject(studentId: Long, projectId: Long): Boolean {
+        return studentDAO.isHisProject(studentId, projectId)
     }
 
     override fun readAll(): List<Student> {
