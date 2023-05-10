@@ -60,8 +60,7 @@ sonarqube {
         property("sonar.test.exclusions", "src/test/kotlin/unq/pds/webservice/**," +
                 "src/test/kotlin/unq/pds/services/TeacherServiceTest.kt," +
                 "src/test/kotlin/unq/pds/services/RepositoryServiceTest.kt," +
-                "src/test/kotlin/unq/pds/services/ProjectServiceTest.kt," +
-                "src/test/kotlin/unq/pds/webservice/RepositoryControllerTest.kt")
+                "src/test/kotlin/unq/pds/services/ProjectServiceTest.kt")
     }
 }
 
