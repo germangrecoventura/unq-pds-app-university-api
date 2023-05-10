@@ -58,6 +58,10 @@ sonarqube {
         property "sonar.projectKey", "germangrecoventura_unq-pds-app-university-api"
         property "sonar.organization", "germangrecoventura"
         property "sonar.host.url", "https://sonarcloud.io"
+        property("sonar.test.exclusions", "src/test/kotlin/unq/pds/webservice/**," +
+                "src/test/kotlin/unq/pds/services/TeacherServiceTest.kt," +
+                "src/test/kotlin/unq/pds/services/RepositoryServiceTest.kt," +
+                "src/test/kotlin/unq/pds/services/ProjectServiceTest.kt")
     }
 }
 
@@ -71,7 +75,6 @@ tasks.withType(Test) {
 }
 
 
-
 jacocoTestReport {
     dependsOn(test)
     reports {
@@ -79,7 +82,7 @@ jacocoTestReport {
         csv.required.set(false)
         html.required.set(false)
     }
-   // executionData set.from(files("$buildDir/jacoco/test.exec"))
+    // executionData set.from(files("$buildDir/jacoco/test.exec"))
 }
 
 
