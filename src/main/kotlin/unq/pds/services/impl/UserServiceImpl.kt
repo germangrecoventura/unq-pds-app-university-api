@@ -24,6 +24,8 @@ open class UserServiceImpl : UserService {
 
     @Autowired
     lateinit var adminDAO: AdminDAO
+
+
     override fun findStudent(email: String): Optional<Student> {
         return studentDAO.findByEmail(email)
     }
@@ -34,6 +36,10 @@ open class UserServiceImpl : UserService {
 
     override fun findAdmin(email: String): Optional<Admin> {
         return adminDAO.findByEmail(email)
+    }
+
+    override fun theEmailIsRegistered(email: String): Boolean {
+        return !findAdmin(email).isEmpty || !findStudent(email).isEmpty || !findTeacher(email).isEmpty
     }
 
 

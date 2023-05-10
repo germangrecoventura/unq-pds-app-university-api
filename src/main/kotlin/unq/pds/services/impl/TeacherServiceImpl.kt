@@ -11,6 +11,7 @@ import unq.pds.model.Teacher
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.persistence.*
 import unq.pds.services.TeacherService
+import unq.pds.services.UserService
 
 @Service
 @Transactional
@@ -30,10 +31,11 @@ open class TeacherServiceImpl : TeacherService {
     @Autowired
     lateinit var groupDAO: GroupDAO
 
+    @Autowired
+    lateinit var userService: UserService
+
     override fun save(teacherCreateRequestDTO: TeacherCreateRequestDTO): Teacher {
-        if (teacherDAO.findByEmail(teacherCreateRequestDTO.email!!).isPresent) {
-            throw AlreadyRegisteredException("email")
-        }
+        if (userService.theEmailIsRegistered(teacherCreateRequestDTO.email!!)) throw AlreadyRegisteredException("email")
         val teacher = Teacher(
             teacherCreateRequestDTO.firstName!!,
             teacherCreateRequestDTO.lastName!!,
@@ -47,6 +49,9 @@ open class TeacherServiceImpl : TeacherService {
     override fun update(teacher: Teacher): Teacher {
         var teacherRecovery = findById(teacher.getId()!!)
         var teacherWithEmail = teacherDAO.findByEmail(teacher.getEmail())
+        if (userService.theEmailIsRegistered(teacher.getEmail()) && !teacherWithEmail.isPresent) {
+            throw AlreadyRegisteredException("email")
+        }
         if (teacherWithEmail.isPresent && teacherRecovery.getId() != teacherWithEmail.get().getId()) {
             throw AlreadyRegisteredException("email")
         }

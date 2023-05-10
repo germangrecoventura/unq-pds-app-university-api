@@ -330,7 +330,7 @@ class StudentControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to get student if exist`() {
         val cookie = cookiesTeacher()
-        var student = studentService.save(aStudentDTO().build())
+        var student = studentService.save(aStudentDTO().withEmail("pruebaa@gmail.com").build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
                 .param("id", student.getId().toString()).cookie(cookie)

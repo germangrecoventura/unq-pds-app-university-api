@@ -83,7 +83,7 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to create repositories`() {
         val cookie = cookiesTeacher()
-        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        studentService.save(aStudentDTO().withEmail("otro@gmail.com").withTokenGithub(token).build())
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -252,7 +252,7 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to get repository if exist`() {
         val cookie = cookiesTeacher()
-        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        studentService.save(aStudentDTO().withEmail("josee@gmail.com").withTokenGithub(token).build())
         val repository = repositoryService.save(aRepositoryDTO().build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
@@ -317,7 +317,7 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to update repositories`() {
         val cookie = cookiesTeacher()
-        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        studentService.save(aStudentDTO().withEmail("pruebaaa@gmail.com").withTokenGithub(token).build())
         repositoryService.save(aRepositoryDTO().build())
 
         mockMvc.perform(

@@ -9,4 +9,5 @@ interface UserService {
     fun findStudent(email: String): Optional<Student>
     fun findTeacher(email: String): Optional<Teacher>
     fun findAdmin(email: String): Optional<Admin>
+    fun theEmailIsRegistered(email: String): Boolean
 }
