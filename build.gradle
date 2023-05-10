@@ -52,7 +52,6 @@ dependencies {
     implementation('ch.qos.logback:logback-core:1.4.6')
 
 }
-
 sonarqube {
     properties {
         property "sonar.projectKey", "germangrecoventura_unq-pds-app-university-api"
@@ -63,26 +62,6 @@ sonarqube {
                 "src/test/kotlin/unq/pds/services/RepositoryServiceTest.kt," +
                 "src/test/kotlin/unq/pds/services/ProjectServiceTest.kt")
     }
-}
-
-jacoco {
-    toolVersion = "0.8.8"
-    reportsDir = file("$buildDir/reports/jacoco")
-}
-
-tasks.withType(Test) {
-    finalizedBy jacocoTestReport
-}
-
-
-jacocoTestReport {
-    dependsOn(test)
-    reports {
-        xml.required.set(true)
-        csv.required.set(false)
-        html.required.set(false)
-    }
-    // executionData set.from(files("$buildDir/jacoco/test.exec"))
 }
 
 
