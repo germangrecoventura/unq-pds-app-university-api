@@ -14,9 +14,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
-import unq.pds.model.builder.MatterBuilder
-import unq.pds.services.*
-import unq.pds.services.builder.*
+import unq.pds.services.AdminService
+import unq.pds.services.RepositoryService
+import unq.pds.services.StudentService
+import unq.pds.services.TeacherService
 import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
 import unq.pds.services.builder.BuilderLoginDTO.Companion.aLoginDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
@@ -82,7 +83,7 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to create repositories`() {
         val cookie = cookiesTeacher()
-        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        studentService.save(aStudentDTO().withEmail("otro@gmail.com").withTokenGithub(token).build())
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -251,7 +252,7 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to get repository if exist`() {
         val cookie = cookiesTeacher()
-        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        studentService.save(aStudentDTO().withEmail("josee@gmail.com").withTokenGithub(token).build())
         val repository = repositoryService.save(aRepositoryDTO().build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
@@ -316,7 +317,7 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to update repositories`() {
         val cookie = cookiesTeacher()
-        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        studentService.save(aStudentDTO().withEmail("pruebaaa@gmail.com").withTokenGithub(token).build())
         repositoryService.save(aRepositoryDTO().build())
 
         mockMvc.perform(
@@ -575,7 +576,7 @@ class RepositoryControllerTest {
 
     private fun cookiesTeacher(): Cookie? {
         val teacher = teacherService.save(aTeacherDTO().build())
-        val login = aLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").withRole("TEACHER").build()
+        val login = aLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -588,7 +589,7 @@ class RepositoryControllerTest {
 
     private fun cookiesStudent(): Cookie? {
         val student = studentService.save(aStudentDTO().withTokenGithub(token).build())
-        val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").withRole("STUDENT").build()
+        val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -601,7 +602,7 @@ class RepositoryControllerTest {
 
     private fun cookiesAdmin(): Cookie? {
         val admin = adminService.save(aAdminDTO().build())
-        val login = aLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").withRole("ADMIN").build()
+        val login = aLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)

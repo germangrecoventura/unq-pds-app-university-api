@@ -19,9 +19,7 @@ import unq.pds.model.exceptions.NotAuthenticatedException
 import unq.pds.persistence.RepositoryDAO
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.RepositoryService
-import java.util.*
 import javax.management.InvalidAttributeValueException
-import kotlin.NoSuchElementException
 
 
 @Service
@@ -88,6 +86,7 @@ open class RepositoryServiceImpl : RepositoryService {
         repository.tags = tags!!
         repository.branches = branches!!
         repository.commits = commits!!
+        repository.commentsTeacher = repositoryDAO.commentsFromId(repository.id).toMutableList()
 
         token = ""
 
@@ -143,6 +142,7 @@ open class RepositoryServiceImpl : RepositoryService {
             issue.status = i.path("state").asText()
             list.add(issue)
         }
+        list.sortBy { it.id }
         return list
     }
 
@@ -160,11 +160,12 @@ open class RepositoryServiceImpl : RepositoryService {
         for (i in root) {
             val pr = PullRequest()
             pr.id = i.path("id").asInt()
-            var url = i.path("url").asText()
-            pr.url = "https://github.com/${url.substring(29, url.length)}"
+            pr.url = i.path("html_url").asText()
             pr.status = i.path("state").asText()
+            pr.title = i.path("title").asText()
             list.add(pr)
         }
+        list.sortBy { it.id }
         return list
     }
 
@@ -211,7 +212,7 @@ open class RepositoryServiceImpl : RepositoryService {
         operation: String
     ): ResponseEntity<String> {
         validation(ownerRepository, nameRepository)
-        val url = "https://api.github.com/repos/$ownerRepository/$nameRepository/$operation?state=all&direction=asc"
+        val url = "https://api.github.com/repos/$ownerRepository/$nameRepository/$operation?state=all"
         return makeRequest(url, token)
     }
 
@@ -233,6 +234,7 @@ open class RepositoryServiceImpl : RepositoryService {
             commit.url = i.path("html_url").asText()
             list.add(commit)
         }
+        list.sortBy { it.nodeId }
         return list
     }
 

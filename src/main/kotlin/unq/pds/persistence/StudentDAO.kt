@@ -30,5 +30,16 @@ interface StudentDAO : JpaRepository<Student, Long> {
         """
     )
     fun isHisProject(studentId: Long, projectId: Long): Boolean
+
+    @Query(
+        """
+            SELECT COUNT(s) = 1
+            FROM Student s
+            JOIN s.projects ps
+            JOIN ps.repositories rs
+            WHERE s.id = ?1 AND rs.id = ?2
+        """
+    )
+    fun isHisRepository(studentId: Long, repositoryId: Long): Boolean
 }
 

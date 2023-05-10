@@ -11,7 +11,7 @@ import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.ProjectService
 import unq.pds.services.StudentService
-import javax.management.InvalidAttributeValueException
+import unq.pds.services.UserService
 
 @Service
 @Transactional
@@ -23,11 +23,11 @@ open class StudentServiceImpl : StudentService {
     @Autowired
     lateinit var projectService: ProjectService
 
-    override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
-        if (studentDAO.findByEmail(studentCreateRequestDTO.email!!).isPresent) {
-            throw AlreadyRegisteredException("email")
-        }
+    @Autowired
+    lateinit var userService: UserService
 
+    override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
+        if (userService.theEmailIsRegistered(studentCreateRequestDTO.email!!)) throw AlreadyRegisteredException("email")
         if (studentCreateRequestDTO.ownerGithub != null) {
             var studentWithOwnerGithub = studentDAO.findByOwnerGithub(studentCreateRequestDTO.ownerGithub!!)
             if (studentWithOwnerGithub.isPresent) {
@@ -67,10 +67,12 @@ open class StudentServiceImpl : StudentService {
         }
 
         var studentWithEmail = studentDAO.findByEmail(student.email!!)
+        if (userService.theEmailIsRegistered(student.email!!) && !studentWithEmail.isPresent) {
+            throw AlreadyRegisteredException("email")
+        }
         if (studentWithEmail.isPresent && student.id != studentWithEmail.get().getId()) {
             throw AlreadyRegisteredException("email")
         }
-
         if (student.id != null && studentDAO.existsById(student.id!!)) {
             val studentFind = studentDAO.findById(student.id!!).get()
             studentFind.apply {
@@ -82,8 +84,7 @@ open class StudentServiceImpl : StudentService {
                 setTokenGithub(student.tokenGithub)
             }
             return studentDAO.save(studentFind)
-        }
-        else throw NoSuchElementException("Student does not exist")
+        } else throw NoSuchElementException("Student does not exist")
     }
 
     override fun deleteById(id: Long) {

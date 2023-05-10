@@ -10,15 +10,9 @@ class BuilderLoginDTO {
 
     fun build(): LoginDTO {
         var login = LoginDTO()
-        login.role = role
         login.password = password
         login.email = email
         return login
-    }
-
-    fun withRole(role: String?): BuilderLoginDTO {
-        this.role = role
-        return this
     }
 
     fun withEmail(email: String?): BuilderLoginDTO {

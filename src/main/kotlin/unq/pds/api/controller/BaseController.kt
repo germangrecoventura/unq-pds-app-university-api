@@ -16,6 +16,7 @@ import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.model.exceptions.NotAuthenticatedException
 import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
+import unq.pds.model.exceptions.RepositoryHasAlreadyBeenAddedException
 import java.sql.SQLIntegrityConstraintViolationException
 import java.util.function.Consumer
 import javax.management.InvalidAttributeValueException
@@ -83,6 +84,12 @@ class BaseController {
     @ExceptionHandler(ProjectAlreadyHasAnOwnerException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleProjectAlreadyHasAnOwnerException(ex: ProjectAlreadyHasAnOwnerException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.badRequest().body(MessageDTO(ex.message))
+    }
+
+    @ExceptionHandler(RepositoryHasAlreadyBeenAddedException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleRepositoryHasAlreadyBeenAddedException(ex: RepositoryHasAlreadyBeenAddedException): ResponseEntity<MessageDTO> {
         return ResponseEntity.badRequest().body(MessageDTO(ex.message))
     }
 

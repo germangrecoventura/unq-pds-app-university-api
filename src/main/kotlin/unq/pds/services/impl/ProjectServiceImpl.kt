@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Project
+import unq.pds.model.exceptions.RepositoryHasAlreadyBeenAddedException
 import unq.pds.persistence.ProjectDAO
 import unq.pds.services.ProjectService
 import unq.pds.services.RepositoryService
@@ -41,6 +42,9 @@ open class ProjectServiceImpl : ProjectService {
     override fun addRepository(projectId: Long, repositoryId: Long): Project {
         val project = this.read(projectId)
         val repository = repositoryService.findById(repositoryId)
+        if (projectDAO.projectWithRepository(repository).isPresent) {
+            throw RepositoryHasAlreadyBeenAddedException()
+        }
         project.addRepository(repository)
 
         return projectDAO.save(project)

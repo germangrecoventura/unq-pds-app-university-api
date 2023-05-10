@@ -312,7 +312,7 @@ class GroupControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to update group`() {
         val cookie = cookiesTeacher()
-        val teacher = teacherService.findByEmail("german@gmail.com")
+        val teacher = teacherService.findByEmail("docente@gmail.com")
         val group = groupService.save(aGroup().build())
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
@@ -509,7 +509,7 @@ class GroupControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to add member to group except yourself`() {
         val cookie = cookiesTeacher()
-        val teacher = teacherService.findByEmail("german@gmail.com")
+        val teacher = teacherService.findByEmail("docente@gmail.com")
         val group = groupService.save(aGroup().build())
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
@@ -646,7 +646,7 @@ class GroupControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to remove member to group except yourself`() {
         val cookie = cookiesTeacher()
-        val teacher = teacherService.findByEmail("german@gmail.com")
+        val teacher = teacherService.findByEmail("docente@gmail.com")
         val group = groupService.save(aGroup().build())
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
@@ -786,7 +786,7 @@ class GroupControllerTest {
     fun `should throw a 200 status when a teacher does have permissions to add project to group except yourself`() {
         val cookie = cookiesTeacher()
         val project = projectService.save(aProject().build())
-        val teacher = teacherService.findByEmail("german@gmail.com")
+        val teacher = teacherService.findByEmail("docente@gmail.com")
         val group = groupService.save(aGroup().build())
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
@@ -855,7 +855,7 @@ class GroupControllerTest {
 
     private fun cookiesStudent(): Cookie? {
         val student = studentService.save(aStudentDTO().build())
-        val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").withRole("STUDENT").build()
+        val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -867,8 +867,8 @@ class GroupControllerTest {
     }
 
     private fun cookiesTeacher(): Cookie? {
-        val teacher = teacherService.save(aTeacherDTO().build())
-        val login = aLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").withRole("TEACHER").build()
+        val teacher = teacherService.save(aTeacherDTO().withEmail("docente@gmail.com").build())
+        val login = aLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -880,8 +880,8 @@ class GroupControllerTest {
     }
 
     private fun cookiesAdmin(): Cookie? {
-        val admin = adminService.save(aAdminDTO().build())
-        val login = aLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").withRole("ADMIN").build()
+        val admin = adminService.save(aAdminDTO().withEmail("prueba@gmail.com").build())
+        val login = aLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)

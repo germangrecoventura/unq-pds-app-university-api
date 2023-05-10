@@ -348,7 +348,7 @@ class CommissionControllerTest {
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val student = studentService.save(aStudentDTO().build())
-        val teacher = teacherService.findByEmail("german@gmail.com")
+        val teacher = teacherService.findByEmail("docente@gmail.com")
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         mockMvc.perform(
             MockMvcRequestBuilders.put(
@@ -488,7 +488,7 @@ class CommissionControllerTest {
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val student = studentService.save(aStudentDTO().build())
-        val teacher = teacherService.findByEmail("german@gmail.com")
+        val teacher = teacherService.findByEmail("docente@gmail.com")
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         commissionService.addStudent(commission.getId()!!, student.getId()!!)
         mockMvc.perform(
@@ -590,7 +590,7 @@ class CommissionControllerTest {
         val cookie = cookiesStudent()
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        val teacher = teacherService.save(aTeacherDTO().build())
+        val teacher = teacherService.save(aTeacherDTO().withEmail("priea@gmail.com").build())
         mockMvc.perform(
             MockMvcRequestBuilders.put(
                 "/commissions/addTeacher/{commissionId}/{teacherId}",
@@ -608,7 +608,7 @@ class CommissionControllerTest {
         val cookie = cookiesTeacher()
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        val teacher = teacherService.findByEmail("german@gmail.com")
+        val teacher = teacherService.findByEmail("docente@gmail.com")
         mockMvc.perform(
             MockMvcRequestBuilders.put(
                 "/commissions/addTeacher/{commissionId}/{teacherId}",
@@ -709,7 +709,7 @@ class CommissionControllerTest {
         val cookie = cookiesStudent()
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        val teacher = teacherService.save(aTeacherDTO().build())
+        val teacher = teacherService.save(aTeacherDTO().withEmail("pruebaaa@gmail.com").build())
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         mockMvc.perform(
             MockMvcRequestBuilders.put(
@@ -728,7 +728,7 @@ class CommissionControllerTest {
         val cookie = cookiesTeacher()
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        val teacher = teacherService.findByEmail("german@gmail.com")
+        val teacher = teacherService.findByEmail("docente@gmail.com")
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         mockMvc.perform(
             MockMvcRequestBuilders.put(
@@ -866,7 +866,7 @@ class CommissionControllerTest {
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val group = groupService.save(aGroup().build())
-        val teacher = teacherService.findByEmail("german@gmail.com")
+        val teacher = teacherService.findByEmail("docente@gmail.com")
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         mockMvc.perform(
             MockMvcRequestBuilders.put(
@@ -1006,7 +1006,7 @@ class CommissionControllerTest {
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val group = groupService.save(aGroup().build())
-        val teacher = teacherService.findByEmail("german@gmail.com")
+        val teacher = teacherService.findByEmail("docente@gmail.com")
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         mockMvc.perform(
@@ -1093,7 +1093,7 @@ class CommissionControllerTest {
 
     private fun cookiesStudent(): Cookie? {
         val student = studentService.save(aStudentDTO().build())
-        val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").withRole("STUDENT").build()
+        val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -1105,8 +1105,8 @@ class CommissionControllerTest {
     }
 
     private fun cookiesTeacher(): Cookie? {
-        val teacher = teacherService.save(aTeacherDTO().build())
-        val login = aLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").withRole("TEACHER").build()
+        val teacher = teacherService.save(aTeacherDTO().withEmail("docente@gmail.com").build())
+        val login = aLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -1118,8 +1118,8 @@ class CommissionControllerTest {
     }
 
     private fun cookiesAdmin(): Cookie? {
-        val admin = adminService.save(aAdminDTO().build())
-        val login = aLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").withRole("ADMIN").build()
+        val admin = adminService.save(aAdminDTO().withEmail("prueba@gmail.com").build())
+        val login = aLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
             MockMvcRequestBuilders.post("/login")
                 .contentType(MediaType.APPLICATION_JSON)

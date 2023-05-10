@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
 import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
+import unq.pds.model.exceptions.RepositoryHasAlreadyBeenAddedException
 import unq.pds.services.builder.BuilderProjectDTO.Companion.aProjectDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
 import unq.pds.services.builder.BuilderStudentDTO
@@ -17,8 +18,10 @@ class ProjectServiceTest {
 
     @Autowired
     lateinit var projectService: ProjectService
+
     @Autowired
     lateinit var repositoryService: RepositoryService
+
     @Autowired
     lateinit var initializer: Initializer
 
@@ -106,11 +109,19 @@ class ProjectServiceTest {
         studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
         val repository = repositoryService.save(aRepositoryDTO().build())
         projectService.addRepository(project.getId()!!, repository.id)
-        try {
-            projectService.addRepository(project.getId()!!, repository.id)
-        } catch (e: CloneNotSupportedException) {
-            Assertions.assertEquals("The repository is already in the project", e.message)
-        }
+
+        val thrown: RepositoryHasAlreadyBeenAddedException? =
+            Assertions.assertThrows(RepositoryHasAlreadyBeenAddedException::class.java) {
+                projectService.addRepository(
+                    project.getId()!!,
+                    repository.id
+                )
+            }
+
+        Assertions.assertEquals(
+            "The repository has already been added to a project",
+            thrown!!.message
+        )
     }
 
     @Test
