@@ -22,7 +22,7 @@ import javax.validation.constraints.NotBlank
 @CrossOrigin
 @RequestMapping("repositories")
 class RepositoryController(private val repositoryService: RepositoryService) {
-
+    private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
     @PostMapping
     @Operation(
         summary = "Registers a repository",
@@ -69,7 +69,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
         @RequestBody @Valid repository: RepositoryDTO
     ): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         return ResponseEntity(repositoryService.save(repository), HttpStatus.OK)
     }
@@ -128,7 +128,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
     )
     fun getRepository(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         return ResponseEntity(repositoryService.findById(id), HttpStatus.OK)
     }
@@ -142,7 +142,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "success",
+                description = "Success",
                 content = [
                     Content(
                         mediaType = "application/json",
@@ -190,7 +190,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
         @RequestBody @Valid repository: RepositoryDTO
     ): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         return ResponseEntity(repositoryService.update(repository), HttpStatus.OK)
     }
@@ -251,7 +251,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
     )
     fun deleteRepository(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         if (body["role"] != "ADMIN") return ResponseEntity(
@@ -293,7 +293,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
     )
     fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         return ResponseEntity(repositoryService.findByAll(), HttpStatus.OK)
     }

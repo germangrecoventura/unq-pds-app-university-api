@@ -1,5 +1,6 @@
 package unq.pds.api.controller
 
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -29,6 +30,9 @@ class TeacherController {
         private val teacherService: TeacherService,
         private val commissionService: CommissionService
     ) {
+        private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
+        private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
+
         @PostMapping
         @Operation(
             summary = "Registers a teacher",
@@ -75,16 +79,12 @@ class TeacherController {
             @CookieValue("jwt") jwt: String?,
             @RequestBody @Valid teacher: TeacherCreateRequestDTO
         ): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] != "ADMIN") ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
-                HttpStatus.UNAUTHORIZED
-            )
-            else ResponseEntity(teacherService.save(teacher), HttpStatus.OK)
+            if (isNotAdmin(body)) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(teacherService.save(teacher), HttpStatus.OK)
         }
+
 
         @GetMapping
         @Operation(
@@ -139,9 +139,7 @@ class TeacherController {
                 )]
         )
         fun getTeacher(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             return ResponseEntity(teacherService.findById(id), HttpStatus.OK)
         }
 
@@ -198,19 +196,15 @@ class TeacherController {
                 )]
         )
         fun updateTeacher(@CookieValue("jwt") jwt: String?, @RequestBody teacher: Teacher): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] == "STUDENT") ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+            return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && body["id"].toString()
+                    .toLong() != teacher.getId())
+            ) ResponseEntity(
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" && body["id"].toString().toLong() != teacher.getId()) {
-                ResponseEntity(
-                    MessageDTO("You do not have permissions to update teachers except yourself"),
-                    HttpStatus.UNAUTHORIZED
-                )
-            } else ResponseEntity(teacherService.update(teacher), HttpStatus.OK)
+            )
+            else ResponseEntity(teacherService.update(teacher), HttpStatus.OK)
         }
 
         @DeleteMapping
@@ -268,14 +262,9 @@ class TeacherController {
                 )]
         )
         fun deleteTeacher(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            if (body["role"] != "ADMIN") return ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
-                HttpStatus.UNAUTHORIZED
-            )
+            if (isNotAdmin(body)) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
             teacherService.deleteById(id)
             return ResponseEntity(MessageDTO("Teacher has been deleted successfully"), HttpStatus.OK)
         }
@@ -311,7 +300,7 @@ class TeacherController {
         )
         fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
             if (jwt.isNullOrBlank()) {
-                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             }
             return ResponseEntity(teacherService.readAll(), HttpStatus.OK)
         }
@@ -374,19 +363,15 @@ class TeacherController {
             @CookieValue("jwt") jwt: String?,
             @RequestBody @Valid comment: CommentCreateRequestDTO
         ): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] == "STUDENT") ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
-                HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" && !commissionService.thereIsACommissionWithATeacherWithEmailAndStudentWithId(
+            return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.thereIsACommissionWithATeacherWithEmailAndStudentWithId(
                     body.issuer,
                     comment.idToComment!!
                 )
+                        )
             ) ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             )
             else ResponseEntity(teacherService.addCommentToStudent(comment), HttpStatus.OK)
@@ -450,22 +435,26 @@ class TeacherController {
             @CookieValue("jwt") jwt: String?,
             @RequestBody @Valid comment: CommentCreateRequestDTO
         ): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] == "STUDENT") ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
-                HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" && !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(
+            return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(
                     body.issuer,
                     comment.idToComment!!
                 )
+                        )
             ) ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             )
             else ResponseEntity(teacherService.addCommentToGroup(comment), HttpStatus.OK)
+        }
+
+        private fun existJWT(jwt: String?): Boolean {
+            return !jwt.isNullOrBlank()
+        }
+
+        private fun isNotAdmin(claim: Claims): Boolean {
+            return claim["role"] != "ADMIN"
         }
     }
 }

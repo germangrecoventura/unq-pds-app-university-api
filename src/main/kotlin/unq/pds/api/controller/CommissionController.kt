@@ -22,6 +22,8 @@ import javax.validation.constraints.NotBlank
 @CrossOrigin
 @RequestMapping("commissions")
 class CommissionController(private val commissionService: CommissionService) {
+    private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
+    private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
 
     @PostMapping
     @Operation(
@@ -80,11 +82,11 @@ class CommissionController(private val commissionService: CommissionService) {
         @RequestBody @Valid commission: CommissionDTO
     ): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         return if (body["role"] != "ADMIN") ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"),
+            messageNotAccess,
             HttpStatus.UNAUTHORIZED
         )
         else ResponseEntity(commissionService.save(commission.fromDTOToModel()), HttpStatus.OK)
@@ -144,7 +146,7 @@ class CommissionController(private val commissionService: CommissionService) {
     )
     fun getCommission(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         return ResponseEntity(commissionService.read(id), HttpStatus.OK)
     }
@@ -205,11 +207,11 @@ class CommissionController(private val commissionService: CommissionService) {
     )
     fun deleteCommission(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         if (body["role"] != "ADMIN") return ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"),
+            messageNotAccess,
             HttpStatus.UNAUTHORIZED
         )
         commissionService.delete(id)
@@ -274,17 +276,17 @@ class CommissionController(private val commissionService: CommissionService) {
         @NotBlank @PathVariable studentId: Long
     ): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT") ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"),
+        return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(
+                commissionId,
+                body.issuer
+            ))
+        ) ResponseEntity(
+            messageNotAccess,
             HttpStatus.UNAUTHORIZED
-        ) else if (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(commissionId, body.issuer))
-            ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
-                HttpStatus.UNAUTHORIZED
-            )
+        )
         else ResponseEntity(commissionService.addStudent(commissionId, studentId), HttpStatus.OK)
     }
 
@@ -346,17 +348,17 @@ class CommissionController(private val commissionService: CommissionService) {
         @NotBlank @PathVariable studentId: Long
     ): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT") ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"),
+        return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(
+                commissionId,
+                body.issuer
+            ))
+        ) ResponseEntity(
+            messageNotAccess,
             HttpStatus.UNAUTHORIZED
-        ) else if (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(commissionId, body.issuer))
-            ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
-                HttpStatus.UNAUTHORIZED
-            )
+        )
         else ResponseEntity(commissionService.removeStudent(commissionId, studentId), HttpStatus.OK)
     }
 
@@ -418,11 +420,11 @@ class CommissionController(private val commissionService: CommissionService) {
         @NotBlank @PathVariable teacherId: Long
     ): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         return if (body["role"] != "ADMIN") ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"),
+            messageNotAccess,
             HttpStatus.UNAUTHORIZED
         )
         else ResponseEntity(commissionService.addTeacher(commissionId, teacherId), HttpStatus.OK)
@@ -486,11 +488,11 @@ class CommissionController(private val commissionService: CommissionService) {
         @NotBlank @PathVariable teacherId: Long
     ): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         return if (body["role"] != "ADMIN") ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"),
+            messageNotAccess,
             HttpStatus.UNAUTHORIZED
         )
         else ResponseEntity(commissionService.removeTeacher(commissionId, teacherId), HttpStatus.OK)
@@ -554,17 +556,17 @@ class CommissionController(private val commissionService: CommissionService) {
         @NotBlank @PathVariable groupId: Long
     ): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT") ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"),
+        return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(
+                commissionId,
+                body.issuer
+            ))
+        ) ResponseEntity(
+            messageNotAccess,
             HttpStatus.UNAUTHORIZED
-        ) else if (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(commissionId, body.issuer))
-            ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
-                HttpStatus.UNAUTHORIZED
-            )
+        )
         else ResponseEntity(commissionService.addGroup(commissionId, groupId), HttpStatus.OK)
     }
 
@@ -626,17 +628,17 @@ class CommissionController(private val commissionService: CommissionService) {
         @NotBlank @PathVariable groupId: Long
     ): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT") ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"),
+        return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(
+                commissionId,
+                body.issuer
+            ))
+        ) ResponseEntity(
+            messageNotAccess,
             HttpStatus.UNAUTHORIZED
-        ) else if (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(commissionId, body.issuer))
-            ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
-                HttpStatus.UNAUTHORIZED
-            )
+        )
         else ResponseEntity(commissionService.removeGroup(commissionId, groupId), HttpStatus.OK)
     }
 
@@ -672,7 +674,7 @@ class CommissionController(private val commissionService: CommissionService) {
     )
     fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         return ResponseEntity(commissionService.readAll(), HttpStatus.OK)
     }

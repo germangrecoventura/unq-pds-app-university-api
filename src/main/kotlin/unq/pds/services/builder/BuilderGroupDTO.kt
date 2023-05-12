@@ -1,7 +1,6 @@
 package unq.pds.services.builder
 
 import unq.pds.api.dtos.GroupDTO
-import unq.pds.api.dtos.StudentCreateRequestDTO
 
 
 class BuilderGroupDTO {

@@ -36,7 +36,7 @@ open class RepositoryServiceImpl : RepositoryService {
     private lateinit var studentDAO: StudentDAO
     override fun save(repositoryDTO: RepositoryDTO): Repository {
         val repositoryFind = getRepository(repositoryDTO.owner!!, repositoryDTO.name!!)
-        if (repositoryDAO.existsById(repositoryFind!!.get("id").asLong())) {
+        if (repositoryDAO.existsById(repositoryFind!!["id"].asLong())) {
             token = ""
             throw AlreadyRegisteredException("repository")
         }
@@ -47,10 +47,10 @@ open class RepositoryServiceImpl : RepositoryService {
         val commits = getRepositoryCommits(repositoryDTO.owner!!, repositoryDTO.name!!)
 
         val repository = Repository(
-            repositoryFind.get("id").asLong(),
+            repositoryFind["id"].asLong(),
             repositoryDTO.name!!,
             repositoryDTO.owner!!,
-            repositoryFind.get("html_url").asText()
+            repositoryFind["html_url"].asText()
         )
         repository.issues = issues!!
         repository.pullRequests = pullRequests!!
@@ -65,7 +65,7 @@ open class RepositoryServiceImpl : RepositoryService {
 
     override fun update(repositoryDTO: RepositoryDTO): Repository {
         val repositoryFind = getRepository(repositoryDTO.owner!!, repositoryDTO.name!!)
-        if (!repositoryDAO.existsById(repositoryFind!!.get("id").asLong())) {
+        if (!repositoryDAO.existsById(repositoryFind!!["id"].asLong())) {
             token = ""
             throw NoSuchElementException("Repository does not exist")
         }
@@ -76,10 +76,10 @@ open class RepositoryServiceImpl : RepositoryService {
         val commits = getRepositoryCommits(repositoryDTO.owner!!, repositoryDTO.name!!)
 
         val repository = Repository(
-            repositoryFind.get("id").asLong(),
+            repositoryFind["id"].asLong(),
             repositoryDTO.name!!,
             repositoryDTO.owner!!,
-            repositoryFind.get("html_url").asText()
+            repositoryFind["html_url"].asText()
         )
         repository.issues = issues!!
         repository.pullRequests = pullRequests!!
@@ -261,8 +261,8 @@ open class RepositoryServiceImpl : RepositoryService {
 
     private fun makeRequest(url: String, token: String): ResponseEntity<String> {
         val headers = HttpHeaders()
-        headers.set("Accept", "application/vnd.github+json")
-        headers.set("Authorization", "Bearer $token")
+        headers["Accept"] = "application/vnd.github+json"
+        headers["Authorization"] = "Bearer $token"
         val request: HttpEntity<*> = HttpEntity<Any?>(headers)
         return restTemplate.exchange(
             url, HttpMethod.GET, request,
