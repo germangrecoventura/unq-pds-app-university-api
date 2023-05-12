@@ -1,13 +1,13 @@
 name: SonarCloud
 on:
   push:
-    branches: ["main","dev"]
+    branches: [ "main","dev" ]
   pull_request:
-    branches: ["main","dev"]
-    types: [opened, synchronize, reopened]
+    branches: [ "main","dev" ]
+    types: [ opened, synchronize, reopened ]
 
-  env:
-    TOKEN-GITHUB: ${{ secrets.GITHUB_TOKEN }}
+env:
+  TOKEN-GITHUB: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build:
