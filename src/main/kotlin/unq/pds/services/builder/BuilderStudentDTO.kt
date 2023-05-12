@@ -35,8 +35,8 @@ class BuilderStudentDTO {
         return this
     }
 
-    fun withLastName(last_name: String?): BuilderStudentDTO {
-        this.lastName = last_name
+    fun withLastName(lastName: String?): BuilderStudentDTO {
+        this.lastName = lastName
         return this
     }
 
