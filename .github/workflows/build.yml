@@ -7,7 +7,7 @@ on:
     types: [ opened, synchronize, reopened ]
 
 env:
-  TOKEN-GITHUB: ${{ secrets.GITHUB_TOKEN }}
+  TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build:
