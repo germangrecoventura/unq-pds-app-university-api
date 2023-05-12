@@ -61,6 +61,7 @@ sonarqube {
         property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir\\reports\\jacoco\\test\\jacocoTestReport.xml"
         property "sonar.coverage.exclusions", "src/main/kotlin/unq/pds/api/dtos," +
                 "src/main/kotlin/unq/pds/services/builder"
+        property "sonar.cpd.exclusions", "src/main/kotlin/unq/pds/api/controller"
     }
 }
 
