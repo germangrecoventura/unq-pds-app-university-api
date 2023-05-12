@@ -21,7 +21,7 @@ class RepositoryServiceTest {
     @Autowired
     lateinit var studentService: StudentService
 
-    private var token: String = System.getenv("TOKEN_GITHUB")
+    private var token: String = System.getenv("GITHUB_TOKEN")
 
     @Autowired
     lateinit var initializer: Initializer
