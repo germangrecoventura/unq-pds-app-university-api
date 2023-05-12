@@ -50,7 +50,7 @@ class RepositoryControllerTest {
     @Autowired
     lateinit var initializer: Initializer
 
-    private var token: String = ""
+    private var token: String = System.getenv("TOKEN_GITHUB")
 
     @BeforeEach
     fun setUp() {
