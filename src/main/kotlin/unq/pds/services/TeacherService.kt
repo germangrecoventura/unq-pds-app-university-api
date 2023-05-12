@@ -1,6 +1,8 @@
 package unq.pds.services
 
+import unq.pds.api.dtos.CommentCreateRequestDTO
 import unq.pds.api.dtos.TeacherCreateRequestDTO
+import unq.pds.model.Comment
 import unq.pds.model.Teacher
 
 interface TeacherService {
@@ -11,5 +13,7 @@ interface TeacherService {
     fun findById(id: Long): Teacher
     fun findByEmail(email: String): Teacher
     fun readAll(): List<Teacher>
+    fun addCommentToStudent(commentCreateRequestDTO: CommentCreateRequestDTO): Comment
+    fun addCommentToGroup(commentCreateRequestDTO: CommentCreateRequestDTO): Comment
     fun clearTeachers()
 }

@@ -1,5 +1,6 @@
 package unq.pds.api.controller
 
+import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
@@ -13,14 +14,22 @@ import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Project
+import unq.pds.services.GroupService
 import unq.pds.services.ProjectService
+import unq.pds.services.StudentService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 
 @RestController
 @CrossOrigin
 @RequestMapping("projects")
-class ProjectController(private val projectService: ProjectService) {
+class ProjectController(
+    private val projectService: ProjectService,
+    private val studentService: StudentService,
+    private val groupService: GroupService
+) {
+    private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
+    private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
 
     @PostMapping
     @Operation(
@@ -49,10 +58,24 @@ class ProjectController(private val projectService: ProjectService) {
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             )]
     )
-    fun createProject(@RequestBody @Valid project: ProjectDTO): ResponseEntity<Any> {
-        return ResponseEntity(projectService.save(project.fromDTOToModel()), HttpStatus.OK)
+    fun createProject(@CookieValue("jwt") jwt: String?, @RequestBody @Valid project: ProjectDTO): ResponseEntity<Any> {
+        return if (jwt.isNullOrBlank()) {
+            ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        } else ResponseEntity(projectService.save(project.fromDTOToModel()), HttpStatus.OK)
     }
 
     @GetMapping
@@ -84,6 +107,18 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -95,7 +130,10 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             )]
     )
-    fun getProject(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+    fun getProject(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
         return ResponseEntity(projectService.read(id), HttpStatus.OK)
     }
 
@@ -128,6 +166,18 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -139,8 +189,23 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             )]
     )
-    fun updateProject(@RequestBody project: Project): ResponseEntity<Any> {
-        return ResponseEntity(projectService.update(project), HttpStatus.OK)
+    fun updateProject(@CookieValue("jwt") jwt: String?, @RequestBody project: ProjectDTO): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "TEACHER" || (body["role"] == "STUDENT" &&
+                    !studentService.isHisProject(body["id"].toString().toLong(), project.id!!) &&
+                    !groupService.thereIsAGroupWithThisProjectAndThisMember(
+                        project.id!!,
+                        body["id"].toString().toLong()
+                    )
+                    )
+        ) ResponseEntity(
+            messageNotAccess,
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(projectService.update(project), HttpStatus.OK)
     }
 
     @DeleteMapping
@@ -174,6 +239,18 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not Found",
                 content = [Content(
@@ -185,7 +262,15 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             )]
     )
-    fun deleteProject(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+    fun deleteProject(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if (body["role"] != "ADMIN") return ResponseEntity(
+            messageNotAccess,
+            HttpStatus.UNAUTHORIZED
+        )
         projectService.delete(id)
         return ResponseEntity(MessageDTO("Project has been deleted successfully"), HttpStatus.OK)
     }
@@ -219,6 +304,18 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -230,8 +327,24 @@ class ProjectController(private val projectService: ProjectService) {
                 )]
             )]
     )
-    fun addRepository(@NotBlank @PathVariable projectId: Long, @NotBlank @PathVariable repositoryId: Long): ResponseEntity<Any> {
-        return ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
+    fun addRepository(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @PathVariable projectId: Long,
+        @NotBlank @PathVariable repositoryId: Long
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "TEACHER" || (body["role"] == "STUDENT" &&
+                    !studentService.isHisProject(body["id"].toString().toLong(), projectId) &&
+                    !groupService.thereIsAGroupWithThisProjectAndThisMember(projectId, body["id"].toString().toLong())
+                    )
+        ) ResponseEntity(
+            messageNotAccess,
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
     }
 
     @GetMapping("/getAll")
@@ -250,9 +363,23 @@ class ProjectController(private val projectService: ProjectService) {
                         array = ArraySchema(schema = Schema(implementation = Project::class)),
                     )
                 ]
+            ), ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             )]
     )
-    fun getAll(): ResponseEntity<List<Project>> {
+    fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
         return ResponseEntity(projectService.readAll(), HttpStatus.OK)
     }
 }

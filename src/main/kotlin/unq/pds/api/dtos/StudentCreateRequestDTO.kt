@@ -6,6 +6,10 @@ import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Pattern
 
 class StudentCreateRequestDTO {
+
+    @Schema(example = "1")
+    var id: Long? = null
+
     @NotBlank(message = "The first name cannot be blank")
     @Pattern(regexp = "[a-zA-Z ]+", message = "The first name cannot contain special characters or numbers")
     @Schema(example = "German")
@@ -20,4 +24,14 @@ class StudentCreateRequestDTO {
     @NotBlank(message = "The email address cannot be blank")
     @Schema(example = "german@gmail.com")
     var email: String? = null
+
+    @NotBlank(message = "The password cannot be blank")
+    @Schema(example = "funciona")
+    var password: String? = null
+
+    @Schema(example = "germangrecoventura")
+    var ownerGithub: String? = null
+
+    @Schema(example = "")
+    var tokenGithub: String? = null
 }

@@ -3,10 +3,8 @@ package unq.pds.model
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import io.swagger.v3.oas.annotations.media.Schema
-import unq.pds.api.Validator
 import javax.management.InvalidAttributeValueException
 import javax.persistence.*
-import javax.validation.constraints.Pattern
 
 @Entity
 @Table(name = "Project")
@@ -16,8 +14,7 @@ class Project(
 ) {
     @Column(nullable = false)
     @JsonProperty
-    @Pattern(regexp = "[a-zA-Z0-9_-]+", message = "The name cannot contain special characters except - and _")
-    @Schema(example = "unq-pds")
+    @Schema(example = "unq pds")
     var name = name
         set(value) {
             this.validateName(value)
@@ -48,7 +45,6 @@ class Project(
 
     private fun validateName(name: String) {
         if (name.isNullOrBlank()) throw InvalidAttributeValueException("Name cannot be empty")
-        if (Validator.containsSpecialCharacterGithub(name)) throw InvalidAttributeValueException("The name cannot contain special characters except - and _")
     }
 
     private fun isMyRepository(repository: Repository): Boolean {

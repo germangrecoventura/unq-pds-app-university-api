@@ -7,6 +7,8 @@ plugins {
     id "org.jetbrains.kotlin.plugin.noarg" version "1.7.10"
     id "org.jetbrains.kotlin.plugin.allopen" version "1.7.10"
     id 'war'
+    id "jacoco"
+    id "org.sonarqube" version "3.5.0.2730"
 }
 
 group 'org.app-universidad'
@@ -49,6 +51,30 @@ dependencies {
     testImplementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30'
     implementation('ch.qos.logback:logback-core:1.4.6')
 
+}
+sonarqube {
+    properties {
+        property "sonar.projectKey", "germangrecoventura_unq-pds-app-university-api"
+        property "sonar.organization", "germangrecoventura"
+        property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.kotlin.compiler.version", "1.7.22"
+        property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir\\reports\\jacoco\\test\\jacocoTestReport.xml"
+        property "sonar.coverage.exclusions", "src/main/kotlin/unq/pds/api/dtos," +
+                "src/main/kotlin/unq/pds/services/builder"
+        property "sonar.cpd.exclusions", "src/main/kotlin/unq/pds/api/controller/**"
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.8"
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.required.set(false)
+    }
 }
 
 

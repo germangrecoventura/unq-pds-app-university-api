@@ -1,13 +1,17 @@
 package unq.pds.services.impl
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import unq.pds.api.dtos.CommentCreateRequestDTO
 import unq.pds.api.dtos.TeacherCreateRequestDTO
+import unq.pds.model.Comment
 import unq.pds.model.Teacher
 import unq.pds.model.exceptions.AlreadyRegisteredException
-import unq.pds.persistence.TeacherDAO
+import unq.pds.persistence.*
 import unq.pds.services.TeacherService
+import unq.pds.services.UserService
 
 @Service
 @Transactional
@@ -15,28 +19,46 @@ open class TeacherServiceImpl : TeacherService {
     @Autowired
     lateinit var teacherDAO: TeacherDAO
 
-    override fun save(teacherCreateRequestDTO: TeacherCreateRequestDTO): Teacher {
-        if (teacherDAO.findByEmail(teacherCreateRequestDTO.email!!).isPresent) {
-            throw AlreadyRegisteredException("email")
-        }
+    @Autowired
+    lateinit var studentDAO: StudentDAO
 
+    @Autowired
+    lateinit var repositoryDAO: RepositoryDAO
+
+    @Autowired
+    lateinit var commentDAO: CommentDAO
+
+    @Autowired
+    lateinit var groupDAO: GroupDAO
+
+    @Autowired
+    lateinit var userService: UserService
+
+    override fun save(teacherCreateRequestDTO: TeacherCreateRequestDTO): Teacher {
+        if (userService.theEmailIsRegistered(teacherCreateRequestDTO.email!!)) throw AlreadyRegisteredException("email")
         val teacher = Teacher(
             teacherCreateRequestDTO.firstName!!,
             teacherCreateRequestDTO.lastName!!,
-            teacherCreateRequestDTO.email!!
+            teacherCreateRequestDTO.email!!,
+            BCryptPasswordEncoder().encode(teacherCreateRequestDTO.password)
         )
         return teacherDAO.save(teacher)
     }
 
+
     override fun update(teacher: Teacher): Teacher {
         var teacherRecovery = findById(teacher.getId()!!)
         var teacherWithEmail = teacherDAO.findByEmail(teacher.getEmail())
+        if (userService.theEmailIsRegistered(teacher.getEmail()) && !teacherWithEmail.isPresent) {
+            throw AlreadyRegisteredException("email")
+        }
         if (teacherWithEmail.isPresent && teacherRecovery.getId() != teacherWithEmail.get().getId()) {
             throw AlreadyRegisteredException("email")
         }
         teacherRecovery.setFirstName(teacher.getFirstName())
         teacherRecovery.setLastName(teacher.getLastName())
         teacherRecovery.setEmail(teacher.getEmail())
+        teacherRecovery.setPassword(BCryptPasswordEncoder().encode(teacher.getPassword()))
         return teacherDAO.save(teacherRecovery)
     }
 
@@ -67,5 +89,33 @@ open class TeacherServiceImpl : TeacherService {
 
     override fun clearTeachers() {
         teacherDAO.deleteAll()
+    }
+
+    override fun addCommentToStudent(commentDTO: CommentCreateRequestDTO): Comment {
+        val studentRecovery = studentDAO.findById(commentDTO.idToComment!!)
+            .orElseThrow { NoSuchElementException("Not found the student with id ${commentDTO.idToComment}") }
+        val repositoryRecovery = repositoryDAO.findByName(commentDTO.nameRepository!!)
+            .orElseThrow { NoSuchElementException("Not found the repository with name ${commentDTO.nameRepository}") }
+        if (!studentDAO.isHisRepository(studentRecovery.getId()!!, repositoryRecovery.id))
+            throw NoSuchElementException("Not found the repository with student")
+
+        val comment = commentDAO.save(Comment(commentDTO.comment!!))
+        repositoryRecovery.addComment(comment)
+        repositoryDAO.save(repositoryRecovery)
+        return comment
+    }
+
+    override fun addCommentToGroup(commentDTO: CommentCreateRequestDTO): Comment {
+        val groupRecovery = groupDAO.findById(commentDTO.idToComment!!)
+            .orElseThrow { NoSuchElementException("Not found the group with id ${commentDTO.idToComment}") }
+        val repositoryRecovery = repositoryDAO.findByName(commentDTO.nameRepository!!)
+            .orElseThrow { NoSuchElementException("Not found the repository with name ${commentDTO.nameRepository}") }
+        if (!groupDAO.hasThisRepository(groupRecovery.getId()!!, repositoryRecovery.id))
+            throw NoSuchElementException("Not found the repository with group")
+
+        val comment = commentDAO.save(Comment(commentDTO.comment!!))
+        repositoryRecovery.addComment(comment)
+        repositoryDAO.save(repositoryRecovery)
+        return comment
     }
 }

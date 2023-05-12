@@ -1,13 +1,14 @@
 package unq.pds.model
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import unq.pds.api.Validator
 import javax.management.InvalidAttributeValueException
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.Table
 
 @Entity
 @Table(name = "student")
@@ -18,9 +19,17 @@ class Student(
     @Column(
         nullable = false,
         unique = true
-    ) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String
-): ProjectOwner() {
-
+    ) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String,
+    @JsonProperty @field:Schema(example = "$" + "2a" + "$" + "CIymVbnbW.QfAyLP2mcw1ugKSpHbXn/N07sBhLjxUD1XqdlBNzHQi") private var password: String,
+    @Column(
+        nullable = true,
+        unique = true
+    ) @JsonProperty @field:Schema(example = "germangrecoventura") private var ownerGithub: String? = null,
+    @Column(
+        nullable = true,
+        unique = true
+    ) @JsonProperty @field:Schema(example = "") private var tokenGithub: String? = null
+) : ProjectOwner() {
     init {
         validateCreate()
     }
@@ -29,6 +38,7 @@ class Student(
         validatePerson(firstName, "firstname")
         validatePerson(lastName, "lastname")
         validateEmail(email)
+        validatePassword(password)
     }
 
     private fun validatePerson(element: String?, field: String) {
@@ -52,6 +62,12 @@ class Student(
         }
     }
 
+    private fun validatePassword(password: String?) {
+        if (password.isNullOrBlank()) {
+            throw InvalidAttributeValueException("The password cannot be empty")
+        }
+    }
+
     fun getFirstName(): String? {
         return firstName
     }
@@ -62,6 +78,14 @@ class Student(
 
     fun getEmail(): String? {
         return email
+    }
+
+    fun getOwnerGithub(): String? {
+        return ownerGithub
+    }
+
+    fun getTokenGithub(): String? {
+        return tokenGithub
     }
 
     fun setFirstName(firstName: String?) {
@@ -79,9 +103,25 @@ class Student(
         this.email = emailAddress!!
     }
 
-    @JsonIgnore
-    fun getPassword(): String? {
-        return BCryptPasswordEncoder().encode("funciona")
+    fun setOwnerGithub(ownerGithub: String?) {
+        this.ownerGithub = ownerGithub
+    }
+
+    fun setTokenGithub(token: String?) {
+        this.tokenGithub = token
+    }
+
+    fun getPassword(): String {
+        return password
+    }
+
+    fun setPassword(password: String) {
+        validatePassword(password)
+        this.password = password
+    }
+
+    fun getRole(): String {
+        return "STUDENT"
     }
 
     fun comparePassword(password: String): Boolean {

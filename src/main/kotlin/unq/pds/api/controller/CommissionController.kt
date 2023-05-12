@@ -1,9 +1,15 @@
 package unq.pds.api.controller
 
-import io.swagger.v3.oas.annotations.*
-import io.swagger.v3.oas.annotations.media.*
-import io.swagger.v3.oas.annotations.responses.*
-import org.springframework.http.*
+import io.jsonwebtoken.Jwts
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.CommissionDTO
 import unq.pds.api.dtos.MessageDTO
@@ -16,6 +22,8 @@ import javax.validation.constraints.NotBlank
 @CrossOrigin
 @RequestMapping("commissions")
 class CommissionController(private val commissionService: CommissionService) {
+    private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
+    private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
 
     @PostMapping
     @Operation(
@@ -46,6 +54,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -57,8 +77,19 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             )]
     )
-    fun createCommission(@RequestBody @Valid commission: CommissionDTO): ResponseEntity<Any> {
-        return ResponseEntity(commissionService.save(commission.fromDTOToModel()), HttpStatus.OK)
+    fun createCommission(
+        @CookieValue("jwt") jwt: String?,
+        @RequestBody @Valid commission: CommissionDTO
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] != "ADMIN") ResponseEntity(
+            messageNotAccess,
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(commissionService.save(commission.fromDTOToModel()), HttpStatus.OK)
     }
 
     @GetMapping
@@ -90,6 +121,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -101,52 +144,11 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             )]
     )
-    fun getCommission(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+    fun getCommission(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
         return ResponseEntity(commissionService.read(id), HttpStatus.OK)
-    }
-
-    @PutMapping
-    @Operation(
-        summary = "Update a commission",
-        description = "Update a commission",
-    )
-    @ApiResponses(
-        value = [
-            ApiResponse(
-                responseCode = "200",
-                description = "success",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schema = Schema(implementation = Commission::class)
-                    )
-                ]
-            ),
-            ApiResponse(
-                responseCode = "400",
-                description = "Bad request",
-                content = [Content(
-                    mediaType = "application/json", examples = [ExampleObject(
-                        value = "{\n" +
-                                "  \"message\": \"string\"\n" +
-                                "}"
-                    )]
-                )]
-            ),
-            ApiResponse(
-                responseCode = "404",
-                description = "Not found",
-                content = [Content(
-                    mediaType = "application/json", examples = [ExampleObject(
-                        value = "{\n" +
-                                "  \"message\": \"Commission does not exist\"\n" +
-                                "}"
-                    )]
-                )]
-            )]
-    )
-    fun updateCommission(@RequestBody commission: Commission): ResponseEntity<Any> {
-        return ResponseEntity(commissionService.update(commission), HttpStatus.OK)
     }
 
     @DeleteMapping
@@ -180,6 +182,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not Found",
                 content = [Content(
@@ -191,7 +205,15 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             )]
     )
-    fun deleteCommission(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+    fun deleteCommission(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if (body["role"] != "ADMIN") return ResponseEntity(
+            messageNotAccess,
+            HttpStatus.UNAUTHORIZED
+        )
         commissionService.delete(id)
         return ResponseEntity(MessageDTO("Commission has been deleted successfully"), HttpStatus.OK)
     }
@@ -225,6 +247,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -236,8 +270,24 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             )]
     )
-    fun addStudent(@NotBlank @PathVariable commissionId: Long, @NotBlank @PathVariable studentId: Long): ResponseEntity<Any> {
-        return ResponseEntity(commissionService.addStudent(commissionId, studentId), HttpStatus.OK)
+    fun addStudent(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @PathVariable commissionId: Long,
+        @NotBlank @PathVariable studentId: Long
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(
+                commissionId,
+                body.issuer
+            ))
+        ) ResponseEntity(
+            messageNotAccess,
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(commissionService.addStudent(commissionId, studentId), HttpStatus.OK)
     }
 
     @PutMapping("/removeStudent/{commissionId}/{studentId}")
@@ -269,6 +319,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -280,8 +342,24 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             )]
     )
-    fun removeStudent(@NotBlank @PathVariable commissionId: Long, @NotBlank @PathVariable studentId: Long): ResponseEntity<Any> {
-        return ResponseEntity(commissionService.removeStudent(commissionId, studentId), HttpStatus.OK)
+    fun removeStudent(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @PathVariable commissionId: Long,
+        @NotBlank @PathVariable studentId: Long
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(
+                commissionId,
+                body.issuer
+            ))
+        ) ResponseEntity(
+            messageNotAccess,
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(commissionService.removeStudent(commissionId, studentId), HttpStatus.OK)
     }
 
     @PutMapping("/addTeacher/{commissionId}/{teacherId}")
@@ -313,6 +391,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -324,8 +414,20 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             )]
     )
-    fun addTeacher(@NotBlank @PathVariable commissionId: Long, @NotBlank @PathVariable teacherId: Long): ResponseEntity<Any> {
-        return ResponseEntity(commissionService.addTeacher(commissionId, teacherId), HttpStatus.OK)
+    fun addTeacher(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @PathVariable commissionId: Long,
+        @NotBlank @PathVariable teacherId: Long
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] != "ADMIN") ResponseEntity(
+            messageNotAccess,
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(commissionService.addTeacher(commissionId, teacherId), HttpStatus.OK)
     }
 
     @PutMapping("/removeTeacher/{commissionId}/{teacherId}")
@@ -357,6 +459,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -368,8 +482,20 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             )]
     )
-    fun removeTeacher(@NotBlank @PathVariable commissionId: Long, @NotBlank @PathVariable teacherId: Long): ResponseEntity<Any> {
-        return ResponseEntity(commissionService.removeTeacher(commissionId, teacherId), HttpStatus.OK)
+    fun removeTeacher(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @PathVariable commissionId: Long,
+        @NotBlank @PathVariable teacherId: Long
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] != "ADMIN") ResponseEntity(
+            messageNotAccess,
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(commissionService.removeTeacher(commissionId, teacherId), HttpStatus.OK)
     }
 
     @PutMapping("/addGroup/{commissionId}/{groupId}")
@@ -401,6 +527,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -412,8 +550,24 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             )]
     )
-    fun addGroup(@NotBlank @PathVariable commissionId: Long, @NotBlank @PathVariable groupId: Long): ResponseEntity<Any> {
-        return ResponseEntity(commissionService.addGroup(commissionId, groupId), HttpStatus.OK)
+    fun addGroup(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @PathVariable commissionId: Long,
+        @NotBlank @PathVariable groupId: Long
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(
+                commissionId,
+                body.issuer
+            ))
+        ) ResponseEntity(
+            messageNotAccess,
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(commissionService.addGroup(commissionId, groupId), HttpStatus.OK)
     }
 
     @PutMapping("/removeGroup/{commissionId}/{groupId}")
@@ -445,6 +599,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             ),
             ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "404",
                 description = "Not found",
                 content = [Content(
@@ -456,8 +622,24 @@ class CommissionController(private val commissionService: CommissionService) {
                 )]
             )]
     )
-    fun removeGroup(@NotBlank @PathVariable commissionId: Long, @NotBlank @PathVariable groupId: Long): ResponseEntity<Any> {
-        return ResponseEntity(commissionService.removeGroup(commissionId, groupId), HttpStatus.OK)
+    fun removeGroup(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @PathVariable commissionId: Long,
+        @NotBlank @PathVariable groupId: Long
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(
+                commissionId,
+                body.issuer
+            ))
+        ) ResponseEntity(
+            messageNotAccess,
+            HttpStatus.UNAUTHORIZED
+        )
+        else ResponseEntity(commissionService.removeGroup(commissionId, groupId), HttpStatus.OK)
     }
 
     @GetMapping("/getAll")
@@ -476,9 +658,24 @@ class CommissionController(private val commissionService: CommissionService) {
                         array = ArraySchema(schema = Schema(implementation = Commission::class)),
                     )
                 ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             )]
     )
-    fun getAll(): ResponseEntity<List<Commission>> {
+    fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
         return ResponseEntity(commissionService.readAll(), HttpStatus.OK)
     }
 }

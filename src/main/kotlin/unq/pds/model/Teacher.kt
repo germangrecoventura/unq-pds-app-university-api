@@ -1,6 +1,5 @@
 package unq.pds.model
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import io.swagger.v3.oas.annotations.media.Schema
@@ -15,7 +14,11 @@ import javax.persistence.*
 class Teacher(
     @Column(nullable = false) @JsonProperty @field:Schema(example = "German") private var firstName: String,
     @Column(nullable = false) @JsonProperty @field:Schema(example = "Greco") private var lastName: String,
-    @Column(nullable = false, unique = true) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String
+    @Column(
+        nullable = false,
+        unique = true
+    ) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String,
+    @field:Schema(example = "$" + "2a" + "$" + "CIymVbnbW.QfAyLP2mcw1ugKSpHbXn/N07sBhLjxUD1XqdlBNzHQi") private var password: String
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +34,7 @@ class Teacher(
         validatePerson(firstName, "firstname")
         validatePerson(lastName, "lastname")
         validateEmail(email)
+        validatePassword(password)
     }
 
     private fun validatePerson(element: String?, field: String) {
@@ -45,12 +49,18 @@ class Teacher(
         }
     }
 
-    private fun validateEmail(email_address: String?) {
-        if (email_address.isNullOrBlank()) {
+    private fun validateEmail(emailAddress: String?) {
+        if (emailAddress.isNullOrBlank()) {
             throw InvalidAttributeValueException("The email cannot be empty")
         }
-        if (!Validator.isValidEMail(email_address)) {
+        if (!Validator.isValidEMail(emailAddress)) {
             throw InvalidAttributeValueException("The email is not valid")
+        }
+    }
+
+    private fun validatePassword(password: String?) {
+        if (password.isNullOrBlank()) {
+            throw InvalidAttributeValueException("The password cannot be empty")
         }
     }
 
@@ -89,9 +99,16 @@ class Teacher(
         email = emailAddress!!
     }
 
-    @JsonIgnore
-    fun getPassword(): String? {
-        return BCryptPasswordEncoder().encode("funciona")
+    fun getPassword(): String {
+        return password
+    }
+
+    fun setPassword(password: String) {
+        this.password = password
+    }
+
+    fun getRole(): String {
+        return "TEACHER"
     }
 
     fun comparePassword(password: String): Boolean {

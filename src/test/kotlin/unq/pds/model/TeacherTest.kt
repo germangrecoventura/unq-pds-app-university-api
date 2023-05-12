@@ -35,7 +35,9 @@ class TeacherTest {
     @Test
     fun `should throw an exception if the firstname has any special characters`() {
         val thrown: InvalidAttributeValueException? =
-            Assertions.assertThrows(InvalidAttributeValueException::class.java) { aTeacher().withFirstName("Germ@n").build() }
+            Assertions.assertThrows(InvalidAttributeValueException::class.java) {
+                aTeacher().withFirstName("Germ@n").build()
+            }
 
         Assertions.assertEquals(
             "The firstname can not contain special characters",
@@ -274,6 +276,25 @@ class TeacherTest {
             { aTeacher().build().setEmail("hola") }
         Assertions.assertEquals(
             "The email is not valid",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should throw an exception if the password is null`() {
+        Assertions.assertThrows(RuntimeException::class.java) { aTeacher().withPassword(null).build() }
+    }
+
+    @Test
+    fun `should throw an exception if the password is empty`() {
+        val thrown: InvalidAttributeValueException? =
+            Assertions.assertThrows(
+                InvalidAttributeValueException::class.java
+            )
+            { aTeacher().withPassword("").build() }
+
+        Assertions.assertEquals(
+            "The password cannot be empty",
             thrown!!.message
         )
     }

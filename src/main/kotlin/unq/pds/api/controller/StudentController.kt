@@ -1,5 +1,6 @@
 package unq.pds.api.controller
 
+import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.model.Student
-import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.services.StudentService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -23,6 +23,9 @@ class StudentController {
     @CrossOrigin
     @RequestMapping("students")
     class StudentController(private val studentService: StudentService) {
+        private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
+        private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
+
         @PostMapping
         @Operation(
             summary = "Registers a student",
@@ -52,10 +55,33 @@ class StudentController {
                                     "}"
                         )]
                     )]
+                ),
+                ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
                 )]
         )
-        fun createStudent(@RequestBody @Valid student: StudentCreateRequestDTO): ResponseEntity<Student> {
-            return ResponseEntity(studentService.save(student), HttpStatus.OK)
+        fun createStudent(
+            @CookieValue("jwt") jwt: String?,
+            @RequestBody @Valid student: StudentCreateRequestDTO
+        ): ResponseEntity<Any> {
+            if (jwt.isNullOrBlank()) {
+                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+            }
+            val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+            return if (body["role"] != "ADMIN") ResponseEntity(
+                messageNotAccess,
+                HttpStatus.UNAUTHORIZED
+            )
+            else ResponseEntity(studentService.save(student), HttpStatus.OK)
         }
 
         @GetMapping
@@ -87,6 +113,18 @@ class StudentController {
                     )]
                 ),
                 ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
+                ),
+                ApiResponse(
                     responseCode = "404",
                     description = "Not found",
                     content = [Content(
@@ -98,7 +136,10 @@ class StudentController {
                     )]
                 )]
         )
-        fun getStudent(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        fun getStudent(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+            if (jwt.isNullOrBlank()) {
+                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+            }
             return ResponseEntity(studentService.findById(id), HttpStatus.OK)
         }
 
@@ -131,6 +172,18 @@ class StudentController {
                     )]
                 ),
                 ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
+                ),
+                ApiResponse(
                     responseCode = "404",
                     description = "Not found",
                     content = [Content(
@@ -142,8 +195,23 @@ class StudentController {
                     )]
                 )]
         )
-        fun updateStudent(@RequestBody student: Student): ResponseEntity<Any> {
-            return ResponseEntity(studentService.update(student), HttpStatus.OK)
+        fun updateStudent(
+            @CookieValue("jwt") jwt: String?,
+            @RequestBody student: StudentCreateRequestDTO
+        ): ResponseEntity<Any> {
+            if (jwt.isNullOrBlank()) {
+                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+            }
+            val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+            return if (body["role"] == "TEACHER") ResponseEntity(
+                messageNotAccess,
+                HttpStatus.UNAUTHORIZED
+            ) else if (body["role"] == "STUDENT" && body["id"].toString().toLong() != student.id) {
+                ResponseEntity(
+                    MessageDTO("You do not have permissions to update students except yourself"),
+                    HttpStatus.UNAUTHORIZED
+                )
+            } else ResponseEntity(studentService.update(student), HttpStatus.OK)
         }
 
         @DeleteMapping
@@ -177,6 +245,18 @@ class StudentController {
                     )]
                 ),
                 ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
+                ),
+                ApiResponse(
                     responseCode = "404",
                     description = "Not Found",
                     content = [Content(
@@ -188,7 +268,15 @@ class StudentController {
                     )]
                 )]
         )
-        fun deleteStudent(@NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        fun deleteStudent(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+            if (jwt.isNullOrBlank()) {
+                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+            }
+            val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+            if (body["role"] != "ADMIN") return ResponseEntity(
+                messageNotAccess,
+                HttpStatus.UNAUTHORIZED
+            )
             studentService.deleteById(id)
             return ResponseEntity(MessageDTO("Student has been deleted successfully"), HttpStatus.OK)
         }
@@ -222,6 +310,18 @@ class StudentController {
                     )]
                 ),
                 ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
+                ),
+                ApiResponse(
                     responseCode = "404",
                     description = "Not found",
                     content = [Content(
@@ -233,8 +333,24 @@ class StudentController {
                     )]
                 )]
         )
-        fun addProject(@NotBlank @PathVariable studentId: Long, @NotBlank @PathVariable projectId: Long): ResponseEntity<Any> {
-            return ResponseEntity(studentService.addProject(studentId, projectId), HttpStatus.OK)
+        fun addProject(
+            @CookieValue("jwt") jwt: String?,
+            @NotBlank @PathVariable studentId: Long,
+            @NotBlank @PathVariable projectId: Long
+        ): ResponseEntity<Any> {
+            if (jwt.isNullOrBlank()) {
+                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+            }
+            val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+            return if (body["role"] == "TEACHER") ResponseEntity(
+                messageNotAccess,
+                HttpStatus.UNAUTHORIZED
+            ) else if (body["role"] == "STUDENT" && body["id"].toString().toLong() != studentId)
+                ResponseEntity(
+                    MessageDTO("You do not have permissions to update students except yourself"),
+                    HttpStatus.UNAUTHORIZED
+                )
+            else ResponseEntity(studentService.addProject(studentId, projectId), HttpStatus.OK)
         }
 
         @GetMapping("/getAll")
@@ -253,9 +369,23 @@ class StudentController {
                             array = ArraySchema(schema = Schema(implementation = Student::class)),
                         )
                     ]
+                ), ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
                 )]
         )
-        fun getAll(): ResponseEntity<List<Student>> {
+        fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
+            if (jwt.isNullOrBlank()) {
+                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+            }
             return ResponseEntity(studentService.readAll(), HttpStatus.OK)
         }
     }
