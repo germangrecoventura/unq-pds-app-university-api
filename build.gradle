@@ -83,5 +83,6 @@ compileTestKotlin {
 }
 
 test {
+    exclude 'unq/pds/webservice/**'
     useJUnitPlatform()
 }

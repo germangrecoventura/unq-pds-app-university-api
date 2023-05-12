@@ -5,6 +5,10 @@ on:
   pull_request:
     branches: ["main","dev"]
     types: [opened, synchronize, reopened]
+
+  env:
+    TOKEN-GITHUB: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   build:
     name: Build and analyze

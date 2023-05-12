@@ -14,14 +14,14 @@ import javax.management.InvalidAttributeValueException
 
 @SpringBootTest
 class RepositoryServiceTest {
-/*
+
     @Autowired
     lateinit var repositoryService: RepositoryService
 
     @Autowired
     lateinit var studentService: StudentService
 
-    private var token: String = ""
+    private var token: String = System.getenv("TOKEN-GITHUB")
 
     @Autowired
     lateinit var initializer: Initializer
@@ -331,5 +331,5 @@ class RepositoryServiceTest {
         Assertions.assertEquals(2, repositories.size)
         Assertions.assertTrue(repositories.any { it.name == "unq-pds-app-university-api" })
         Assertions.assertTrue(repositories.any { it.name == "unq-pds-app-university-web" })
-    }*/
+    }
 }

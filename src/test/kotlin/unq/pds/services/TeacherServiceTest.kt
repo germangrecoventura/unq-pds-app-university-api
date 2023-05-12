@@ -17,7 +17,7 @@ import javax.management.InvalidAttributeValueException
 
 @SpringBootTest
 class TeacherServiceTest {
-/*
+
     @Autowired
     lateinit var teacherService: TeacherServiceImpl
 
@@ -30,7 +30,7 @@ class TeacherServiceTest {
     @Autowired
     lateinit var initializer: Initializer
 
-    private var token: String = ""
+    private var token: String = System.getenv("TOKEN-GITHUB")
 
     @Autowired
     lateinit var repositoryService: RepositoryService
@@ -467,5 +467,5 @@ class TeacherServiceTest {
         val repositoryFind = repositoryService.findById(repository.id)
         Assertions.assertTrue(repositoryFind.commentsTeacher.size == 1)
     }
-*/
+
 }

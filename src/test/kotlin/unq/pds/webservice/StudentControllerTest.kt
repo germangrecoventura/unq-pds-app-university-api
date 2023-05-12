@@ -29,7 +29,7 @@ import javax.servlet.http.Cookie
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
 class StudentControllerTest {
-   /* lateinit var mockMvc: MockMvc
+    lateinit var mockMvc: MockMvc
 
     @Autowired
     lateinit var context: WebApplicationContext
@@ -969,5 +969,5 @@ class StudentControllerTest {
         ).andExpect(status().isOk)
 
         return response.andReturn().response.cookies[0]
-    }*/
+    }
 }
