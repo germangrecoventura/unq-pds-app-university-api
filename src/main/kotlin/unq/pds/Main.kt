@@ -8,12 +8,12 @@ import org.springframework.boot.runApplication
 
 @SpringBootApplication(exclude = [SecurityAutoConfiguration::class])
 open class AppUniversity : CommandLineRunner {
-
+/*
     @Autowired
-    private lateinit var initializer: Initializer
+    private lateinit var initializer: Initializer*/
     override fun run(vararg args: String?) {
-        initializer.cleanDataBase()
-        initializer.loadData()
+       // initializer.cleanDataBase()
+        //initializer.loadData()
     }
 }
 
