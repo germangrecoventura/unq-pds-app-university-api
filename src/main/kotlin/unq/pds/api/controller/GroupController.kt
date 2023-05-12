@@ -24,7 +24,8 @@ import javax.validation.constraints.NotBlank
 @CrossOrigin
 @RequestMapping("groups")
 class GroupController(private val groupService: GroupService, private val commissionService: CommissionService) {
-
+    private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
+    private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
     @PostMapping
     @Operation(
         summary = "Registers a group",
@@ -67,7 +68,7 @@ class GroupController(private val groupService: GroupService, private val commis
     )
     fun createGroup(@CookieValue("jwt") jwt: String?, @RequestBody @Valid group: GroupDTO): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         return ResponseEntity(groupService.save(group.fromDTOToModel()), HttpStatus.OK)
     }
@@ -126,7 +127,7 @@ class GroupController(private val groupService: GroupService, private val commis
     )
     fun getGroup(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         return ResponseEntity(groupService.read(id), HttpStatus.OK)
     }
@@ -185,17 +186,17 @@ class GroupController(private val groupService: GroupService, private val commis
     )
     fun updateGroup(@CookieValue("jwt") jwt: String?, @RequestBody groupUpdateDTO: GroupUpdateDTO): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupUpdateDTO.id!!, body.issuer))
             ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             ) else if (body["role"] == "TEACHER" &&
                 !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.issuer, groupUpdateDTO.id!!)) {
             ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             )
         } else ResponseEntity(groupService.update(groupUpdateDTO), HttpStatus.OK)
@@ -258,11 +259,11 @@ class GroupController(private val groupService: GroupService, private val commis
     )
     fun deleteGroup(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         if (body["role"] != "ADMIN") return ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"),
+            messageNotAccess,
             HttpStatus.UNAUTHORIZED
         )
         groupService.delete(id)
@@ -327,18 +328,18 @@ class GroupController(private val groupService: GroupService, private val commis
         @NotBlank @PathVariable studentId: Long
     ): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupId, body.issuer)
             && body["id"].toString().toLong() != studentId)
             ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             ) else if (body["role"] == "TEACHER" &&
                     !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.issuer, groupId)) {
             ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             )
         } else ResponseEntity(groupService.addMember(groupId, studentId), HttpStatus.OK)
@@ -402,17 +403,17 @@ class GroupController(private val groupService: GroupService, private val commis
         @NotBlank @PathVariable studentId: Long
     ): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupId, body.issuer))
             ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             ) else if (body["role"] == "TEACHER" &&
                 !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.issuer, groupId)) {
             ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             )
         } else ResponseEntity(groupService.removeMember(groupId, studentId), HttpStatus.OK)
@@ -476,17 +477,17 @@ class GroupController(private val groupService: GroupService, private val commis
         @NotBlank @PathVariable projectId: Long
     ): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupId, body.issuer))
             ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             ) else if (body["role"] == "TEACHER" &&
                     !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.issuer, groupId)) {
             ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             )
         } else ResponseEntity(groupService.addProject(groupId, projectId), HttpStatus.OK)
@@ -524,7 +525,7 @@ class GroupController(private val groupService: GroupService, private val commis
     )
     fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
         if (jwt.isNullOrBlank()) {
-            return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         return ResponseEntity(groupService.readAll(), HttpStatus.OK)
     }

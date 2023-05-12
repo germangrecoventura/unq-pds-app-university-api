@@ -22,7 +22,6 @@ import javax.validation.constraints.NotBlank
 @CrossOrigin
 @RequestMapping("commissions")
 class CommissionController(private val commissionService: CommissionService) {
-
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
     private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
 

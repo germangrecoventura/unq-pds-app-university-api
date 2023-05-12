@@ -23,6 +23,9 @@ class StudentController {
     @CrossOrigin
     @RequestMapping("students")
     class StudentController(private val studentService: StudentService) {
+        private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
+        private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
+
         @PostMapping
         @Operation(
             summary = "Registers a student",
@@ -71,11 +74,11 @@ class StudentController {
             @RequestBody @Valid student: StudentCreateRequestDTO
         ): ResponseEntity<Any> {
             if (jwt.isNullOrBlank()) {
-                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             }
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
             return if (body["role"] != "ADMIN") ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             )
             else ResponseEntity(studentService.save(student), HttpStatus.OK)
@@ -135,7 +138,7 @@ class StudentController {
         )
         fun getStudent(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
             if (jwt.isNullOrBlank()) {
-                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             }
             return ResponseEntity(studentService.findById(id), HttpStatus.OK)
         }
@@ -197,11 +200,11 @@ class StudentController {
             @RequestBody student: StudentCreateRequestDTO
         ): ResponseEntity<Any> {
             if (jwt.isNullOrBlank()) {
-                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             }
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
             return if (body["role"] == "TEACHER") ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             ) else if (body["role"] == "STUDENT" && body["id"].toString().toLong() != student.id) {
                 ResponseEntity(
@@ -267,11 +270,11 @@ class StudentController {
         )
         fun deleteStudent(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
             if (jwt.isNullOrBlank()) {
-                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             }
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
             if (body["role"] != "ADMIN") return ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             )
             studentService.deleteById(id)
@@ -336,11 +339,11 @@ class StudentController {
             @NotBlank @PathVariable projectId: Long
         ): ResponseEntity<Any> {
             if (jwt.isNullOrBlank()) {
-                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             }
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
             return if (body["role"] == "TEACHER") ResponseEntity(
-                MessageDTO("You do not have permissions to access this resource"),
+                messageNotAccess,
                 HttpStatus.UNAUTHORIZED
             ) else if (body["role"] == "STUDENT" && body["id"].toString().toLong() != studentId)
                 ResponseEntity(
@@ -381,7 +384,7 @@ class StudentController {
         )
         fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
             if (jwt.isNullOrBlank()) {
-                return ResponseEntity(MessageDTO("It is not authenticated. Please log in"), HttpStatus.UNAUTHORIZED)
+                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             }
             return ResponseEntity(studentService.readAll(), HttpStatus.OK)
         }
