@@ -3,6 +3,8 @@ package unq.pds.services.impl
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
 import unq.pds.api.Validator
+import unq.pds.api.dtos.PaginatedRepositoryDTO
 import unq.pds.api.dtos.RepositoryDTO
 import unq.pds.model.*
 import unq.pds.model.exceptions.AlreadyRegisteredException
@@ -19,6 +22,7 @@ import unq.pds.model.exceptions.NotAuthenticatedException
 import unq.pds.persistence.RepositoryDAO
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.RepositoryService
+import java.lang.Math.toIntExact
 import javax.management.InvalidAttributeValueException
 
 
@@ -106,6 +110,63 @@ open class RepositoryServiceImpl : RepositoryService {
     override fun findByAll(): List<Repository> {
         return repositoryDAO.findAll().toList()
     }
+
+    override fun lengthPagesPaginatedCommit(name:String, size: Int): Int {
+        val pageRequest = PageRequest.of(0, size)
+        val commits = findByName(name).commits
+        val total = commits.size
+        val start: Int = toIntExact(pageRequest.offset)
+        val end = (start + pageRequest.pageSize).coerceAtMost(total)
+        var output: List<Commit> = mutableListOf()
+        if (start <= end) {
+            output = commits.subList(start, end)
+            output.sortedBy { it.nodeId }
+        }
+        return PageImpl(output, pageRequest, total.toLong()).totalPages
+    }
+
+    override fun findPaginatedCommit(name: String,page: Int, size: Int): PageImpl<Commit> {
+        val pageRequest = PageRequest.of(page, size)
+        val commits = findByName(name).commits
+        val total = commits.size
+        val start: Int = toIntExact(pageRequest.offset)
+        val end = (start + pageRequest.pageSize).coerceAtMost(total)
+        var output: List<Commit> = mutableListOf()
+        if (start <= end) {
+            output = commits.subList(start, end)
+            output.sortedBy { it.nodeId }
+        }
+        return PageImpl(output, pageRequest, total.toLong())
+    }
+
+    override fun findPaginatedIssue(paginatedRepositoryDTO: PaginatedRepositoryDTO): PageImpl<Issue> {
+        val pageRequest = PageRequest.of(paginatedRepositoryDTO.numberPage!!, paginatedRepositoryDTO.sizePage!!)
+        val issues = findByName(paginatedRepositoryDTO.nameRepository!!).issues
+        val total = issues.size
+        val start: Int = toIntExact(pageRequest.offset)
+        val end = (start + pageRequest.pageSize).coerceAtMost(total)
+        var output: List<Issue> = mutableListOf()
+        if (start <= end) {
+            output = issues.subList(start, end)
+            output.sortedBy { it.id }
+        }
+        return PageImpl(output, pageRequest, total.toLong())
+    }
+
+    override fun findPaginatedPullRequest(paginatedRepositoryDTO: PaginatedRepositoryDTO): PageImpl<PullRequest> {
+        val pageRequest = PageRequest.of(paginatedRepositoryDTO.numberPage!!, paginatedRepositoryDTO.sizePage!!)
+        val pulls = findByName(paginatedRepositoryDTO.nameRepository!!).pullRequests
+        val total = pulls.size
+        val start: Int = toIntExact(pageRequest.offset)
+        val end = (start + pageRequest.pageSize).coerceAtMost(total)
+        var output: List<PullRequest> = mutableListOf()
+        if (start <= end) {
+            output = pulls.subList(start, end)
+            output.sortedBy { it.id }
+        }
+        return PageImpl(output, pageRequest, total.toLong())
+    }
+
 
     override fun deleteById(repositoryId: Long) {
         if (repositoryDAO.existsById(repositoryId)) repositoryDAO.deleteById(repositoryId)

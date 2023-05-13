@@ -8,21 +8,26 @@ import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import org.springframework.data.domain.PageImpl
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
+import unq.pds.api.dtos.PaginatedRepositoryDTO
 import unq.pds.api.dtos.RepositoryDTO
+import unq.pds.model.Commit
 import unq.pds.model.Repository
 import unq.pds.services.RepositoryService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
+
 
 @RestController
 @CrossOrigin
 @RequestMapping("repositories")
 class RepositoryController(private val repositoryService: RepositoryService) {
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
+
     @PostMapping
     @Operation(
         summary = "Registers a repository",
@@ -296,5 +301,15 @@ class RepositoryController(private val repositoryService: RepositoryService) {
             return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         return ResponseEntity(repositoryService.findByAll(), HttpStatus.OK)
+    }
+
+    @GetMapping("/lengthPagesPaginatedCommit")
+    fun lengthPagesPaginatedCommit(@NotBlank @RequestParam name: String, @NotBlank @RequestParam size: Int): Int {
+        return repositoryService.lengthPagesPaginatedCommit(name, size)
+    }
+
+    @GetMapping("/pageCommit")
+    fun getPaginatedCommit(@NotBlank @RequestParam name: String, @NotBlank @RequestParam page: Int, @NotBlank @RequestParam size: Int): ResponseEntity<PageImpl<Commit>> {
+        return ResponseEntity(repositoryService.findPaginatedCommit(name,page,size), HttpStatus.OK)
     }
 }
