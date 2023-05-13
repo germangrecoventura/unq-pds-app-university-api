@@ -16,8 +16,10 @@ interface RepositoryService {
     fun findByAll(): List<Repository>
     fun lengthPagesPaginatedCommit(name: String, size: Int): Int
     fun findPaginatedCommit(name: String,page: Int, size: Int): PageImpl<Commit>
-    fun findPaginatedIssue(paginatedRepositoryDTO: PaginatedRepositoryDTO): PageImpl<Issue>
-    fun findPaginatedPullRequest(paginatedRepositoryDTO: PaginatedRepositoryDTO): PageImpl<PullRequest>
+    fun lengthPagesPaginatedIssue(name: String, size: Int): Int
+    fun lengthPagesPaginatedPullRequest(name: String, size: Int): Int
+    fun findPaginatedIssue(name: String,page: Int, size: Int): PageImpl<Issue>
+    fun findPaginatedPullRequest(name: String,page: Int, size: Int): PageImpl<PullRequest>
     fun deleteById(repositoryId: Long)
     fun count(): Int
     fun clearRepositories()

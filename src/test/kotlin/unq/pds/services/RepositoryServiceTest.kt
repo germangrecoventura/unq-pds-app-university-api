@@ -33,7 +33,7 @@ class RepositoryServiceTest {
     }
 
     // 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
-  /*  @Test
+   /* @Test
     fun `prueba`() {
         studentService.save(aStudentDTO().withTokenGithub(token).build())
         val repo = repositoryService.save(aRepositoryDTO().build())
@@ -42,7 +42,7 @@ class RepositoryServiceTest {
         ala.numberPage = 0
         ala.sizePage = 20
 
-        val commitPage = repositoryService.findPaginatedCommit(ala)
+        val commitPage = repositoryService.fin(ala)
         val jose = 5
     }*/
 

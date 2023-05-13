@@ -16,6 +16,8 @@ import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.PaginatedRepositoryDTO
 import unq.pds.api.dtos.RepositoryDTO
 import unq.pds.model.Commit
+import unq.pds.model.Issue
+import unq.pds.model.PullRequest
 import unq.pds.model.Repository
 import unq.pds.services.RepositoryService
 import javax.validation.Valid
@@ -311,5 +313,25 @@ class RepositoryController(private val repositoryService: RepositoryService) {
     @GetMapping("/pageCommit")
     fun getPaginatedCommit(@NotBlank @RequestParam name: String, @NotBlank @RequestParam page: Int, @NotBlank @RequestParam size: Int): ResponseEntity<PageImpl<Commit>> {
         return ResponseEntity(repositoryService.findPaginatedCommit(name,page,size), HttpStatus.OK)
+    }
+
+    @GetMapping("/lengthPagesPaginatedIssue")
+    fun lengthPagesPaginatedIssue(@NotBlank @RequestParam name: String, @NotBlank @RequestParam size: Int): Int {
+        return repositoryService.lengthPagesPaginatedIssue(name, size)
+    }
+
+    @GetMapping("/pageIssue")
+    fun getPaginatedIssue(@NotBlank @RequestParam name: String, @NotBlank @RequestParam page: Int, @NotBlank @RequestParam size: Int): ResponseEntity<PageImpl<Issue>> {
+        return ResponseEntity(repositoryService.findPaginatedIssue(name,page,size), HttpStatus.OK)
+    }
+
+    @GetMapping("/lengthPagesPaginatedPullRequest")
+    fun lengthPagesPaginatedPullRequest(@NotBlank @RequestParam name: String, @NotBlank @RequestParam size: Int): Int {
+        return repositoryService.lengthPagesPaginatedIssue(name, size)
+    }
+
+    @GetMapping("/pagePullRequest")
+    fun getPaginatedPullRequest(@NotBlank @RequestParam name: String, @NotBlank @RequestParam page: Int, @NotBlank @RequestParam size: Int): ResponseEntity<PageImpl<PullRequest>> {
+        return ResponseEntity(repositoryService.findPaginatedPullRequest(name,page,size), HttpStatus.OK)
     }
 }
