@@ -1,8 +1,10 @@
 package unq.pds.persistence
 
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import unq.pds.model.Comment
+import unq.pds.model.Commit
 import unq.pds.model.Repository
 import java.util.*
 
@@ -17,5 +19,25 @@ interface RepositoryDAO : JpaRepository<Repository, Long>{
             WHERE r.id = ?1
         """
     )
-    fun commentsFromId(id:Long): List<Comment>
+    fun commentsFromId(id: Long): List<Comment>
+
+    @Query(
+        """
+            SELECT cs
+            FROM Repository r
+            JOIN r.commits cs
+            WHERE r.name = ?1
+        """
+    )
+    fun getCommitsByPageFromRepository(name: String, page: Pageable): List<Commit>
+
+    @Query(
+        """
+            SELECT COUNT(cs)
+            FROM Repository r
+            JOIN r.commits cs
+            WHERE r.name = ?1
+        """
+    )
+    fun countCommitsFromRepository(name: String): Int
 }

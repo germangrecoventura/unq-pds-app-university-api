@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
-import unq.pds.api.dtos.PaginatedRepositoryDTO
 import unq.pds.api.dtos.RepositoryDTO
 import unq.pds.model.Commit
 import unq.pds.model.Issue
@@ -311,7 +310,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
     }
 
     @GetMapping("/pageCommit")
-    fun getPaginatedCommit(@NotBlank @RequestParam name: String, @NotBlank @RequestParam page: Int, @NotBlank @RequestParam size: Int): ResponseEntity<PageImpl<Commit>> {
+    fun getPaginatedCommit(@NotBlank @RequestParam name: String, @NotBlank @RequestParam page: Int, @NotBlank @RequestParam size: Int): ResponseEntity<List<Commit>> {
         return ResponseEntity(repositoryService.findPaginatedCommit(name,page,size), HttpStatus.OK)
     }
 

@@ -23,6 +23,7 @@ import unq.pds.persistence.StudentDAO
 import unq.pds.services.RepositoryService
 import java.lang.Math.toIntExact
 import javax.management.InvalidAttributeValueException
+import kotlin.math.ceil
 
 
 @Service
@@ -111,22 +112,24 @@ open class RepositoryServiceImpl : RepositoryService {
     }
 
     override fun lengthPagesPaginatedCommit(name: String, size: Int): Int {
-        val pageRequest = PageRequest.of(0, size)
+        val total = repositoryDAO.countCommitsFromRepository(name)
+        return ceil(total / size.toDouble()).toInt()
+        /*val pageRequest = PageRequest.of(0, size)
         val commits = findByName(name).commits
-        val total = commits.size
-        val start: Int = toIntExact(pageRequest.offset)
+
+        val start = toIntExact(pageRequest.offset)
         val end = (start + pageRequest.pageSize).coerceAtMost(total)
         var output: List<Commit> = mutableListOf()
         if (start <= end) {
             output = commits.subList(start, end)
             output.sortedBy { it.nodeId }
-        }
-        return PageImpl(output, pageRequest, total.toLong()).totalPages
+        }*/
     }
 
-    override fun findPaginatedCommit(name: String, page: Int, size: Int): PageImpl<Commit> {
+    override fun findPaginatedCommit(name: String, page: Int, size: Int): List<Commit> {
         val pageRequest = PageRequest.of(page, size)
-        val commits = findByName(name).commits
+        return repositoryDAO.getCommitsByPageFromRepository(name, pageRequest)
+        /*val commits = findByName(name).commits
         val total = commits.size
         val start: Int = toIntExact(pageRequest.offset)
         val end = (start + pageRequest.pageSize).coerceAtMost(total)
@@ -134,8 +137,8 @@ open class RepositoryServiceImpl : RepositoryService {
         if (start <= end) {
             output = commits.subList(start, end)
             output.sortedBy { it.nodeId }
-        }
-        return PageImpl(output, pageRequest, total.toLong())
+        }*/
+        //return PageImpl(output, pageRequest, total.toLong())
     }
 
     override fun lengthPagesPaginatedIssue(name: String, size: Int): Int {

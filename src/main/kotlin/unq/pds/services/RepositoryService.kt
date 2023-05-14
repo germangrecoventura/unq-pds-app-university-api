@@ -1,7 +1,6 @@
 package unq.pds.services
 
 import org.springframework.data.domain.PageImpl
-import unq.pds.api.dtos.PaginatedRepositoryDTO
 import unq.pds.api.dtos.RepositoryDTO
 import unq.pds.model.Commit
 import unq.pds.model.Issue
@@ -15,7 +14,7 @@ interface RepositoryService {
     fun findByName(name: String): Repository
     fun findByAll(): List<Repository>
     fun lengthPagesPaginatedCommit(name: String, size: Int): Int
-    fun findPaginatedCommit(name: String,page: Int, size: Int): PageImpl<Commit>
+    fun findPaginatedCommit(name: String,page: Int, size: Int): List<Commit>
     fun lengthPagesPaginatedIssue(name: String, size: Int): Int
     fun lengthPagesPaginatedPullRequest(name: String, size: Int): Int
     fun findPaginatedIssue(name: String,page: Int, size: Int): PageImpl<Issue>
