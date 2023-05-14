@@ -1,0 +1,1 @@
+INSERT INTO admin_university (id, email, password) VALUES (1, "admin@gmail.com", "funciona");
