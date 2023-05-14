@@ -16,8 +16,8 @@ interface RepositoryService {
     fun lengthPagesPaginatedCommit(name: String, size: Int): Int
     fun findPaginatedCommit(name: String,page: Int, size: Int): List<Commit>
     fun lengthPagesPaginatedIssue(name: String, size: Int): Int
+    fun findPaginatedIssue(name: String,page: Int, size: Int): List<Issue>
     fun lengthPagesPaginatedPullRequest(name: String, size: Int): Int
-    fun findPaginatedIssue(name: String,page: Int, size: Int): PageImpl<Issue>
     fun findPaginatedPullRequest(name: String,page: Int, size: Int): PageImpl<PullRequest>
     fun deleteById(repositoryId: Long)
     fun count(): Int

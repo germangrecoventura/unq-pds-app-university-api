@@ -320,7 +320,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
     }
 
     @GetMapping("/pageIssue")
-    fun getPaginatedIssue(@NotBlank @RequestParam name: String, @NotBlank @RequestParam page: Int, @NotBlank @RequestParam size: Int): ResponseEntity<PageImpl<Issue>> {
+    fun getPaginatedIssue(@NotBlank @RequestParam name: String, @NotBlank @RequestParam page: Int, @NotBlank @RequestParam size: Int): ResponseEntity<List<Issue>> {
         return ResponseEntity(repositoryService.findPaginatedIssue(name,page,size), HttpStatus.OK)
     }
 

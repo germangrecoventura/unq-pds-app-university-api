@@ -114,59 +114,21 @@ open class RepositoryServiceImpl : RepositoryService {
     override fun lengthPagesPaginatedCommit(name: String, size: Int): Int {
         val total = repositoryDAO.countCommitsFromRepository(name)
         return ceil(total / size.toDouble()).toInt()
-        /*val pageRequest = PageRequest.of(0, size)
-        val commits = findByName(name).commits
-
-        val start = toIntExact(pageRequest.offset)
-        val end = (start + pageRequest.pageSize).coerceAtMost(total)
-        var output: List<Commit> = mutableListOf()
-        if (start <= end) {
-            output = commits.subList(start, end)
-            output.sortedBy { it.nodeId }
-        }*/
     }
 
     override fun findPaginatedCommit(name: String, page: Int, size: Int): List<Commit> {
         val pageRequest = PageRequest.of(page, size)
         return repositoryDAO.getCommitsByPageFromRepository(name, pageRequest)
-        /*val commits = findByName(name).commits
-        val total = commits.size
-        val start: Int = toIntExact(pageRequest.offset)
-        val end = (start + pageRequest.pageSize).coerceAtMost(total)
-        var output: List<Commit> = mutableListOf()
-        if (start <= end) {
-            output = commits.subList(start, end)
-            output.sortedBy { it.nodeId }
-        }*/
-        //return PageImpl(output, pageRequest, total.toLong())
     }
 
     override fun lengthPagesPaginatedIssue(name: String, size: Int): Int {
-        val pageRequest = PageRequest.of(0, size)
-        val issues = findByName(name).issues
-        val total = issues.size
-        val start: Int = toIntExact(pageRequest.offset)
-        val end = (start + pageRequest.pageSize).coerceAtMost(total)
-        var output: List<Issue> = mutableListOf()
-        if (start <= end) {
-            output = issues.subList(start, end)
-            output.sortedBy { it.id }
-        }
-        return PageImpl(output, pageRequest, total.toLong()).totalPages
+        val total = repositoryDAO.countIssuesFromRepository(name)
+        return ceil(total / size.toDouble()).toInt()
     }
 
-    override fun findPaginatedIssue(name: String, page: Int, size: Int): PageImpl<Issue> {
+    override fun findPaginatedIssue(name: String, page: Int, size: Int): List<Issue> {
         val pageRequest = PageRequest.of(page, size)
-        val issues = findByName(name).issues
-        val total = issues.size
-        val start: Int = toIntExact(pageRequest.offset)
-        val end = (start + pageRequest.pageSize).coerceAtMost(total)
-        var output: List<Issue> = mutableListOf()
-        if (start <= end) {
-            output = issues.subList(start, end)
-            output.sortedBy { it.id }
-        }
-        return PageImpl(output, pageRequest, total.toLong())
+        return repositoryDAO.getIssuesByPageFromRepository(name, pageRequest)
     }
 
     override fun lengthPagesPaginatedPullRequest(name: String, size: Int): Int {
