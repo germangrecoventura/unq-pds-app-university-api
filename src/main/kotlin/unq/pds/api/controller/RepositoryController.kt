@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import org.springframework.data.domain.PageImpl
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -21,7 +20,6 @@ import unq.pds.model.Repository
 import unq.pds.services.RepositoryService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
-
 
 @RestController
 @CrossOrigin
@@ -330,7 +328,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
     }
 
     @GetMapping("/pagePullRequest")
-    fun getPaginatedPullRequest(@NotBlank @RequestParam name: String, @NotBlank @RequestParam page: Int, @NotBlank @RequestParam size: Int): ResponseEntity<PageImpl<PullRequest>> {
+    fun getPaginatedPullRequest(@NotBlank @RequestParam name: String, @NotBlank @RequestParam page: Int, @NotBlank @RequestParam size: Int): ResponseEntity<List<PullRequest>> {
         return ResponseEntity(repositoryService.findPaginatedPullRequest(name,page,size), HttpStatus.OK)
     }
 }

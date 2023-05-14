@@ -3,10 +3,7 @@ package unq.pds.persistence
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
-import unq.pds.model.Comment
-import unq.pds.model.Commit
-import unq.pds.model.Issue
-import unq.pds.model.Repository
+import unq.pds.model.*
 import java.util.*
 
 interface RepositoryDAO : JpaRepository<Repository, Long>{
@@ -61,4 +58,24 @@ interface RepositoryDAO : JpaRepository<Repository, Long>{
         """
     )
     fun countIssuesFromRepository(name: String): Int
+
+    @Query(
+        """
+            SELECT prs
+            FROM Repository r
+            JOIN r.pullRequests prs
+            WHERE r.name = ?1
+        """
+    )
+    fun getPullRequestsByPageFromRepository(name: String, page: Pageable): List<PullRequest>
+
+    @Query(
+        """
+            SELECT COUNT(prs)
+            FROM Repository r
+            JOIN r.pullRequests prs
+            WHERE r.name = ?1
+        """
+    )
+    fun countPullRequestsFromRepository(name: String): Int
 }

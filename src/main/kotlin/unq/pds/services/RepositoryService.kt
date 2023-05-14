@@ -1,6 +1,5 @@
 package unq.pds.services
 
-import org.springframework.data.domain.PageImpl
 import unq.pds.api.dtos.RepositoryDTO
 import unq.pds.model.Commit
 import unq.pds.model.Issue
@@ -18,7 +17,7 @@ interface RepositoryService {
     fun lengthPagesPaginatedIssue(name: String, size: Int): Int
     fun findPaginatedIssue(name: String,page: Int, size: Int): List<Issue>
     fun lengthPagesPaginatedPullRequest(name: String, size: Int): Int
-    fun findPaginatedPullRequest(name: String,page: Int, size: Int): PageImpl<PullRequest>
+    fun findPaginatedPullRequest(name: String,page: Int, size: Int): List<PullRequest>
     fun deleteById(repositoryId: Long)
     fun count(): Int
     fun clearRepositories()
