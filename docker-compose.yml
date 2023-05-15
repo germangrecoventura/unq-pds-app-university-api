@@ -32,6 +32,7 @@ services:
       - MYSQL_PASSWORD=root
       - MYSQL_DATABASE=app-universidad
       - MYSQL_PORT=3306
+      - ENCRYPT_PASSWORD=some_salt
 
 networks:
   bored-network:
