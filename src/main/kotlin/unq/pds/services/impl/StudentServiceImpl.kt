@@ -1,7 +1,7 @@
 package unq.pds.services.impl
 
+import org.jasypt.util.text.AES256TextEncryptor
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.StudentCreateRequestDTO
@@ -27,6 +27,9 @@ open class StudentServiceImpl : StudentService {
     lateinit var userService: UserService
 
     override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
+        val encryptor = AES256TextEncryptor()
+        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
+        val tokenEncrypt = encryptor.encrypt(studentCreateRequestDTO.tokenGithub)
         if (userService.theEmailIsRegistered(studentCreateRequestDTO.email!!)) throw AlreadyRegisteredException("email")
         if (studentCreateRequestDTO.ownerGithub != null) {
             var studentWithOwnerGithub = studentDAO.findByOwnerGithub(studentCreateRequestDTO.ownerGithub!!)
@@ -35,53 +38,57 @@ open class StudentServiceImpl : StudentService {
             }
         }
         if (studentCreateRequestDTO.tokenGithub != null) {
-            var studentWithOwnerGithub = studentDAO.findByTokenGithub(studentCreateRequestDTO.tokenGithub!!)
-            if (studentWithOwnerGithub.isPresent) {
+            var studentWithTokenGithub = studentDAO.findAll()
+                .any { student -> encryptor.decrypt(student.getTokenGithub()) == studentCreateRequestDTO.tokenGithub }
+            if (studentWithTokenGithub) {
                 throw AlreadyRegisteredException("token github")
             }
         }
 
+        val myEncryptedPassword = encryptor.encrypt(studentCreateRequestDTO.password)
         val student = Student(
             studentCreateRequestDTO.firstName!!,
             studentCreateRequestDTO.lastName!!,
             studentCreateRequestDTO.email!!,
-            BCryptPasswordEncoder().encode(studentCreateRequestDTO.password!!),
+            myEncryptedPassword,
             studentCreateRequestDTO.ownerGithub,
-            studentCreateRequestDTO.tokenGithub
+            tokenEncrypt
         )
         return studentDAO.save(student)
     }
 
-    override fun update(student: StudentCreateRequestDTO): Student {
-        if (student.ownerGithub != null) {
-            var studentWithOwnerGithub = studentDAO.findByOwnerGithub(student.ownerGithub!!)
-            if (studentWithOwnerGithub.isPresent && student.id != studentWithOwnerGithub.get().getId()) {
+    override fun update(studentDTO: StudentCreateRequestDTO): Student {
+        val encryptor = AES256TextEncryptor()
+        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
+        if (studentDTO.ownerGithub != null) {
+            var studentWithOwnerGithub = studentDAO.findByOwnerGithub(studentDTO.ownerGithub!!)
+            if (studentWithOwnerGithub.isPresent && studentDTO.id != studentWithOwnerGithub.get().getId()) {
                 throw AlreadyRegisteredException("owner github")
             }
         }
-        if (student.tokenGithub != null) {
-            var studentWithToken = studentDAO.findByTokenGithub(student.tokenGithub!!)
-            if (studentWithToken.isPresent && student.id != studentWithToken.get().getId()) {
+        if (studentDTO.tokenGithub != null) {
+            var studentWithTokenGithub = studentDAO.findAll()
+                .find { student -> encryptor.decrypt(student.getTokenGithub()) == studentDTO.tokenGithub }
+            if (studentWithTokenGithub != null && studentDTO.id != studentWithTokenGithub.getId()) {
                 throw AlreadyRegisteredException("token github")
             }
         }
-
-        var studentWithEmail = studentDAO.findByEmail(student.email!!)
-        if (userService.theEmailIsRegistered(student.email!!) && !studentWithEmail.isPresent) {
+        var studentWithEmail = studentDAO.findByEmail(studentDTO.email!!)
+        if (userService.theEmailIsRegistered(studentDTO.email!!) && !studentWithEmail.isPresent) {
             throw AlreadyRegisteredException("email")
         }
-        if (studentWithEmail.isPresent && student.id != studentWithEmail.get().getId()) {
+        if (studentWithEmail.isPresent && studentDTO.id != studentWithEmail.get().getId()) {
             throw AlreadyRegisteredException("email")
         }
-        if (student.id != null && studentDAO.existsById(student.id!!)) {
-            val studentFind = studentDAO.findById(student.id!!).get()
+        if (studentDTO.id != null && studentDAO.existsById(studentDTO.id!!)) {
+            val studentFind = studentDAO.findById(studentDTO.id!!).get()
             studentFind.apply {
-                setFirstName(student.firstName)
-                setLastName(student.lastName)
-                setEmail(student.email)
-                setPassword(BCryptPasswordEncoder().encode(student.password))
-                setOwnerGithub(student.ownerGithub)
-                setTokenGithub(student.tokenGithub)
+                setFirstName(studentDTO.firstName)
+                setLastName(studentDTO.lastName)
+                setEmail(studentDTO.email)
+                setPassword(studentDTO.password!!)
+                setOwnerGithub(studentDTO.ownerGithub)
+                setTokenGithub(studentDTO.tokenGithub)
             }
             return studentDAO.save(studentFind)
         } else throw NoSuchElementException("Student does not exist")

@@ -3,7 +3,7 @@ package unq.pds.model
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import io.swagger.v3.oas.annotations.media.Schema
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.jasypt.util.text.AES256TextEncryptor
 import unq.pds.api.Validator
 import javax.management.InvalidAttributeValueException
 import javax.persistence.Column
@@ -20,7 +20,7 @@ class Student(
         nullable = false,
         unique = true
     ) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String,
-    @JsonProperty @field:Schema(example = "$" + "2a" + "$" + "CIymVbnbW.QfAyLP2mcw1ugKSpHbXn/N07sBhLjxUD1XqdlBNzHQi") private var password: String,
+    @JsonProperty @field:Schema(example = "QVNm6Z3nmXAqTzQUDWrGgTGLoyVKPw+z+RZ4784R4MZi5E2OpjqR01ChmR2qTmgo") private var password: String,
     @Column(
         nullable = true,
         unique = true
@@ -117,7 +117,10 @@ class Student(
 
     fun setPassword(password: String) {
         validatePassword(password)
-        this.password = password
+        val encryptor = AES256TextEncryptor()
+        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
+        val myEncryptedPassword = encryptor.encrypt(password)
+        this.password = myEncryptedPassword
     }
 
     fun getRole(): String {
@@ -125,6 +128,9 @@ class Student(
     }
 
     fun comparePassword(password: String): Boolean {
-        return BCryptPasswordEncoder().matches(password, getPassword())
+        val encryptor = AES256TextEncryptor()
+        encryptor.setPassword("some_salt")
+        val myEncryptedPassword = encryptor.decrypt(getPassword())
+        return password == myEncryptedPassword
     }
 }

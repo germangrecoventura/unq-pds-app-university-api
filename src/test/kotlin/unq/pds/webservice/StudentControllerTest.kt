@@ -294,9 +294,9 @@ class StudentControllerTest {
     @Test
     fun `should throw a 400 status when you save a student with token is already registered`() {
         val cookie = cookiesAdmin()
-        var student = studentService.save(aStudentDTO().withTokenGithub("prueba").build())
+        studentService.save(aStudentDTO().withTokenGithub("prueba").build())
         var student2 = aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba")
-            .withTokenGithub(student.getTokenGithub()).build()
+            .withTokenGithub("prueba").build()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -768,10 +768,10 @@ class StudentControllerTest {
     @Test
     fun `should throw a 400 status when you update a student with token is already registered`() {
         val cookie = cookiesAdmin()
-        var student = studentService.save(aStudentDTO().withTokenGithub("prueba").build())
+        studentService.save(aStudentDTO().withTokenGithub("prueba").build())
         var student2 =
             studentService.save(aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").build())
-        student2.setTokenGithub(student.getTokenGithub())
+        student2.setTokenGithub("prueba")
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/students")
