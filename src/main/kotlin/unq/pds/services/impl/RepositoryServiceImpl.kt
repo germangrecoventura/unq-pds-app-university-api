@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.jasypt.util.text.AES256TextEncryptor
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -21,6 +22,7 @@ import unq.pds.persistence.RepositoryDAO
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.RepositoryService
 import javax.management.InvalidAttributeValueException
+import kotlin.math.ceil
 
 
 @Service
@@ -35,6 +37,7 @@ open class RepositoryServiceImpl : RepositoryService {
 
     @Autowired
     private lateinit var studentDAO: StudentDAO
+
     override fun save(repositoryDTO: RepositoryDTO): Repository {
         val repositoryFind = getRepository(repositoryDTO.owner!!, repositoryDTO.name!!)
         if (repositoryDAO.existsById(repositoryFind!!["id"].asLong())) {
@@ -108,11 +111,40 @@ open class RepositoryServiceImpl : RepositoryService {
         return repositoryDAO.findAll().toList()
     }
 
+    override fun lengthPagesPaginatedCommit(name: String, size: Int): Int {
+        val total = repositoryDAO.countCommitsFromRepository(name)
+        return ceil(total / size.toDouble()).toInt()
+    }
+
+    override fun findPaginatedCommit(name: String, page: Int, size: Int): List<Commit> {
+        val pageRequest = PageRequest.of(page, size)
+        return repositoryDAO.getCommitsByPageFromRepository(name, pageRequest)
+    }
+
+    override fun lengthPagesPaginatedIssue(name: String, size: Int): Int {
+        val total = repositoryDAO.countIssuesFromRepository(name)
+        return ceil(total / size.toDouble()).toInt()
+    }
+
+    override fun findPaginatedIssue(name: String, page: Int, size: Int): List<Issue> {
+        val pageRequest = PageRequest.of(page, size)
+        return repositoryDAO.getIssuesByPageFromRepository(name, pageRequest)
+    }
+
+    override fun lengthPagesPaginatedPullRequest(name: String, size: Int): Int {
+        val total = repositoryDAO.countPullRequestsFromRepository(name)
+        return ceil(total / size.toDouble()).toInt()
+    }
+
+    override fun findPaginatedPullRequest(name: String, page: Int, size: Int): List<PullRequest> {
+        val pageRequest = PageRequest.of(page, size)
+        return repositoryDAO.getPullRequestsByPageFromRepository(name, pageRequest)
+    }
+
     override fun deleteById(repositoryId: Long) {
         if (repositoryDAO.existsById(repositoryId)) repositoryDAO.deleteById(repositoryId)
         else throw NoSuchElementException("The repository with id $repositoryId is not registered")
     }
-
 
     override fun count(): Int {
         return repositoryDAO.count().toInt()
@@ -121,7 +153,6 @@ open class RepositoryServiceImpl : RepositoryService {
     override fun clearRepositories() {
         repositoryDAO.deleteAll()
     }
-
 
     private fun getRepositoryIssues(ownerGithub: String, nameRepository: String): MutableList<Issue>? {
         val mapper = ObjectMapper()
@@ -238,7 +269,6 @@ open class RepositoryServiceImpl : RepositoryService {
         list.sortBy { it.nodeId }
         return list
     }
-
 
     private fun getRepository(ownerRepository: String, nameRepository: String): JsonNode? {
         try {

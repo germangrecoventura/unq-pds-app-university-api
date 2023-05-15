@@ -65,8 +65,7 @@ class Initializer {
 
     private fun loadStudents() {
         val students = mutableListOf(
-            BuilderStudentDTO.aStudentDTO().build(),
-            BuilderStudentDTO.aStudentDTO().withFirstName("Lucas").withLastName("Ziegemann")
+            BuilderStudentDTO.aStudentDTO().withTokenGithub(System.getenv("TOKEN_GITHUB")).build(),            BuilderStudentDTO.aStudentDTO().withFirstName("Lucas").withLastName("Ziegemann")
                 .withEmail("lucas@gmail.com").withOwnerGithub("prueba").build()
         )
         val mutListIterator = students.listIterator()

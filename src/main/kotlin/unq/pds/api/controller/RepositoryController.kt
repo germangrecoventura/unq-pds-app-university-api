@@ -23,6 +23,7 @@ import javax.validation.constraints.NotBlank
 @RequestMapping("repositories")
 class RepositoryController(private val repositoryService: RepositoryService) {
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
+
     @PostMapping
     @Operation(
         summary = "Registers a repository",
@@ -32,7 +33,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "success",
+                description = "Success",
                 content = [
                     Content(
                         mediaType = "application/json",
@@ -204,7 +205,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "success",
+                description = "Success",
                 content = [
                     Content(
                         mediaType = "application/json", examples = [ExampleObject(
@@ -296,5 +297,386 @@ class RepositoryController(private val repositoryService: RepositoryService) {
             return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         }
         return ResponseEntity(repositoryService.findByAll(), HttpStatus.OK)
+    }
+
+    @GetMapping("/lengthPagesPaginatedCommit")
+    @Operation(
+        summary = "Number of commit pages",
+        description = "Number of commit pages",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = Int::class),
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not Found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"The repository with id is not registered\"\n" +
+                                "}"
+                    )]
+                )]
+            )]
+    )
+    fun lengthPagesPaginatedCommit(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @RequestParam name: String,
+        @NotBlank @RequestParam size: Int
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        return ResponseEntity(repositoryService.lengthPagesPaginatedCommit(name, size), HttpStatus.OK)
+    }
+
+    @GetMapping("/pageCommit")
+    @Operation(
+        summary = "Get commit page",
+        description = "Get commit page",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{[\"[commitOne,commitTwo,...]\"]" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not Found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"The repository with id is not registered\"\n" +
+                                "}"
+                    )]
+                )]
+            )]
+    )
+    fun getPaginatedCommit(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @RequestParam name: String,
+        @NotBlank @RequestParam page: Int,
+        @NotBlank @RequestParam size: Int
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        return ResponseEntity(repositoryService.findPaginatedCommit(name, page, size), HttpStatus.OK)
+    }
+
+    @GetMapping("/lengthPagesPaginatedIssue")
+    @Operation(
+        summary = "Number of issue pages",
+        description = "Number of issue pages",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = Int::class),
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not Found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"The repository with id is not registered\"\n" +
+                                "}"
+                    )]
+                )]
+            )]
+    )
+    fun lengthPagesPaginatedIssue(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @RequestParam name: String,
+        @NotBlank @RequestParam size: Int
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        return ResponseEntity(repositoryService.lengthPagesPaginatedIssue(name, size), HttpStatus.OK)
+    }
+
+    @GetMapping("/pageIssue")
+    @Operation(
+        summary = "Get issue page",
+        description = "Get issue page",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{[\"[issueOne,issueTwo,...]\"]" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not Found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"The repository with id is not registered\"\n" +
+                                "}"
+                    )]
+                )]
+            )]
+    )
+    fun getPaginatedIssue(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @RequestParam name: String,
+        @NotBlank @RequestParam page: Int,
+        @NotBlank @RequestParam size: Int
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        return ResponseEntity(repositoryService.findPaginatedIssue(name, page, size), HttpStatus.OK)
+    }
+
+    @GetMapping("/lengthPagesPaginatedPullRequest")
+    @Operation(
+        summary = "Number of pull request pages",
+        description = "Number of pull request pages",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = Int::class),
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not Found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"The repository with id is not registered\"\n" +
+                                "}"
+                    )]
+                )]
+            )]
+    )
+    fun lengthPagesPaginatedPullRequest(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @RequestParam name: String,
+        @NotBlank @RequestParam size: Int
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        return ResponseEntity(repositoryService.lengthPagesPaginatedPullRequest(name, size), HttpStatus.OK)
+    }
+
+    @GetMapping("/pagePullRequest")
+    @Operation(
+        summary = "Get pull request page",
+        description = "Get pull request page",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{[\"[pullRequestOne,pullRequestTwo,...]\"]" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not Found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"The repository with id is not registered\"\n" +
+                                "}"
+                    )]
+                )]
+            )]
+    )
+    fun getPaginatedPullRequest(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @RequestParam name: String,
+        @NotBlank @RequestParam page: Int,
+        @NotBlank @RequestParam size: Int
+    ): ResponseEntity<Any> {
+        if (jwt.isNullOrBlank()) {
+            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        }
+        return ResponseEntity(repositoryService.findPaginatedPullRequest(name, page, size), HttpStatus.OK)
     }
 }
