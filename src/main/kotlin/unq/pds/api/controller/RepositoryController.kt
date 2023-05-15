@@ -324,7 +324,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
 
     @GetMapping("/lengthPagesPaginatedPullRequest")
     fun lengthPagesPaginatedPullRequest(@NotBlank @RequestParam name: String, @NotBlank @RequestParam size: Int): Int {
-        return repositoryService.lengthPagesPaginatedIssue(name, size)
+        return repositoryService.lengthPagesPaginatedPullRequest(name, size)
     }
 
     @GetMapping("/pagePullRequest")
