@@ -7,6 +7,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
+import unq.pds.api.dtos.PaginatedRepositoryDTO
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
@@ -30,6 +31,20 @@ class RepositoryServiceTest {
     fun tearDown() {
         initializer.cleanDataBase()
     }
+
+    // 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
+   /* @Test
+    fun `prueba`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        val repo = repositoryService.save(aRepositoryDTO().build())
+        val ala = PaginatedRepositoryDTO()
+        ala.nameRepository = "unq-pds-app-university-api"
+        ala.numberPage = 0
+        ala.sizePage = 20
+
+        val commitPage = repositoryService.fin(ala)
+        val jose = 5
+    }*/
 
     @Test
     fun `should be create a repository when it has valid credentials`() {
@@ -331,5 +346,53 @@ class RepositoryServiceTest {
         Assertions.assertEquals(2, repositories.size)
         Assertions.assertTrue(repositories.any { it.name == "unq-pds-app-university-api" })
         Assertions.assertTrue(repositories.any { it.name == "unq-pds-app-university-web" })
+    }
+
+    @Test
+    fun `should not throw an exception when querying the page count of commits`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withName("unq-pds-app-university-web").build())
+        assertDoesNotThrow { repositoryService.lengthPagesPaginatedCommit(repository.name,0) }
+    }
+
+    @Test
+    fun `should not throw an exception when querying the page count of pull request`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withName("unq-pds-app-university-web").build())
+        assertDoesNotThrow { repositoryService.lengthPagesPaginatedPullRequest(repository.name,0) }
+    }
+
+    @Test
+    fun `should not throw an exception when querying the page count of issue`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withName("unq-pds-app-university-web").build())
+        assertDoesNotThrow { repositoryService.lengthPagesPaginatedIssue(repository.name,0) }
+    }
+
+    @Test
+    fun `should not throw an exception when paging commits is requested`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withName("unq-pds-app-university-web").build())
+        assertDoesNotThrow { repositoryService.findPaginatedCommit(repository.name,0,5) }
+    }
+
+    @Test
+    fun `should not throw an exception when paging pull request is requested`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withName("unq-pds-app-university-web").build())
+        assertDoesNotThrow { repositoryService.findPaginatedPullRequest(repository.name,0,5) }
+    }
+
+    @Test
+    fun `should not throw an exception when paging issue is requested`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withName("unq-pds-app-university-web").build())
+        assertDoesNotThrow { repositoryService.findPaginatedIssue(repository.name,0,5) }
     }
 }
