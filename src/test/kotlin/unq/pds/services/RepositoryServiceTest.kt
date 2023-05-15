@@ -347,4 +347,52 @@ class RepositoryServiceTest {
         Assertions.assertTrue(repositories.any { it.name == "unq-pds-app-university-api" })
         Assertions.assertTrue(repositories.any { it.name == "unq-pds-app-university-web" })
     }
+
+    @Test
+    fun `should not throw an exception when querying the page count of commits`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withName("unq-pds-app-university-web").build())
+        assertDoesNotThrow { repositoryService.lengthPagesPaginatedCommit(repository.name,0) }
+    }
+
+    @Test
+    fun `should not throw an exception when querying the page count of pull request`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withName("unq-pds-app-university-web").build())
+        assertDoesNotThrow { repositoryService.lengthPagesPaginatedPullRequest(repository.name,0) }
+    }
+
+    @Test
+    fun `should not throw an exception when querying the page count of issue`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withName("unq-pds-app-university-web").build())
+        assertDoesNotThrow { repositoryService.lengthPagesPaginatedIssue(repository.name,0) }
+    }
+
+    @Test
+    fun `should not throw an exception when paging commits is requested`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withName("unq-pds-app-university-web").build())
+        assertDoesNotThrow { repositoryService.findPaginatedCommit(repository.name,0,5) }
+    }
+
+    @Test
+    fun `should not throw an exception when paging pull request is requested`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withName("unq-pds-app-university-web").build())
+        assertDoesNotThrow { repositoryService.findPaginatedPullRequest(repository.name,0,5) }
+    }
+
+    @Test
+    fun `should not throw an exception when paging issue is requested`() {
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withName("unq-pds-app-university-web").build())
+        assertDoesNotThrow { repositoryService.findPaginatedIssue(repository.name,0,5) }
+    }
 }

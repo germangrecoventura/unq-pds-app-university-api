@@ -574,6 +574,79 @@ class RepositoryControllerTest {
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
+    @Test
+    fun `should throw a 200 status when querying the page count of commits`() {
+        val cookie = cookiesAdmin()
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        val repository = repositoryService.save(aRepositoryDTO().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedCommit")
+                .accept(MediaType.APPLICATION_JSON)
+                .param("name", repository.name).param("size", "0")
+                .cookie(cookie)
+        ).andExpect(MockMvcResultMatchers.status().isOk)
+    }
+
+    @Test
+    fun `should throw a 200 status when querying the page count of issues`() {
+        val cookie = cookiesAdmin()
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        val repository = repositoryService.save(aRepositoryDTO().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedIssue")
+                .accept(MediaType.APPLICATION_JSON)
+                .param("name", repository.name).param("size", "0")
+                .cookie(cookie)
+        ).andExpect(MockMvcResultMatchers.status().isOk)
+    }
+
+    @Test
+    fun `should throw a 200 status when querying the page count of pull request`() {
+        val cookie = cookiesAdmin()
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        val repository = repositoryService.save(aRepositoryDTO().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedPullRequest")
+                .accept(MediaType.APPLICATION_JSON)
+                .param("name", repository.name).param("size", "0")
+                .cookie(cookie)
+        ).andExpect(MockMvcResultMatchers.status().isOk)
+    }
+
+    @Test
+    fun `should throw a 200 status when querying the page commits`() {
+        val cookie = cookiesAdmin()
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        val repository = repositoryService.save(aRepositoryDTO().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/repositories/pageCommit").accept(MediaType.APPLICATION_JSON)
+                .param("name", repository.name).param("page", "0").param("size", "5").cookie(cookie)
+        ).andExpect(MockMvcResultMatchers.status().isOk)
+    }
+
+    @Test
+    fun `should throw a 200 status when querying the page issue`() {
+        val cookie = cookiesAdmin()
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        val repository = repositoryService.save(aRepositoryDTO().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/repositories/pageIssue").accept(MediaType.APPLICATION_JSON)
+                .param("name", repository.name).param("page", "0").param("size", "5").cookie(cookie)
+        ).andExpect(MockMvcResultMatchers.status().isOk)
+    }
+
+    @Test
+    fun `should throw a 200 status when querying the page pull request`() {
+        val cookie = cookiesAdmin()
+        studentService.save(aStudentDTO().withTokenGithub(token).build())
+        val repository = repositoryService.save(aRepositoryDTO().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/repositories/pagePullRequest").accept(MediaType.APPLICATION_JSON)
+                .param("name", repository.name).param("page", "0").param("size", "5").cookie(cookie)
+        ).andExpect(MockMvcResultMatchers.status().isOk)
+    }
+
+
     private fun cookiesTeacher(): Cookie? {
         val teacher = teacherService.save(aTeacherDTO().build())
         val login = aLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").build()
