@@ -94,7 +94,7 @@ class Commission(
 
     private fun isMyGroup(group: Group): Boolean {
         return groupsStudents.any { it.name == group.name &&
-                                    it.members.size == group.members.size
+                                    it.members.size == group.members.size &&
                                     it.members.all { member -> isMemberOfTheGroup(member, group) } }
     }
 
