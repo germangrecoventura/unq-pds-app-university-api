@@ -504,6 +504,64 @@ class MatterControllerTest {
         ).andExpect(status().isUnauthorized)
     }
 
+    @Test
+    fun `should throw a 401 status when a create matter with cookie empty`() {
+        val cookie = Cookie("jwt", "")
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/matters")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aMatterDTO().build()))
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when get matter with cookie empty`() {
+        val cookie = Cookie("jwt", "")
+        val matter = matterService.save(aMatter().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
+                .param("id", matter.getId().toString()).cookie(cookie)
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when update matter with cookie empty`() {
+        val cookie = Cookie("jwt", "")
+        val matter = matterService.save(aMatter().build())
+
+        matter.name = "Lengua"
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("/matters")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(matter))
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when delete matter with cookie empty`() {
+        val cookie = Cookie("jwt", "")
+        var matter = matterService.save(aMatter().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.delete("/matters").accept(MediaType.APPLICATION_JSON)
+                .param("id", matter.getId().toString()).cookie(cookie)
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when get all matters with cookie empty`() {
+        val cookie = Cookie("jwt", "")
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/matters/getAll").accept(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+        )
+            .andExpect(status().isUnauthorized)
+    }
 
     private fun cookiesTeacher(): Cookie? {
         val teacher = teacherService.save(aTeacherDTO().build())
