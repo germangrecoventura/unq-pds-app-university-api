@@ -13,6 +13,9 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.RepositoryDTO
+import unq.pds.model.Commit
+import unq.pds.model.Issue
+import unq.pds.model.PullRequest
 import unq.pds.model.Repository
 import unq.pds.services.RepositoryService
 import javax.validation.Valid
@@ -279,7 +282,20 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                         array = ArraySchema(schema = Schema(implementation = Repository::class)),
                     )
                 ]
-            ), ApiResponse(
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "401",
                 description = "Not authenticated",
                 content = [Content(
@@ -345,7 +361,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"The repository with id is not registered\"\n" +
+                                "  \"message\": \"string\"\n" +
                                 "}"
                     )]
                 )]
@@ -373,10 +389,8 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 responseCode = "200",
                 description = "Success",
                 content = [Content(
-                    mediaType = "application/json", examples = [ExampleObject(
-                        value = "{[\"[commitOne,commitTwo,...]\"]" +
-                                "}"
-                    )]
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = Commit::class)),
                 )]
             ),
             ApiResponse(
@@ -408,7 +422,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"The repository with id is not registered\"\n" +
+                                "  \"message\": \"string\"\n" +
                                 "}"
                     )]
                 )]
@@ -472,7 +486,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"The repository with id is not registered\"\n" +
+                                "  \"message\": \"string\"\n" +
                                 "}"
                     )]
                 )]
@@ -500,10 +514,8 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 responseCode = "200",
                 description = "Success",
                 content = [Content(
-                    mediaType = "application/json", examples = [ExampleObject(
-                        value = "{[\"[issueOne,issueTwo,...]\"]" +
-                                "}"
-                    )]
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = Issue::class)),
                 )]
             ),
             ApiResponse(
@@ -535,7 +547,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"The repository with id is not registered\"\n" +
+                                "  \"message\": \"string\"\n" +
                                 "}"
                     )]
                 )]
@@ -599,7 +611,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"The repository with id is not registered\"\n" +
+                                "  \"message\": \"string\"\n" +
                                 "}"
                     )]
                 )]
@@ -627,10 +639,8 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 responseCode = "200",
                 description = "Success",
                 content = [Content(
-                    mediaType = "application/json", examples = [ExampleObject(
-                        value = "{[\"[pullRequestOne,pullRequestTwo,...]\"]" +
-                                "}"
-                    )]
+                    mediaType = "application/json",
+                    array = ArraySchema(schema = Schema(implementation = PullRequest::class)),
                 )]
             ),
             ApiResponse(
@@ -662,7 +672,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"The repository with id is not registered\"\n" +
+                                "  \"message\": \"string\"\n" +
                                 "}"
                     )]
                 )]
