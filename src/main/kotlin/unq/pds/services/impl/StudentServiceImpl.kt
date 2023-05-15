@@ -29,7 +29,8 @@ open class StudentServiceImpl : StudentService {
     override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
         val encryptor = AES256TextEncryptor()
         encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
-        val tokenEncrypt = encryptor.encrypt(studentCreateRequestDTO.tokenGithub)
+        val myEncryptedToken = encryptor.encrypt(studentCreateRequestDTO.tokenGithub)
+        val myEncryptedPassword = encryptor.encrypt(studentCreateRequestDTO.password)
         if (userService.theEmailIsRegistered(studentCreateRequestDTO.email!!)) throw AlreadyRegisteredException("email")
         if (studentCreateRequestDTO.ownerGithub != null) {
             var studentWithOwnerGithub = studentDAO.findByOwnerGithub(studentCreateRequestDTO.ownerGithub!!)
@@ -37,22 +38,13 @@ open class StudentServiceImpl : StudentService {
                 throw AlreadyRegisteredException("owner github")
             }
         }
-        if (studentCreateRequestDTO.tokenGithub != null) {
-            var studentWithTokenGithub = studentDAO.findAll()
-                .any { student -> encryptor.decrypt(student.getTokenGithub()) == studentCreateRequestDTO.tokenGithub }
-            if (studentWithTokenGithub) {
-                throw AlreadyRegisteredException("token github")
-            }
-        }
-
-        val myEncryptedPassword = encryptor.encrypt(studentCreateRequestDTO.password)
         val student = Student(
             studentCreateRequestDTO.firstName!!,
             studentCreateRequestDTO.lastName!!,
             studentCreateRequestDTO.email!!,
             myEncryptedPassword,
             studentCreateRequestDTO.ownerGithub,
-            tokenEncrypt
+            myEncryptedToken
         )
         return studentDAO.save(student)
     }
@@ -61,19 +53,12 @@ open class StudentServiceImpl : StudentService {
         val encryptor = AES256TextEncryptor()
         encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
         if (studentDTO.ownerGithub != null) {
-            var studentWithOwnerGithub = studentDAO.findByOwnerGithub(studentDTO.ownerGithub!!)
+            val studentWithOwnerGithub = studentDAO.findByOwnerGithub(studentDTO.ownerGithub!!)
             if (studentWithOwnerGithub.isPresent && studentDTO.id != studentWithOwnerGithub.get().getId()) {
                 throw AlreadyRegisteredException("owner github")
             }
         }
-        if (studentDTO.tokenGithub != null) {
-            var studentWithTokenGithub = studentDAO.findAll()
-                .find { student -> encryptor.decrypt(student.getTokenGithub()) == studentDTO.tokenGithub }
-            if (studentWithTokenGithub != null && studentDTO.id != studentWithTokenGithub.getId()) {
-                throw AlreadyRegisteredException("token github")
-            }
-        }
-        var studentWithEmail = studentDAO.findByEmail(studentDTO.email!!)
+        val studentWithEmail = studentDAO.findByEmail(studentDTO.email!!)
         if (userService.theEmailIsRegistered(studentDTO.email!!) && !studentWithEmail.isPresent) {
             throw AlreadyRegisteredException("email")
         }

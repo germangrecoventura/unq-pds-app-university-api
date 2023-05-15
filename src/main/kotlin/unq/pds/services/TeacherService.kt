@@ -13,7 +13,7 @@ interface TeacherService {
     fun findById(id: Long): Teacher
     fun findByEmail(email: String): Teacher
     fun readAll(): List<Teacher>
-    fun addCommentToStudent(commentCreateRequestDTO: CommentCreateRequestDTO): Comment
-    fun addCommentToGroup(commentCreateRequestDTO: CommentCreateRequestDTO): Comment
+    fun addCommentToStudent(commentDTO: CommentCreateRequestDTO): Comment
+    fun addCommentToGroup(commentDTO: CommentCreateRequestDTO): Comment
     fun clearTeachers()
 }

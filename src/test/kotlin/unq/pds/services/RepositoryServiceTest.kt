@@ -32,20 +32,6 @@ class RepositoryServiceTest {
         initializer.cleanDataBase()
     }
 
-    // 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
-   /* @Test
-    fun `prueba`() {
-        studentService.save(aStudentDTO().withTokenGithub(token).build())
-        val repo = repositoryService.save(aRepositoryDTO().build())
-        val ala = PaginatedRepositoryDTO()
-        ala.nameRepository = "unq-pds-app-university-api"
-        ala.numberPage = 0
-        ala.sizePage = 20
-
-        val commitPage = repositoryService.fin(ala)
-        val jose = 5
-    }*/
-
     @Test
     fun `should be create a repository when it has valid credentials`() {
         studentService.save(aStudentDTO().withTokenGithub(token).build())

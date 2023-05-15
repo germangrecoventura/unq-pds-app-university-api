@@ -25,10 +25,7 @@ class Student(
         nullable = true,
         unique = true
     ) @JsonProperty @field:Schema(example = "germangrecoventura") private var ownerGithub: String? = null,
-    @Column(
-        nullable = true,
-        unique = true
-    ) @JsonProperty @field:Schema(example = "") private var tokenGithub: String? = null
+    @Column(nullable = true) @JsonProperty @field:Schema(example = "") private var tokenGithub: String? = null
 ) : ProjectOwner() {
     init {
         validateCreate()
@@ -108,7 +105,10 @@ class Student(
     }
 
     fun setTokenGithub(token: String?) {
-        this.tokenGithub = token
+        val encryptor = AES256TextEncryptor()
+        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
+        val myEncryptedToken = encryptor.encrypt(token)
+        this.tokenGithub = myEncryptedToken
     }
 
     fun getPassword(): String {

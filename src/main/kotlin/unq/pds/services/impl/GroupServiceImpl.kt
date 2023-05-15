@@ -24,8 +24,8 @@ open class GroupServiceImpl : GroupService {
     }
 
     override fun update(groupUpdateDTO: GroupUpdateDTO): Group {
-        if (groupUpdateDTO.id != null && groupDAO.existsById(groupUpdateDTO.id)) {
-            val groupFind = groupDAO.findById(groupUpdateDTO.id).get()
+        if (groupUpdateDTO.id != null && groupDAO.existsById(groupUpdateDTO.id!!)) {
+            val groupFind = groupDAO.findById(groupUpdateDTO.id!!).get()
             groupFind.name = groupUpdateDTO.name!!
             return groupDAO.save(groupFind)
         }

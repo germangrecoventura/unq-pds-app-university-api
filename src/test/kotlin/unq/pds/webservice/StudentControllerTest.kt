@@ -290,24 +290,6 @@ class StudentControllerTest {
         ).andExpect(status().isBadRequest)
     }
 
-
-    @Test
-    fun `should throw a 400 status when you save a student with token is already registered`() {
-        val cookie = cookiesAdmin()
-        studentService.save(aStudentDTO().withTokenGithub("prueba").build())
-        var student2 = aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba")
-            .withTokenGithub("prueba").build()
-        mockMvc.perform(
-            MockMvcRequestBuilders.post("/students")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    mapper.writeValueAsString(student2)
-                )
-                .cookie(cookie)
-                .accept("application/json")
-        ).andExpect(status().isBadRequest)
-    }
-
     @Test
     fun `should throw a 401 status when trying to get a student and is not authenticated`() {
         mockMvc.perform(
@@ -752,26 +734,6 @@ class StudentControllerTest {
         var student2 =
             studentService.save(aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").build())
         student2.setOwnerGithub(student.getOwnerGithub())
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.put("/students")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    mapper.writeValueAsString(student2)
-                )
-                .cookie(cookie)
-                .accept("application/json")
-        ).andExpect(status().isBadRequest)
-    }
-
-
-    @Test
-    fun `should throw a 400 status when you update a student with token is already registered`() {
-        val cookie = cookiesAdmin()
-        studentService.save(aStudentDTO().withTokenGithub("prueba").build())
-        var student2 =
-            studentService.save(aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").build())
-        student2.setTokenGithub("prueba")
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/students")
