@@ -129,7 +129,7 @@ class Student(
 
     fun comparePassword(password: String): Boolean {
         val encryptor = AES256TextEncryptor()
-        encryptor.setPassword("some_salt")
+        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
         val myEncryptedPassword = encryptor.decrypt(getPassword())
         return password == myEncryptedPassword
     }
