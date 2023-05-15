@@ -60,7 +60,9 @@ sonarqube {
         property "sonar.kotlin.compiler.version", "1.7.22"
         property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir\\reports\\jacoco\\test\\jacocoTestReport.xml"
         property "sonar.coverage.exclusions", "src/main/kotlin/unq/pds/api/dtos/**," +
-                "src/main/kotlin/unq/pds/services/builder/**"
+                "src/main/kotlin/unq/pds/services/builder/**," +
+                "src/main/kotlin/unq/pds/model/builder/**," +
+                "src/main/kotlin/unq/pds/Initializer.kt"
         property "sonar.cpd.exclusions", "src/main/kotlin/unq/pds/api/controller/**"
     }
 }
