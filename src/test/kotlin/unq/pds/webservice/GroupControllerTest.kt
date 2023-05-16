@@ -853,6 +853,122 @@ class GroupControllerTest {
         ).andExpect(status().isNotFound)
     }
 
+
+    @Test
+    fun `should throw a 401 status when a create group with cookie empty`() {
+        val cookie = Cookie("jwt", "")
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/groups")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aGroupDTO().build()))
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when looking for a group with cookies empty`() {
+        val cookie = Cookie("jwt", "")
+        var group = groupService.save(aGroup().build())
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/groups").accept(MediaType.APPLICATION_JSON)
+                .param("id", group.getId().toString())
+                .cookie(cookie)
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when a update group with cookie empty`() {
+        val cookie = Cookie("jwt", "")
+        val group = groupService.save(aGroup().build())
+
+        group.name = "New name"
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("/groups")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(group))
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when a delete groups with cookie empty`() {
+        val cookie = Cookie("jwt", "")
+        val group = groupService.save(aGroup().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.delete("/groups").accept(MediaType.APPLICATION_JSON)
+                .param("id", group.getId().toString()).cookie(cookie)
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when add member to group with cookie empty`() {
+        cookiesStudent()
+        val cookie = Cookie("jwt", "")
+        var group = groupService.save(aGroup().build())
+        val studentFind = studentService.findByEmail("german@gmail.com")
+        groupService.addMember(group.getId()!!, studentFind.getId()!!)
+
+        var student = studentService.save(aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/groups/addMember/{groupId}/{studentId}",
+                group.getId(),
+                student.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when remove member to group with cookie empty`() {
+        cookiesStudent()
+        val cookie = Cookie("jwt", "")
+        val group = groupService.save(aGroup().build())
+        val student = studentService.findByEmail("german@gmail.com")
+        groupService.addMember(group.getId()!!, student.getId()!!)
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/groups/removeMember/{groupId}/{studentId}",
+                group.getId(),
+                student.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when add project to group with cookie empty`() {
+        cookiesTeacher()
+        val cookie = Cookie("jwt", "")
+        val project = projectService.save(aProject().build())
+        val teacher = teacherService.findByEmail("docente@gmail.com")
+        val group = groupService.save(aGroup().build())
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/groups/addProject/{groupId}/{projectId}",
+                group.getId(),
+                project.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+
     private fun cookiesStudent(): Cookie? {
         val student = studentService.save(aStudentDTO().build())
         val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").build()
