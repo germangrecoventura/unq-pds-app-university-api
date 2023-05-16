@@ -247,12 +247,12 @@ class StudentServiceTest {
     fun `should throw an exception when update a non-existent student`() {
         val thrown: NoSuchElementException =
             Assertions.assertThrows(NoSuchElementException::class.java) { studentService.update(
-                aStudentDTO().build()
+                aStudentDTO().withId(-1).build()
             ) }
 
 
         Assertions.assertEquals(
-            "Student does not exist",
+            "Not found the student with id -1",
             thrown.message
         )
     }

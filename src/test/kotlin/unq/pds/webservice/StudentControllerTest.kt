@@ -449,7 +449,7 @@ class StudentControllerTest {
     @Test
     fun `should throw a 404 status when you update a student that does not exist`() {
         val cookie = cookiesAdmin()
-        var student = aStudent().build()
+        var student = aStudentDTO().withId(-1).build()
         mockMvc.perform(
             MockMvcRequestBuilders.put("/students")
                 .contentType(MediaType.APPLICATION_JSON)
