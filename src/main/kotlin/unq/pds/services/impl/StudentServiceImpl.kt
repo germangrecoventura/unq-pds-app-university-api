@@ -12,6 +12,7 @@ import unq.pds.persistence.StudentDAO
 import unq.pds.services.ProjectService
 import unq.pds.services.StudentService
 import unq.pds.services.UserService
+import javax.management.InvalidAttributeValueException
 
 @Service
 @Transactional
@@ -50,8 +51,6 @@ open class StudentServiceImpl : StudentService {
     }
 
     override fun update(studentDTO: StudentCreateRequestDTO): Student {
-        val encryptor = AES256TextEncryptor()
-        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
         if (studentDTO.ownerGithub != null) {
             val studentWithOwnerGithub = studentDAO.findByOwnerGithub(studentDTO.ownerGithub!!)
             if (studentWithOwnerGithub.isPresent && studentDTO.id != studentWithOwnerGithub.get().getId()) {
@@ -65,18 +64,14 @@ open class StudentServiceImpl : StudentService {
         if (studentWithEmail.isPresent && studentDTO.id != studentWithEmail.get().getId()) {
             throw AlreadyRegisteredException("email")
         }
-        if (studentDTO.id != null && studentDAO.existsById(studentDTO.id!!)) {
-            val studentFind = studentDAO.findById(studentDTO.id!!).get()
-            studentFind.apply {
-                setFirstName(studentDTO.firstName)
-                setLastName(studentDTO.lastName)
-                setEmail(studentDTO.email)
-                setPassword(studentDTO.password!!)
-                setOwnerGithub(studentDTO.ownerGithub)
-                setTokenGithub(studentDTO.tokenGithub)
-            }
-            return studentDAO.save(studentFind)
-        } else throw NoSuchElementException("Student does not exist")
+        val studentFind = findById(studentDTO.id!!)
+        studentFind.setFirstName(studentDTO.firstName)
+        studentFind.setLastName(studentDTO.lastName)
+        studentFind.setEmail(studentDTO.email)
+        studentFind.setPassword(studentDTO.password!!)
+        studentFind.setOwnerGithub(studentDTO.ownerGithub)
+        studentFind.setTokenGithub(studentDTO.tokenGithub)
+        return studentDAO.save(studentFind)
     }
 
     override fun deleteById(id: Long) {

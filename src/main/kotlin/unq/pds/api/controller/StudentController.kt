@@ -197,7 +197,7 @@ class StudentController {
         )
         fun updateStudent(
             @CookieValue("jwt") jwt: String?,
-            @RequestBody student: StudentCreateRequestDTO
+            @RequestBody @Valid student: StudentCreateRequestDTO
         ): ResponseEntity<Any> {
             if (jwt.isNullOrBlank()) {
                 return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
