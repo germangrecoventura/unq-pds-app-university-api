@@ -45,6 +45,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-ui:1.6.15")
     implementation("org.springframework.boot:spring-boot-starter-security:3.0.5")
     implementation("io.jsonwebtoken:jjwt:0.9.1")
+    implementation("com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     implementation 'org.modelmapper:modelmapper:3.1.1'
@@ -60,10 +61,12 @@ sonarqube {
         property "sonar.kotlin.compiler.version", "1.7.22"
         property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir\\reports\\jacoco\\test\\jacocoTestReport.xml"
         property "sonar.coverage.exclusions", "src/main/kotlin/unq/pds/api/dtos/**," +
-                "src/main/kotlin/unq/pds/services/builder/**," +
-                "src/main/kotlin/unq/pds/model/builder/**," +
-                "src/main/kotlin/unq/pds/Initializer.kt"
-        property "sonar.cpd.exclusions", "src/main/kotlin/unq/pds/api/controller/**"
+                "src/main/kotlin/unq/pds/services/builder/**"
+        property "sonar.cpd.exclusions", "src/main/kotlin/unq/pds/api/controller/**," +
+                "src/main/kotlin/unq/pds/security/**," +
+                "src/main/kotlin/unq/pds/model/Teacher.kt," +
+                "src/main/kotlin/unq/pds/model/Student.kt," +
+                "src/main/kotlin/unq/pds/model/Admin.kt"
     }
 }
 

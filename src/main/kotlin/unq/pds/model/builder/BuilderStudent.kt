@@ -1,6 +1,6 @@
 package unq.pds.model.builder
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.jasypt.util.text.AES256TextEncryptor
 import unq.pds.model.Student
 
 
@@ -8,7 +8,7 @@ class BuilderStudent {
     private var firstName: String? = "German"
     private var lastName: String? = "Fernandez"
     private var emailAddress: String? = "german@gmail.com"
-    private var password: String? = BCryptPasswordEncoder().encode("funciona")
+    private var password: String? = "QVNm6Z3nmXAqTzQUDWrGgTGLoyVKPw+z+RZ4784R4MZi5E2OpjqR01ChmR2qTmgo"
     private var ownerGithub: String? = null
     private var tokenGithub: String? = null
 
@@ -32,7 +32,10 @@ class BuilderStudent {
     }
 
     fun withPassword(password: String?): BuilderStudent {
-        this.password = password
+        val encryptor = AES256TextEncryptor()
+        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
+        val myEncryptedPassword = encryptor.encrypt(password)
+        this.password = myEncryptedPassword
         return this
     }
 

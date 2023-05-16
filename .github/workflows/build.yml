@@ -48,4 +48,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          ENCRYPT_PASSWORD: ${{ secrets.ENCRYPT_PASSWORD }}
         run: ./gradlew build jacocoTestReport sonarqube --info

@@ -660,6 +660,18 @@ class CommissionController(private val commissionService: CommissionService) {
                 ]
             ),
             ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
                 responseCode = "401",
                 description = "Not authenticated",
                 content = [Content(

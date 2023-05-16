@@ -101,7 +101,7 @@ class BaseController {
 
     @ExceptionHandler(SQLIntegrityConstraintViolationException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleSQLIntegrityConstraintViolationException(ex: SQLIntegrityConstraintViolationException): ResponseEntity<MessageDTO> {
+    fun handleSQLIntegrityConstraintViolationException(): ResponseEntity<MessageDTO> {
         return ResponseEntity.badRequest()
             .body(MessageDTO("The entity cannot be deleted because it is related to another entity"))
     }
@@ -114,7 +114,7 @@ class BaseController {
 
     @ExceptionHandler(ExpiredJwtException::class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    fun handleExpiredJwtException(ex: ExpiredJwtException, response: HttpServletResponse): ResponseEntity<MessageDTO> {
+    fun handleExpiredJwtException(response: HttpServletResponse): ResponseEntity<MessageDTO> {
         val cookie = Cookie("jwt", null)
         cookie.isHttpOnly = true
         cookie.maxAge = 0

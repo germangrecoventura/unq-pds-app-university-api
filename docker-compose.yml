@@ -8,6 +8,9 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=app-universidad
+    volumes:
+      - my-datavolume:/var/lib/mysql
+      - ./db-dump:/docker-entrypoint-initdb.d
     ports:
       - "3306:3306"
     #restart: always
@@ -29,7 +32,11 @@ services:
       - MYSQL_PASSWORD=root
       - MYSQL_DATABASE=app-universidad
       - MYSQL_PORT=3306
+      - ENCRYPT_PASSWORD=some_salt
 
 networks:
   bored-network:
     name: bored-network
+
+volumes:
+  my-datavolume:

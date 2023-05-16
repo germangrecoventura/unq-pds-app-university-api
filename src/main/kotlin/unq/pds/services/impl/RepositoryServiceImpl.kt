@@ -2,6 +2,7 @@ package unq.pds.services.impl
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.jasypt.util.text.AES256TextEncryptor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpEntity
@@ -277,7 +278,9 @@ open class RepositoryServiceImpl : RepositoryService {
             if (owner.get().getTokenGithub()
                     .isNullOrBlank()
             ) throw InvalidAttributeValueException("The student with token is not registered")
-            token = owner.get().getTokenGithub()!!
+            val encryptor = AES256TextEncryptor()
+            encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
+            token = encryptor.decrypt(owner.get().getTokenGithub())
             val url = "https://api.github.com/repos/$ownerRepository/$nameRepository"
             val repository = makeRequest(url, token)
             val mapper = ObjectMapper()

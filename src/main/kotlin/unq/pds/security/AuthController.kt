@@ -45,7 +45,7 @@ class AuthController(
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"string\"\n" +
+                                "  \"message\": \"You are logged in correctly\"\n" +
                                 "}"
                     )]
                 )
@@ -57,9 +57,7 @@ class AuthController(
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"additionalProp1\": \"string\",\n" +
-                                "  \"additionalProp2\": \"string\",\n" +
-                                "  \"additionalProp3\": \"string\"\n" +
+                                "  \"message\": \"string\"\n" +
                                 "}"
                     )]
                 )]
@@ -69,7 +67,18 @@ class AuthController(
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"string\"\n" +
+                                "  \"message\": \"Password is incorrect\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ), ApiResponse(
+                responseCode = "404",
+                description = "Not found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"Not found the user with email\"\n" +
                                 "}"
                     )]
                 )
@@ -87,7 +96,7 @@ class AuthController(
         }
         val admin = userService.findAdmin(body.email!!)
         return if (admin.isEmpty) {
-            ResponseEntity(MessageDTO("Not found the user with email ${body.email}"), HttpStatus.UNAUTHORIZED)
+            ResponseEntity(MessageDTO("Not found the user with email ${body.email}"), HttpStatus.NOT_FOUND)
         } else {
             adminLogin(admin.get(), body.password!!, response)
         }
@@ -107,6 +116,18 @@ class AuthController(
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
+                                "  \"message\": \"You successfully logged out\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
                                 "  \"message\": \"string\"\n" +
                                 "}"
                     )]
@@ -119,7 +140,7 @@ class AuthController(
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"string\"\n" +
+                                "  \"message\": \"It is not authenticated. Please log in\"\n" +
                                 "}"
                     )]
                 )
@@ -149,21 +170,7 @@ class AuthController(
                 description = "Success",
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
-                        value = "{\n" +
-                                "  \"message\": \"string\"\n" +
-                                "}"
-                    )]
-                )
-                ]
-            ),
-            ApiResponse(
-                responseCode = "401",
-                description = "Not authenticated",
-                content = [Content(
-                    mediaType = "application/json", examples = [ExampleObject(
-                        value = "{\n" +
-                                "  \"message\": \"string\"\n" +
-                                "}"
+                        value = "User { ... }"
                     )]
                 )
                 ]
@@ -174,12 +181,22 @@ class AuthController(
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"additionalProp1\": \"string\",\n" +
-                                "  \"additionalProp2\": \"string\",\n" +
-                                "  \"additionalProp3\": \"string\"\n" +
+                                "  \"message\": \"It is not an allowed role in the system\"\n" +
                                 "}"
                     )]
                 )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"It is not authenticated. Please log in\"\n" +
+                                "}"
+                    )]
+                )
+                ]
             ),
             ApiResponse(
                 responseCode = "404",

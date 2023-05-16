@@ -1,7 +1,7 @@
 package unq.pds.services.impl
 
+import org.jasypt.util.text.AES256TextEncryptor
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.CommentCreateRequestDTO
@@ -36,11 +36,14 @@ open class TeacherServiceImpl : TeacherService {
 
     override fun save(teacherCreateRequestDTO: TeacherCreateRequestDTO): Teacher {
         if (userService.theEmailIsRegistered(teacherCreateRequestDTO.email!!)) throw AlreadyRegisteredException("email")
+        val encryptor = AES256TextEncryptor()
+        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
+        val myEncryptedPassword = encryptor.encrypt(teacherCreateRequestDTO.password)
         val teacher = Teacher(
             teacherCreateRequestDTO.firstName!!,
             teacherCreateRequestDTO.lastName!!,
             teacherCreateRequestDTO.email!!,
-            BCryptPasswordEncoder().encode(teacherCreateRequestDTO.password)
+            myEncryptedPassword
         )
         return teacherDAO.save(teacher)
     }
@@ -58,7 +61,7 @@ open class TeacherServiceImpl : TeacherService {
         teacherRecovery.setFirstName(teacher.getFirstName())
         teacherRecovery.setLastName(teacher.getLastName())
         teacherRecovery.setEmail(teacher.getEmail())
-        teacherRecovery.setPassword(BCryptPasswordEncoder().encode(teacher.getPassword()))
+        teacherRecovery.setPassword(teacher.getPassword())
         return teacherDAO.save(teacherRecovery)
     }
 

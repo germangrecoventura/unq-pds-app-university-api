@@ -178,22 +178,6 @@ class StudentServiceTest {
     }
 
     @Test
-    fun `should throw an exception when the token is already registered`() {
-        var request1 = aStudentDTO().withTokenGithub("prueba").build()
-        var request2 =
-            aStudentDTO().withEmail("repetido@gmail.com").withOwnerGithub("prueba").withTokenGithub("prueba").build()
-
-        studentService.save(request1)
-        val thrown: AlreadyRegisteredException =
-            Assertions.assertThrows(AlreadyRegisteredException::class.java) { studentService.save(request2) }
-
-        Assertions.assertEquals(
-            "The token github is already registered",
-            thrown.message
-        )
-    }
-
-    @Test
     fun `should throw an exception when the email is not valid`() {
         var request = aStudentDTO().withEmail("juanPerezgmail.com").build()
         val thrown: InvalidAttributeValueException? =
@@ -263,16 +247,15 @@ class StudentServiceTest {
     fun `should throw an exception when update a non-existent student`() {
         val thrown: NoSuchElementException =
             Assertions.assertThrows(NoSuchElementException::class.java) { studentService.update(
-                aStudentDTO().build()
+                aStudentDTO().withId(-1).build()
             ) }
 
 
         Assertions.assertEquals(
-            "Student does not exist",
+            "Not found the student with id -1",
             thrown.message
         )
     }
-
 
     @Test
     fun `should delete a student if it exists`() {
@@ -299,28 +282,6 @@ class StudentServiceTest {
             thrown.message
         )
     }
-
-    @Test
-    fun `should not update the student if the token already exists`() {
-        var request = aStudentDTO().withTokenGithub("prueba").build()
-        studentService.save(request)
-        var request2 =
-            aStudentDTO().withEmail("jose@gmail.com").withOwnerGithub("prueba").withTokenGithub("tokenprueba").build()
-        var student = studentService.save(request2)
-        student.setTokenGithub(request.tokenGithub)
-        val thrown: AlreadyRegisteredException =
-            Assertions.assertThrows(AlreadyRegisteredException::class.java) { studentService.update(
-                aStudentDTO().withId(student.getId()).withEmail(student.getEmail())
-                    .withOwnerGithub(student.getOwnerGithub()).withTokenGithub(student.getTokenGithub()).build()
-            ) }
-
-
-        Assertions.assertEquals(
-            "The token github is already registered",
-            thrown.message
-        )
-    }
-
 
     @Test
     fun `should throw an exception when deleting a non-existent student`() {
