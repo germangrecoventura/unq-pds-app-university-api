@@ -63,7 +63,10 @@ sonarqube {
         property "sonar.coverage.exclusions", "src/main/kotlin/unq/pds/api/dtos/**," +
                 "src/main/kotlin/unq/pds/services/builder/**"
         property "sonar.cpd.exclusions", "src/main/kotlin/unq/pds/api/controller/**," +
-                "src/main/kotlin/unq/pds/security/**"
+                "src/main/kotlin/unq/pds/security/**," +
+                "src/main/kotlin/unq/pds/model/Teacher.kt," +
+                "src/main/kotlin/unq/pds/model/Student.kt," +
+                "src/main/kotlin/unq/pds/model/Admin.kt"
     }
 }
 
