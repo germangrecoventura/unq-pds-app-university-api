@@ -7,12 +7,14 @@ plugins {
     id "org.jetbrains.kotlin.plugin.noarg" version "1.7.10"
     id "org.jetbrains.kotlin.plugin.allopen" version "1.7.10"
     id 'war'
+    id "jacoco"
+    id "org.sonarqube" version "3.5.0.2730"
 }
 
 group 'org.app-universidad'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 17
 
 repositories {
     mavenCentral()
@@ -25,7 +27,7 @@ allOpen {
 }
 
 dependencies {
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.20'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10'
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation group: 'io.kotlintest', name: 'kotlintest-runner-junit4', version: '3.4.2'
@@ -39,12 +41,45 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation('org.hibernate:hibernate-validator:8.0.0.Final')
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.15")
+    implementation("org.springframework.boot:spring-boot-starter-security:3.0.5")
+    implementation("io.jsonwebtoken:jjwt:0.9.1")
+    implementation("com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
-    implementation 'org.modelmapper:modelmapper:3.1.0'
+    implementation 'org.modelmapper:modelmapper:3.1.1'
     testImplementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30'
-    implementation("ch.qos.logback:logback-core:1.2.11")
+    implementation('ch.qos.logback:logback-core:1.4.6')
 
+}
+sonarqube {
+    properties {
+        property "sonar.projectKey", "germangrecoventura_unq-pds-app-university-api"
+        property "sonar.organization", "germangrecoventura"
+        property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.kotlin.compiler.version", "1.7.22"
+        property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir\\reports\\jacoco\\test\\jacocoTestReport.xml"
+        property "sonar.coverage.exclusions", "src/main/kotlin/unq/pds/api/dtos/**," +
+                "src/main/kotlin/unq/pds/services/builder/**"
+        property "sonar.cpd.exclusions", "src/main/kotlin/unq/pds/api/controller/**," +
+                "src/main/kotlin/unq/pds/security/**," +
+                "src/main/kotlin/unq/pds/model/Teacher.kt," +
+                "src/main/kotlin/unq/pds/model/Student.kt," +
+                "src/main/kotlin/unq/pds/model/Admin.kt"
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.8"
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.required.set(false)
+    }
 }
 
 

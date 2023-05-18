@@ -1,27 +1,46 @@
 package unq.pds.services.impl
 
-import unq.pds.persistence.UserDAO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import unq.pds.model.User
+import unq.pds.model.Admin
+import unq.pds.model.Student
+import unq.pds.model.Teacher
+import unq.pds.persistence.AdminDAO
+import unq.pds.persistence.StudentDAO
+import unq.pds.persistence.TeacherDAO
 import unq.pds.services.UserService
+import java.util.*
 
 @Service
 @Transactional
 open class UserServiceImpl : UserService {
 
-    @Autowired private lateinit var userDAO: UserDAO
+    @Autowired
+    lateinit var studentDAO: StudentDAO
 
-    override fun create(user: User): User {
-        return userDAO.save(user)
+    @Autowired
+    lateinit var teacherDAO: TeacherDAO
+
+    @Autowired
+    lateinit var adminDAO: AdminDAO
+
+
+    override fun findStudent(email: String): Optional<Student> {
+        return studentDAO.findByEmail(email)
     }
 
-    override fun count(): Int {
-        return userDAO.count().toInt()
+    override fun findTeacher(email: String): Optional<Teacher> {
+        return teacherDAO.findByEmail(email)
     }
 
-    override fun clearUsers() {
-        userDAO.deleteAll()
+    override fun findAdmin(email: String): Optional<Admin> {
+        return adminDAO.findByEmail(email)
     }
+
+    override fun theEmailIsRegistered(email: String): Boolean {
+        return !findAdmin(email).isEmpty || !findStudent(email).isEmpty || !findTeacher(email).isEmpty
+    }
+
+
 }

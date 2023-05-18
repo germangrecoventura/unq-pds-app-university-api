@@ -1,0 +1,42 @@
+version: '3.7'
+services:
+  mysqldb:
+    container_name: mysqldb
+    image: mysql:latest
+    networks:
+      - bored-network
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=app-universidad
+    volumes:
+      - my-datavolume:/var/lib/mysql
+      - ./db-dump:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    #restart: always
+
+  springboot-app:
+    build:
+      context: .
+    container_name: springboot-app
+    image: springboot
+    ports:
+      - "8080:8080"
+    networks:
+      - bored-network
+    depends_on:
+      - mysqldb
+    environment:
+      - MYSQL_HOST=mysqldb
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DATABASE=app-universidad
+      - MYSQL_PORT=3306
+      - ENCRYPT_PASSWORD=some_salt
+
+networks:
+  bored-network:
+    name: bored-network
+
+volumes:
+  my-datavolume:
