@@ -337,7 +337,7 @@ class GroupController(private val groupService: GroupService, private val commis
         }
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupId, body.issuer)
-            && body["id"].toString().toLong() != studentId
+            && body["id"].toString().toLong() == studentId
         )
             ResponseEntity(
                 messageNotAccess,
