@@ -2,14 +2,10 @@ package unq.pds
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import unq.pds.model.Matter
-import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
-import unq.pds.model.builder.GroupBuilder.Companion.aGroup
-import unq.pds.model.builder.MatterBuilder.Companion.aMatter
-import unq.pds.services.*
-import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
-import unq.pds.services.builder.BuilderStudentDTO
-import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
+import unq.pds.services.AdminService
+import unq.pds.services.MatterService
+import unq.pds.services.StudentService
+import unq.pds.services.TeacherService
 
 @Component
 class Initializer {
@@ -23,31 +19,23 @@ class Initializer {
     lateinit var matterService: MatterService
 
     @Autowired
-    lateinit var groupService: GroupService
-
-    @Autowired
-    lateinit var commissionService: CommissionService
-
-    @Autowired
-    lateinit var repositoryService: RepositoryService
-
-    @Autowired
-    lateinit var projectService: ProjectService
-
-    @Autowired
     lateinit var adminService: AdminService
 
+
     fun cleanDataBase() {
-        commissionService.clearCommissions()
-        groupService.clearGroups()
+
+        /* commissionService.clearCommissions()
+         groupService.clearGroups()*/
         studentService.clearStudents()
         teacherService.clearTeachers()
         matterService.clearMatters()
-        projectService.clearProjects()
-        repositoryService.clearRepositories()
+        /*
+         projectService.clearProjects()
+         repositoryService.clearRepositories()*/
         adminService.clearAdmins()
     }
-
+}
+/*
     fun loadData() {
         loadAdmins()
         loadStudents()
@@ -62,10 +50,10 @@ class Initializer {
 
     }
 
-
     private fun loadStudents() {
         val students = mutableListOf(
-            BuilderStudentDTO.aStudentDTO().withTokenGithub(System.getenv("TOKEN_GITHUB")).build(),            BuilderStudentDTO.aStudentDTO().withFirstName("Lucas").withLastName("Ziegemann")
+            BuilderStudentDTO.aStudentDTO().withTokenGithub(System.getenv("TOKEN_GITHUB")).build(),
+            BuilderStudentDTO.aStudentDTO().withFirstName("Lucas").withLastName("Ziegemann")
                 .withEmail("lucas@gmail.com").withOwnerGithub("prueba").build()
         )
         val mutListIterator = students.listIterator()
@@ -73,6 +61,7 @@ class Initializer {
             studentService.save(mutListIterator.next())
         }
     }
+
 
     private fun loadTeachers() {
         val teachers = mutableListOf(
@@ -110,6 +99,7 @@ class Initializer {
         }
     }
 
+
     private fun loadCommissions() {
         val commissions = mutableListOf(
             aCommission().withMatter(Matter("Math")).build(),
@@ -120,4 +110,4 @@ class Initializer {
             commissionService.save(mutListIterator.next())
         }
     }
-}
+}*/

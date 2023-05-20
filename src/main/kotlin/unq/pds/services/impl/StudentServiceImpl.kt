@@ -7,12 +7,8 @@ import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.model.Student
 import unq.pds.model.exceptions.AlreadyRegisteredException
-import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import unq.pds.persistence.StudentDAO
-import unq.pds.services.ProjectService
 import unq.pds.services.StudentService
-import unq.pds.services.UserService
-import javax.management.InvalidAttributeValueException
 
 @Service
 @Transactional
@@ -21,46 +17,22 @@ open class StudentServiceImpl : StudentService {
     @Autowired
     lateinit var studentDAO: StudentDAO
 
-    @Autowired
-    lateinit var projectService: ProjectService
-
-    @Autowired
-    lateinit var userService: UserService
-
     override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
         val encryptor = AES256TextEncryptor()
         encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
-        val myEncryptedToken = encryptor.encrypt(studentCreateRequestDTO.tokenGithub)
         val myEncryptedPassword = encryptor.encrypt(studentCreateRequestDTO.password)
-        if (userService.theEmailIsRegistered(studentCreateRequestDTO.email!!)) throw AlreadyRegisteredException("email")
-        if (studentCreateRequestDTO.ownerGithub != null) {
-            var studentWithOwnerGithub = studentDAO.findByOwnerGithub(studentCreateRequestDTO.ownerGithub!!)
-            if (studentWithOwnerGithub.isPresent) {
-                throw AlreadyRegisteredException("owner github")
-            }
-        }
+        if (studentDAO.findByEmail(studentCreateRequestDTO.email!!).isPresent) throw AlreadyRegisteredException("email")
         val student = Student(
             studentCreateRequestDTO.firstName!!,
             studentCreateRequestDTO.lastName!!,
             studentCreateRequestDTO.email!!,
             myEncryptedPassword,
-            studentCreateRequestDTO.ownerGithub,
-            myEncryptedToken
         )
         return studentDAO.save(student)
     }
 
     override fun update(studentDTO: StudentCreateRequestDTO): Student {
-        if (studentDTO.ownerGithub != null) {
-            val studentWithOwnerGithub = studentDAO.findByOwnerGithub(studentDTO.ownerGithub!!)
-            if (studentWithOwnerGithub.isPresent && studentDTO.id != studentWithOwnerGithub.get().getId()) {
-                throw AlreadyRegisteredException("owner github")
-            }
-        }
         val studentWithEmail = studentDAO.findByEmail(studentDTO.email!!)
-        if (userService.theEmailIsRegistered(studentDTO.email!!) && !studentWithEmail.isPresent) {
-            throw AlreadyRegisteredException("email")
-        }
         if (studentWithEmail.isPresent && studentDTO.id != studentWithEmail.get().getId()) {
             throw AlreadyRegisteredException("email")
         }
@@ -69,8 +41,6 @@ open class StudentServiceImpl : StudentService {
         studentFind.setLastName(studentDTO.lastName)
         studentFind.setEmail(studentDTO.email)
         studentFind.setPassword(studentDTO.password!!)
-        studentFind.setOwnerGithub(studentDTO.ownerGithub)
-        studentFind.setTokenGithub(studentDTO.tokenGithub)
         return studentDAO.save(studentFind)
     }
 
@@ -93,21 +63,6 @@ open class StudentServiceImpl : StudentService {
     override fun findByEmail(email: String): Student {
         return studentDAO.findByEmail(email)
             .orElseThrow { NoSuchElementException("Not found the student with email $email") }
-    }
-
-    override fun addProject(studentId: Long, projectId: Long): Student {
-        val student = this.findById(studentId)
-        val project = projectService.read(projectId)
-        if (studentDAO.projectOwnerOfTheProject(project).isPresent) {
-            throw ProjectAlreadyHasAnOwnerException()
-        }
-        student.addProject(project)
-
-        return studentDAO.save(student)
-    }
-
-    override fun isHisProject(studentId: Long, projectId: Long): Boolean {
-        return studentDAO.isHisProject(studentId, projectId)
     }
 
     override fun readAll(): List<Student> {

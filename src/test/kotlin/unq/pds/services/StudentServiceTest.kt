@@ -6,11 +6,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
-import unq.pds.model.builder.BuilderStudent.Companion.aStudent
-import unq.pds.model.builder.GroupBuilder.Companion.aGroup
-import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.model.exceptions.AlreadyRegisteredException
-import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import javax.management.InvalidAttributeValueException
 
@@ -19,12 +15,6 @@ class StudentServiceTest {
 
     @Autowired
     lateinit var studentService: StudentService
-
-    @Autowired
-    lateinit var projectService: ProjectService
-
-    @Autowired
-    lateinit var groupService: GroupService
 
     @Autowired
     lateinit var initializer: Initializer
@@ -163,21 +153,6 @@ class StudentServiceTest {
     }
 
     @Test
-    fun `should throw an exception when the owner is already registered`() {
-        var request1 = aStudentDTO().build()
-        var request2 = aStudentDTO().withEmail("repetido@gmail.com").build()
-
-        studentService.save(request1)
-        val thrown: AlreadyRegisteredException =
-            Assertions.assertThrows(AlreadyRegisteredException::class.java) { studentService.save(request2) }
-
-        Assertions.assertEquals(
-            "The owner github is already registered",
-            thrown.message
-        )
-    }
-
-    @Test
     fun `should throw an exception when the email is not valid`() {
         var request = aStudentDTO().withEmail("juanPerezgmail.com").build()
         val thrown: InvalidAttributeValueException? =
@@ -195,7 +170,8 @@ class StudentServiceTest {
         var student = studentService.save(request)
         student.setFirstName("Juan")
         var studentUpdated = studentService.update(
-            aStudentDTO().withId(student.getId()).withFirstName(student.getFirstName()).withEmail(student.getEmail()).build()
+            aStudentDTO().withId(student.getId()).withFirstName(student.getFirstName()).withEmail(student.getEmail())
+                .build()
         )
         Assertions.assertTrue(studentUpdated.getFirstName() == student.getFirstName())
     }
@@ -207,7 +183,8 @@ class StudentServiceTest {
         student.setLastName("Perez")
 
         var studentUpdated = studentService.update(
-            aStudentDTO().withId(student.getId()).withLastName(student.getLastName()).withEmail(student.getEmail()).build()
+            aStudentDTO().withId(student.getId()).withLastName(student.getLastName()).withEmail(student.getEmail())
+                .build()
         )
 
         Assertions.assertTrue(studentUpdated.getLastName() == student.getLastName())
@@ -229,13 +206,16 @@ class StudentServiceTest {
     fun `should not update the student if the email already exists`() {
         var request = aStudentDTO().withEmail("prueba@gmail.com").build()
         studentService.save(request)
-        var request2 = aStudentDTO().withEmail("jose@gmail.com").withOwnerGithub("prueba").build()
+        var request2 = aStudentDTO().withEmail("jose@gmail.com").build()
         var student = studentService.save(request2)
         student.setEmail("prueba@gmail.com")
         val thrown: RuntimeException =
-            Assertions.assertThrows(RuntimeException::class.java) { studentService.update(
-                aStudentDTO().withId(student.getId()).withEmail(student.getEmail()).withOwnerGithub(student.getOwnerGithub()).build()
-            ) }
+            Assertions.assertThrows(RuntimeException::class.java) {
+                studentService.update(
+                    aStudentDTO().withId(student.getId()).withEmail(student.getEmail())
+                        .build()
+                )
+            }
 
         Assertions.assertEquals(
             "The email is already registered",
@@ -246,9 +226,11 @@ class StudentServiceTest {
     @Test
     fun `should throw an exception when update a non-existent student`() {
         val thrown: NoSuchElementException =
-            Assertions.assertThrows(NoSuchElementException::class.java) { studentService.update(
-                aStudentDTO().withId(-1).build()
-            ) }
+            Assertions.assertThrows(NoSuchElementException::class.java) {
+                studentService.update(
+                    aStudentDTO().withId(-1).build()
+                )
+            }
 
 
         Assertions.assertEquals(
@@ -262,25 +244,6 @@ class StudentServiceTest {
         var student = studentService.save(aStudentDTO().build())
         student.getId()?.let { studentService.deleteById(it) }
         Assertions.assertTrue(studentService.count() == 0)
-    }
-
-    @Test
-    fun `should not update the student if the owner already exists`() {
-        var request = aStudentDTO().build()
-        studentService.save(request)
-        var request2 = aStudentDTO().withEmail("jose@gmail.com").withOwnerGithub("prueba").build()
-        var student = studentService.save(request2)
-        student.setOwnerGithub(request.ownerGithub)
-        val thrown: AlreadyRegisteredException =
-            Assertions.assertThrows(AlreadyRegisteredException::class.java) { studentService.update(
-                aStudentDTO().withId(student.getId()).withEmail(student.getEmail()).withOwnerGithub(student.getOwnerGithub()).build()
-            ) }
-
-
-        Assertions.assertEquals(
-            "The owner github is already registered",
-            thrown.message
-        )
     }
 
     @Test
@@ -333,79 +296,6 @@ class StudentServiceTest {
     }
 
     @Test
-    fun `should add a project to a student when it was not previously added and both exist`() {
-        val student = studentService.save(aStudentDTO().build())
-        val project = projectService.save(aProject().build())
-        Assertions.assertEquals(0, student.projects.size)
-        val groupWithAProject = studentService.addProject(student.getId()!!, project.getId()!!)
-        Assertions.assertEquals(1, groupWithAProject.projects.size)
-    }
-
-    @Test
-    fun `should throw an exception when trying to add a project to a student and the project does not exist`() {
-        val student = studentService.save(aStudentDTO().build())
-        try {
-            studentService.addProject(student.getId()!!, -1)
-        } catch (e: NoSuchElementException) {
-            Assertions.assertEquals("There is no project with that id", e.message)
-        }
-    }
-
-    @Test
-    fun `should throw an exception when trying to add a project to a student and the student does not exist`() {
-        val project = projectService.save(aProject().build())
-        try {
-            studentService.addProject(-1, project.getId()!!)
-        } catch (e: NoSuchElementException) {
-            Assertions.assertEquals("Not found the student with id -1", e.message)
-        }
-    }
-
-    @Test
-    fun `should throw an exception when trying to add a project to a student and the project already has an owner`() {
-        val studentA = studentService.save(aStudentDTO().build())
-        val studentB = studentService.save(
-            aStudentDTO().withFirstName("Lucas")
-                .withLastName("Ziegemann").withEmail("lucas@gmail.com").withOwnerGithub("prueba").build()
-        )
-        val project = projectService.save(aProject().build())
-        studentService.addProject(studentA.getId()!!, project.getId()!!)
-        try {
-            studentService.addProject(studentB.getId()!!, project.getId()!!)
-        } catch (e: ProjectAlreadyHasAnOwnerException) {
-            Assertions.assertEquals("The project already has an owner", e.message)
-        }
-    }
-
-    @Test
-    fun `should throw an exception when trying to add a project to a group and the project already has an owner`() {
-        val student = studentService.save(aStudentDTO().build())
-        val group = groupService.save(aGroup().build())
-        val project = projectService.save(aProject().build())
-        studentService.addProject(student.getId()!!, project.getId()!!)
-        try {
-            groupService.addProject(group.getId()!!, project.getId()!!)
-        } catch (e: ProjectAlreadyHasAnOwnerException) {
-            Assertions.assertEquals("The project already has an owner", e.message)
-        }
-    }
-
-    @Test
-    fun `should be true to have a project when the project was added previously`() {
-        val student = studentService.save(aStudentDTO().build())
-        val project = projectService.save(aProject().build())
-        studentService.addProject(student.getId()!!, project.getId()!!)
-        Assertions.assertTrue(studentService.isHisProject(student.getId()!!, project.getId()!!))
-    }
-
-    @Test
-    fun `should be false to have a project when it was not added`() {
-        val student = studentService.save(aStudentDTO().build())
-        val project = projectService.save(aProject().build())
-        Assertions.assertFalse(studentService.isHisProject(student.getId()!!, project.getId()!!))
-    }
-
-    @Test
     fun `should recover an empty list of students when recover all and there is no persistence`() {
         Assertions.assertEquals(0, studentService.readAll().size)
     }
@@ -413,7 +303,7 @@ class StudentServiceTest {
     @Test
     fun `should recover a list with two students when recover all and there are exactly two persisted`() {
         studentService.save(aStudentDTO().build())
-        studentService.save(aStudentDTO().withEmail("germanF@gmail.com").withOwnerGithub("prueba").build())
+        studentService.save(aStudentDTO().withEmail("germanF@gmail.com").build())
         val students = studentService.readAll()
 
         Assertions.assertEquals(2, students.size)
