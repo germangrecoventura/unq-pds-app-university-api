@@ -23,9 +23,9 @@ DROP TABLE IF EXISTS `admin_university`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `admin_university` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
+  `id` bigint NOT NULL,
   `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
+  `password` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_bfou1wt67yddqelrro9d1oxnr` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -51,7 +51,7 @@ CREATE TABLE `branch` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -102,7 +102,7 @@ CREATE TABLE `commission` (
   PRIMARY KEY (`id`),
   KEY `FK9flbacipapfehpmbyclkide22` (`matter_id`),
   CONSTRAINT `FK9flbacipapfehpmbyclkide22` FOREIGN KEY (`matter_id`) REFERENCES `matter` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=447 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -224,10 +224,10 @@ DROP TABLE IF EXISTS `group_app`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `group_app` (
-  `id` bigint NOT NULL,
+  `id` bigint NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1371 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -266,6 +266,32 @@ LOCK TABLES `group_app_members` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `group_app_projects`
+--
+
+DROP TABLE IF EXISTS `group_app_projects`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `group_app_projects` (
+  `group_id` bigint NOT NULL,
+  `projects_id` bigint NOT NULL,
+  PRIMARY KEY (`group_id`,`projects_id`),
+  UNIQUE KEY `UK_jw2du0ctmad4k1w5r27nqw0po` (`projects_id`),
+  CONSTRAINT `FKexre4nwk5i2o4jadibwubt150` FOREIGN KEY (`projects_id`) REFERENCES `project` (`id`),
+  CONSTRAINT `FKq8fj4cl8jhke2n9vtowevx42k` FOREIGN KEY (`group_id`) REFERENCES `group_app` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `group_app_projects`
+--
+
+LOCK TABLES `group_app_projects` WRITE;
+/*!40000 ALTER TABLE `group_app_projects` DISABLE KEYS */;
+/*!40000 ALTER TABLE `group_app_projects` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `hibernate_sequence`
 --
 
@@ -283,7 +309,7 @@ CREATE TABLE `hibernate_sequence` (
 
 LOCK TABLES `hibernate_sequence` WRITE;
 /*!40000 ALTER TABLE `hibernate_sequence` DISABLE KEYS */;
-INSERT INTO `hibernate_sequence` VALUES (5);
+INSERT INTO `hibernate_sequence` VALUES (7770);
 /*!40000 ALTER TABLE `hibernate_sequence` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -324,7 +350,7 @@ CREATE TABLE `matter` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_2h3v3va436kxeu6vkm1dqdolj` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1224 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -347,7 +373,7 @@ CREATE TABLE `project` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1603 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -357,31 +383,6 @@ CREATE TABLE `project` (
 LOCK TABLES `project` WRITE;
 /*!40000 ALTER TABLE `project` DISABLE KEYS */;
 /*!40000 ALTER TABLE `project` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `project_owner_projects`
---
-
-DROP TABLE IF EXISTS `project_owner_projects`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `project_owner_projects` (
-  `project_owner_id` bigint NOT NULL,
-  `projects_id` bigint NOT NULL,
-  PRIMARY KEY (`project_owner_id`,`projects_id`),
-  UNIQUE KEY `UK_cx2y7y40vr7ow44bs5adyew85` (`projects_id`),
-  CONSTRAINT `FKbpr1l28pg1asbmq0c7i5jwmnc` FOREIGN KEY (`projects_id`) REFERENCES `project` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `project_owner_projects`
---
-
-LOCK TABLES `project_owner_projects` WRITE;
-/*!40000 ALTER TABLE `project_owner_projects` DISABLE KEYS */;
-/*!40000 ALTER TABLE `project_owner_projects` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -626,14 +627,11 @@ DROP TABLE IF EXISTS `student`;
 CREATE TABLE `student` (
   `id` bigint NOT NULL,
   `email` varchar(255) NOT NULL,
+  `password` varchar(255) DEFAULT NULL,
   `first_name` varchar(255) NOT NULL,
   `last_name` varchar(255) NOT NULL,
-  `owner_github` varchar(255) DEFAULT NULL,
-  `password` varchar(255) DEFAULT NULL,
-  `token_github` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UK_fe0i52si7ybu0wjedj6motiim` (`email`),
-  UNIQUE KEY `UK_gxbi7o44uva0hook1la5fjtoc` (`owner_github`)
+  UNIQUE KEY `UK_fe0i52si7ybu0wjedj6motiim` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -679,11 +677,11 @@ DROP TABLE IF EXISTS `teacher`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `teacher` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
+  `id` bigint NOT NULL,
   `email` varchar(255) NOT NULL,
+  `password` varchar(255) DEFAULT NULL,
   `first_name` varchar(255) NOT NULL,
   `last_name` varchar(255) NOT NULL,
-  `password` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_3kv6k1e64a9gylvkn3gnghc2q` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -707,4 +705,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-05-15 22:00:57
+-- Dump completed on 2023-05-20 14:22:09

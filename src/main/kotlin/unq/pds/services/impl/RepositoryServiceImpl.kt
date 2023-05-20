@@ -269,6 +269,7 @@ open class RepositoryServiceImpl : RepositoryService {
     private fun getRepository(repositoryDTO: RepositoryDTO): JsonNode? {
         try {
             validation(repositoryDTO.owner, repositoryDTO.name, repositoryDTO.token)
+            token = repositoryDTO.token!!
             val url = "https://api.github.com/repos/${repositoryDTO.owner}/${repositoryDTO.name}"
             val repository = makeRequest(url, token)
             val mapper = ObjectMapper()

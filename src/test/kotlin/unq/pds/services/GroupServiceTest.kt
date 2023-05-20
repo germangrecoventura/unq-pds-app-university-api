@@ -333,7 +333,7 @@ class GroupServiceTest {
         groupDTOCreate.name = "Test"
         groupDTOCreate.nameProject = "Test project"
         groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        groupService.save(groupDTOCreate)
         Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMember(-1, -1))
     }
 
@@ -344,7 +344,7 @@ class GroupServiceTest {
         groupDTOCreate.name = "Test"
         groupDTOCreate.nameProject = "Test project"
         groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        groupService.save(groupDTOCreate)
         Assertions.assertFalse(
             groupService.thereIsAGroupWithThisProjectAndThisMember(
                 -1,
