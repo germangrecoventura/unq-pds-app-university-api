@@ -2,10 +2,7 @@ package unq.pds
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import unq.pds.services.AdminService
-import unq.pds.services.MatterService
-import unq.pds.services.StudentService
-import unq.pds.services.TeacherService
+import unq.pds.services.*
 
 @Component
 class Initializer {
@@ -19,19 +16,29 @@ class Initializer {
     lateinit var matterService: MatterService
 
     @Autowired
+    lateinit var groupService: GroupService
+
+    @Autowired
+    lateinit var commissionService: CommissionService
+
+    @Autowired
+    lateinit var repositoryService: RepositoryService
+
+    @Autowired
+    lateinit var projectService: ProjectService
+
+    @Autowired
     lateinit var adminService: AdminService
 
 
     fun cleanDataBase() {
-
-        /* commissionService.clearCommissions()
-         groupService.clearGroups()*/
+        commissionService.clearCommissions()
+        groupService.clearGroups()
         studentService.clearStudents()
         teacherService.clearTeachers()
         matterService.clearMatters()
-        /*
-         projectService.clearProjects()
-         repositoryService.clearRepositories()*/
+        projectService.clearProjects()
+        repositoryService.clearRepositories()
         adminService.clearAdmins()
     }
 }
