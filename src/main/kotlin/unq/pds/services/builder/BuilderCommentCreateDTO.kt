@@ -4,27 +4,21 @@ import unq.pds.api.dtos.CommentCreateRequestDTO
 
 
 class BuilderCommentCreateDTO {
-    var idToComment: Long? = 1
-    var nameRepository: String? = "unq-pds-app-university-api"
+    var repositoryId: Long? = 1
     var commentAdd: String? = "Exercise done correctly"
 
     fun build(): CommentCreateRequestDTO {
         var comment = CommentCreateRequestDTO()
-        comment.idToComment = idToComment
-        comment.nameRepository = nameRepository
+        comment.repositoryId = repositoryId
         comment.comment = commentAdd
         return comment
     }
 
     fun withId(id: Long?): BuilderCommentCreateDTO {
-        this.idToComment = id
+        this.repositoryId = id
         return this
     }
 
-    fun withNameRepository(name: String?): BuilderCommentCreateDTO {
-        this.nameRepository = name
-        return this
-    }
 
     fun withComment(comment: String?): BuilderCommentCreateDTO {
         this.commentAdd = comment

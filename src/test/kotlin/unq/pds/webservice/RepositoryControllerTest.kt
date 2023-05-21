@@ -175,7 +175,7 @@ class RepositoryControllerTest {
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
     }
 
-    
+
     @Test
     fun `should throw a 401 status when trying to get a repository and is not authenticated`() {
         mockMvc.perform(
