@@ -151,70 +151,61 @@ open class RepositoryServiceImpl : RepositoryService {
     }
 
     private fun getRepositoryIssues(ownerGithub: String, nameRepository: String): MutableList<Issue>? {
-        val mapper = ObjectMapper()
-        val root: JsonNode = mapper.readTree(
-            executeRequest(
-                ownerGithub,
-                nameRepository,
-                token,
-                "issues"
-            ).body
-        )
+        var page = 1
+        var root: JsonNode = getJsonNode(ownerGithub, nameRepository, "issues", page)
         val list = mutableListOf<Issue>()
-        for (i in root) {
-            val issue = Issue()
-            issue.id = i.path("id").asInt()
-            issue.title = i.path("title").asText()
-            var url = i.path("url").asText()
-            issue.url = "https://github.com/${url.substring(29, url.length)}"
-            issue.status = i.path("state").asText()
-            list.add(issue)
+        while (!root.isEmpty) {
+            for (i in root) {
+                val issue = Issue()
+                issue.id = i.path("id").asInt()
+                issue.title = i.path("title").asText()
+                val url = i.path("url").asText()
+                issue.url = "https://github.com/${url.substring(29, url.length)}"
+                issue.status = i.path("state").asText()
+                list.add(issue)
+            }
+            page++
+            root = getJsonNode(ownerGithub, nameRepository, "issues", page)
         }
         list.sortBy { it.id }
         return list
     }
 
     private fun getRepositoryPulls(ownerGithub: String, nameRepository: String): MutableList<PullRequest>? {
-        val mapper = ObjectMapper()
-        val root: JsonNode = mapper.readTree(
-            executeRequest(
-                ownerGithub,
-                nameRepository,
-                token,
-                "pulls"
-            ).body
-        )
+        var page = 1
+        var root: JsonNode = getJsonNode(ownerGithub, nameRepository, "pulls", page)
         val list = mutableListOf<PullRequest>()
-        for (i in root) {
-            val pr = PullRequest()
-            pr.id = i.path("id").asInt()
-            pr.url = i.path("html_url").asText()
-            pr.status = i.path("state").asText()
-            pr.title = i.path("title").asText()
-            list.add(pr)
+        while (!root.isEmpty) {
+            for (i in root) {
+                val pr = PullRequest()
+                pr.id = i.path("id").asInt()
+                pr.url = i.path("html_url").asText()
+                pr.status = i.path("state").asText()
+                pr.title = i.path("title").asText()
+                list.add(pr)
+            }
+            page++
+            root = getJsonNode(ownerGithub, nameRepository, "pulls", page)
         }
         list.sortBy { it.id }
         return list
     }
 
     private fun getRepositoryTags(ownerGithub: String, nameRepository: String): MutableList<Tag>? {
-        val mapper = ObjectMapper()
-        val root: JsonNode = mapper.readTree(
-            executeRequest(
-                ownerGithub,
-                nameRepository,
-                token,
-                "tags"
-            ).body
-        )
+        var page = 1
+        var root: JsonNode = getJsonNode(ownerGithub, nameRepository, "tags", page)
         val list = mutableListOf<Tag>()
-        for (i in root) {
-            val tag = Tag()
-            tag.nodeId = i.path("node_id").asText()
-            tag.name = i.path("name").asText()
-            tag.zipUrl = "https://github.com/$ownerGithub/$nameRepository/archive/refs/tags/${tag.name}.zip"
-            tag.tarUrl = "https://github.com/$ownerGithub/$nameRepository/archive/refs/tags/${tag.name}.tar.gz"
-            list.add(tag)
+        while (!root.isEmpty) {
+            for (i in root) {
+                val tag = Tag()
+                tag.nodeId = i.path("node_id").asText()
+                tag.name = i.path("name").asText()
+                tag.zipUrl = "https://github.com/$ownerGithub/$nameRepository/archive/refs/tags/${tag.name}.zip"
+                tag.tarUrl = "https://github.com/$ownerGithub/$nameRepository/archive/refs/tags/${tag.name}.tar.gz"
+                list.add(tag)
+            }
+            page++
+            root = getJsonNode(ownerGithub, nameRepository, "tags", page)
         }
         return list
     }
@@ -237,30 +228,28 @@ open class RepositoryServiceImpl : RepositoryService {
         ownerRepository: String,
         nameRepository: String,
         token: String,
-        operation: String
+        operation: String,
+        page: Int
     ): ResponseEntity<String> {
         validation(ownerRepository, nameRepository, token)
-        val url = "https://api.github.com/repos/$ownerRepository/$nameRepository/$operation?state=all"
+        val url = "https://api.github.com/repos/$ownerRepository/$nameRepository/$operation?page=$page&per_page=100&state=all"
         return makeRequest(url, token)
     }
 
     private fun getRepositoryCommits(ownerRepository: String, nameRepository: String): MutableList<Commit>? {
-        val mapper = ObjectMapper()
-        val root: JsonNode = mapper.readTree(
-            executeRequest(
-                ownerRepository,
-                nameRepository,
-                token,
-                "commits"
-            ).body
-        )
+        var page = 1
+        var root: JsonNode = getJsonNode(ownerRepository, nameRepository, "commits", page)
         val list = mutableListOf<Commit>()
-        for (i in root) {
-            val commit = Commit()
-            commit.nodeId = i.path("node_id").asText()
-            commit.name = i.path("commit").path("message").asText()
-            commit.url = i.path("html_url").asText()
-            list.add(commit)
+        while (!root.isEmpty) {
+            for (i in root) {
+                val commit = Commit()
+                commit.nodeId = i.path("node_id").asText()
+                commit.name = i.path("commit").path("message").asText()
+                commit.url = i.path("html_url").asText()
+                list.add(commit)
+            }
+            page++
+            root = getJsonNode(ownerRepository, nameRepository, "commits", page)
         }
         list.sortBy { it.nodeId }
         return list
@@ -289,6 +278,19 @@ open class RepositoryServiceImpl : RepositoryService {
         return restTemplate.exchange(
             url, HttpMethod.GET, request,
             String::class.java
+        )
+    }
+
+    private fun getJsonNode(ownerRepository: String, nameRepository: String, operation: String, page: Int): JsonNode {
+        val mapper = ObjectMapper()
+        return mapper.readTree(
+            executeRequest(
+                ownerRepository,
+                nameRepository,
+                token,
+                operation,
+                page
+            ).body
         )
     }
 
