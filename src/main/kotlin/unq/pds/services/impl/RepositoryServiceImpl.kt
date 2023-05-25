@@ -2,6 +2,7 @@ package unq.pds.services.impl
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.jasypt.util.text.AES256TextEncryptor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpEntity
@@ -18,7 +19,7 @@ import unq.pds.model.*
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.model.exceptions.NotAuthenticatedException
 import unq.pds.persistence.RepositoryDAO
-import unq.pds.persistence.StudentDAO
+import unq.pds.services.ProjectService
 import unq.pds.services.RepositoryService
 import javax.management.InvalidAttributeValueException
 import kotlin.math.ceil
@@ -33,23 +34,29 @@ open class RepositoryServiceImpl : RepositoryService {
 
     @Autowired
     private lateinit var repositoryDAO: RepositoryDAO
+    @Autowired
+    private lateinit var projectService: ProjectService
 
     override fun save(repositoryDTO: RepositoryDTO): Repository {
-        val repositoryFind = getRepository(repositoryDTO)
+        val project = projectService.read(repositoryDTO.projectId!!)
+        val encryptor = AES256TextEncryptor()
+        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
+        token = encryptor.decrypt(project.getTokenGithub())
+        val repositoryFind = getRepository(repositoryDTO.name!!, project.getOwnerGithub()!!)
         if (repositoryDAO.existsById(repositoryFind!!["id"].asLong())) {
             token = ""
             throw AlreadyRegisteredException("repository")
         }
-        val issues = getRepositoryIssues(repositoryDTO.owner!!, repositoryDTO.name!!)
-        val pullRequests = getRepositoryPulls(repositoryDTO.owner!!, repositoryDTO.name!!)
-        val tags = getRepositoryTags(repositoryDTO.owner!!, repositoryDTO.name!!)
-        val branches = getRepositoryBranches(repositoryDTO.owner!!, repositoryDTO.name!!)
-        val commits = getRepositoryCommits(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val issues = getRepositoryIssues(project.getOwnerGithub()!!, repositoryDTO.name!!)
+        val pullRequests = getRepositoryPulls(project.getOwnerGithub()!!, repositoryDTO.name!!)
+        val tags = getRepositoryTags(project.getOwnerGithub()!!, repositoryDTO.name!!)
+        val branches = getRepositoryBranches(project.getOwnerGithub()!!, repositoryDTO.name!!)
+        val commits = getRepositoryCommits(project.getOwnerGithub()!!, repositoryDTO.name!!)
 
         val repository = Repository(
             repositoryFind["id"].asLong(),
             repositoryDTO.name!!,
-            repositoryDTO.owner!!,
+            project.getOwnerGithub()!!,
             repositoryFind["html_url"].asText()
         )
         repository.issues = issues!!
@@ -64,21 +71,25 @@ open class RepositoryServiceImpl : RepositoryService {
     }
 
     override fun update(repositoryDTO: RepositoryDTO): Repository {
-        val repositoryFind = getRepository(repositoryDTO)
+        val project = projectService.read(repositoryDTO.projectId!!)
+        val encryptor = AES256TextEncryptor()
+        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
+        token = encryptor.decrypt(project.getTokenGithub())
+        val repositoryFind = getRepository(repositoryDTO.name!!, project.getOwnerGithub()!!)
         if (!repositoryDAO.existsById(repositoryFind!!["id"].asLong())) {
             token = ""
             throw NoSuchElementException("Repository does not exist")
         }
-        val issues = getRepositoryIssues(repositoryDTO.owner!!, repositoryDTO.name!!)
-        val pullRequests = getRepositoryPulls(repositoryDTO.owner!!, repositoryDTO.name!!)
-        val tags = getRepositoryTags(repositoryDTO.owner!!, repositoryDTO.name!!)
-        val branches = getRepositoryBranches(repositoryDTO.owner!!, repositoryDTO.name!!)
-        val commits = getRepositoryCommits(repositoryDTO.owner!!, repositoryDTO.name!!)
+        val issues = getRepositoryIssues(project.getOwnerGithub()!!, repositoryDTO.name!!)
+        val pullRequests = getRepositoryPulls(project.getOwnerGithub()!!, repositoryDTO.name!!)
+        val tags = getRepositoryTags(project.getOwnerGithub()!!, repositoryDTO.name!!)
+        val branches = getRepositoryBranches(project.getOwnerGithub()!!, repositoryDTO.name!!)
+        val commits = getRepositoryCommits(project.getOwnerGithub()!!, repositoryDTO.name!!)
 
         val repository = Repository(
             repositoryFind["id"].asLong(),
             repositoryDTO.name!!,
-            repositoryDTO.owner!!,
+            project.getOwnerGithub()!!,
             repositoryFind["html_url"].asText()
         )
         repository.issues = issues!!
@@ -255,11 +266,10 @@ open class RepositoryServiceImpl : RepositoryService {
         return list
     }
 
-    private fun getRepository(repositoryDTO: RepositoryDTO): JsonNode? {
+    private fun getRepository(name: String, owner: String): JsonNode? {
         try {
-            validation(repositoryDTO.owner, repositoryDTO.name, repositoryDTO.token)
-            token = repositoryDTO.token!!
-            val url = "https://api.github.com/repos/${repositoryDTO.owner}/${repositoryDTO.name}"
+            validation(owner, name, token)
+            val url = "https://api.github.com/repos/${owner}/${name}"
             val repository = makeRequest(url, token)
             val mapper = ObjectMapper()
             return mapper.readTree(repository.body)

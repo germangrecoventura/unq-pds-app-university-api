@@ -7,15 +7,15 @@ import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Project
 import unq.pds.model.exceptions.RepositoryHasAlreadyBeenAddedException
 import unq.pds.persistence.ProjectDAO
+import unq.pds.persistence.RepositoryDAO
 import unq.pds.services.ProjectService
-import unq.pds.services.RepositoryService
 
 @Service
 @Transactional
 open class ProjectServiceImpl : ProjectService {
 
     @Autowired private lateinit var projectDAO: ProjectDAO
-    @Autowired private lateinit var repositoryService: RepositoryService
+    @Autowired private lateinit var repositoryDAO: RepositoryDAO
 
     override fun save(project: Project): Project {
         project.setTokenGithub(project.getTokenGithub())
@@ -44,7 +44,8 @@ open class ProjectServiceImpl : ProjectService {
 
     override fun addRepository(projectId: Long, repositoryId: Long): Project {
         val project = this.read(projectId)
-        val repository = repositoryService.findById(repositoryId)
+        val repository = repositoryDAO.findById(repositoryId)
+            .orElseThrow { NoSuchElementException("Not found the repository with id $repositoryId") }
         if (projectDAO.projectWithRepository(repository).isPresent) {
             throw RepositoryHasAlreadyBeenAddedException()
         }

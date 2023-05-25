@@ -144,7 +144,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withOwner(null).build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
@@ -156,7 +156,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withOwner("").build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
@@ -335,7 +335,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withOwner(null).build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
@@ -349,7 +349,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withOwner("").build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)

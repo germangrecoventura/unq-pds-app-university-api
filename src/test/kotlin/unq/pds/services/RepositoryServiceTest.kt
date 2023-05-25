@@ -42,7 +42,7 @@ class RepositoryServiceTest {
 
     @Test
     fun `should throw an exception if owner is empty`() {
-        var request = aRepositoryDTO().withOwner("").build()
+        var request = aRepositoryDTO().build()
         val thrown: InvalidAttributeValueException? =
             Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
 
@@ -91,7 +91,7 @@ class RepositoryServiceTest {
 
     @Test
     fun `should throw exception when token is null`() {
-        var request = aRepositoryDTO().withToken(null).build()
+        var request = aRepositoryDTO().build()
         val thrown: InvalidAttributeValueException? =
             Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
 
@@ -103,7 +103,7 @@ class RepositoryServiceTest {
 
     @Test
     fun `should throw exception when token is empty`() {
-        var request = aRepositoryDTO().withToken("").build()
+        var request = aRepositoryDTO().build()
         val thrown: InvalidAttributeValueException? =
             Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.save(request) }
 
@@ -127,7 +127,7 @@ class RepositoryServiceTest {
 
     @Test
     fun `should throw exception when the user is not authenticated`() {
-        var request = aRepositoryDTO().withToken("djasdjdas").build()
+        var request = aRepositoryDTO().build()
         val thrown: RuntimeException? =
             Assertions.assertThrows(RuntimeException::class.java) { repositoryService.save(request) }
 
@@ -151,7 +151,7 @@ class RepositoryServiceTest {
 
     @Test
     fun `should throw an exception if that updates a repository and the owner is empty`() {
-        var request = aRepositoryDTO().withOwner("").build()
+        var request = aRepositoryDTO().build()
         val thrown: InvalidAttributeValueException? =
             Assertions.assertThrows(InvalidAttributeValueException::class.java) { repositoryService.update(request) }
 

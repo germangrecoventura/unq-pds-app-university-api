@@ -66,6 +66,17 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                     )]
                 )
                 ]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"There is no project with that id\"\n" +
+                                "}"
+                    )]
+                )]
             )]
     )
     fun createRepository(
@@ -183,7 +194,7 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"Repository does not exist\"\n" +
+                                "  \"message\": \"string\"\n" +
                                 "}"
                     )]
                 )]
