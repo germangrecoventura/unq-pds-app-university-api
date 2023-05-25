@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
+import unq.pds.model.builder.ProjectBuilder
 import unq.pds.services.builder.BuilderCommentCreateDTO.Companion.aCommentDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
@@ -26,6 +27,9 @@ class TeacherServiceTest {
 
     @Autowired
     lateinit var repositoryService: RepositoryService
+
+    @Autowired
+    lateinit var projectService: ProjectService
 
     @BeforeEach
     fun tearDown() {
@@ -324,7 +328,8 @@ class TeacherServiceTest {
 
     @Test
     fun `should add a comment to repository if exists`() {
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(ProjectBuilder.aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         teacherService.addCommentToRepository(aCommentDTO().withId(repository.id).build())
         val repositoryFind = repositoryService.findById(repository.id)
         Assertions.assertTrue(repositoryFind.commentsTeacher.size == 1)

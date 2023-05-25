@@ -93,7 +93,7 @@ class ProjectServiceTest {
     @Test
     fun `should add a repository to a project when it was not previously added and both exist`() {
         val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         Assertions.assertEquals(0, project.repositories.size)
         val projectWithARepository = projectService.addRepository(project.getId()!!, repository.id)
         Assertions.assertEquals(1, projectWithARepository.repositories.size)
@@ -102,7 +102,7 @@ class ProjectServiceTest {
     @Test
     fun `should throw an exception when trying to add the same repository to a project twice and both exist`() {
         val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         projectService.addRepository(project.getId()!!, repository.id)
 
         val thrown: RepositoryHasAlreadyBeenAddedException? =
@@ -131,7 +131,8 @@ class ProjectServiceTest {
 
     @Test
     fun `should throw an exception when trying to add a repository to a project and the project does not exist`() {
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         try {
             projectService.addRepository(-1, repository.id)
         } catch (e: NoSuchElementException) {

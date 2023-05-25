@@ -42,7 +42,7 @@ open class RepositoryServiceImpl : RepositoryService {
         val encryptor = AES256TextEncryptor()
         encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
         token = encryptor.decrypt(project.getTokenGithub())
-        val repositoryFind = getRepository(repositoryDTO.name!!, project.getOwnerGithub()!!)
+        val repositoryFind = getRepository(repositoryDTO.name, project.getOwnerGithub())
         if (repositoryDAO.existsById(repositoryFind!!["id"].asLong())) {
             token = ""
             throw AlreadyRegisteredException("repository")
@@ -75,7 +75,7 @@ open class RepositoryServiceImpl : RepositoryService {
         val encryptor = AES256TextEncryptor()
         encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
         token = encryptor.decrypt(project.getTokenGithub())
-        val repositoryFind = getRepository(repositoryDTO.name!!, project.getOwnerGithub()!!)
+        val repositoryFind = getRepository(repositoryDTO.name, project.getOwnerGithub())
         if (!repositoryDAO.existsById(repositoryFind!!["id"].asLong())) {
             token = ""
             throw NoSuchElementException("Repository does not exist")
@@ -266,7 +266,7 @@ open class RepositoryServiceImpl : RepositoryService {
         return list
     }
 
-    private fun getRepository(name: String, owner: String): JsonNode? {
+    private fun getRepository(name: String?, owner: String?): JsonNode? {
         try {
             validation(owner, name, token)
             val url = "https://api.github.com/repos/${owner}/${name}"

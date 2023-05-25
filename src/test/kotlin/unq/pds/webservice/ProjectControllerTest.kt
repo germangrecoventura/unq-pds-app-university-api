@@ -423,7 +423,7 @@ class ProjectControllerTest {
         groupDTOCreate.members = listOf(student.getEmail()!!)
         val group = groupService.save(groupDTOCreate)
         groupService.addProject(group.getId()!!, project.getId()!!)
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put(
@@ -442,7 +442,7 @@ class ProjectControllerTest {
         val cookie = cookiesAdmin()
         val project = projectService.save(aProject().build())
         studentService.save(aStudentDTO().build())
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put(
@@ -460,7 +460,8 @@ class ProjectControllerTest {
     fun `should throw a 404 status when add a non-existent project`() {
         val cookie = cookiesAdmin()
         studentService.save(aStudentDTO().build())
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put(
@@ -496,7 +497,7 @@ class ProjectControllerTest {
         val cookie = cookiesAdmin()
         val project = projectService.save(aProject().build())
         studentService.save(aStudentDTO().build())
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         projectService.addRepository(project.getId()!!, repository.id)
 
         mockMvc.perform(

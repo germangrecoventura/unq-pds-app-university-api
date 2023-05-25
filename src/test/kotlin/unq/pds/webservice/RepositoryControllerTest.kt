@@ -14,10 +14,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
-import unq.pds.services.AdminService
-import unq.pds.services.RepositoryService
-import unq.pds.services.StudentService
-import unq.pds.services.TeacherService
+import unq.pds.model.builder.ProjectBuilder
+import unq.pds.model.builder.ProjectBuilder.Companion.aProject
+import unq.pds.services.*
 import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
 import unq.pds.services.builder.BuilderLoginDTO.Companion.aLoginDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
@@ -45,6 +44,9 @@ class RepositoryControllerTest {
     @Autowired
     lateinit var adminService: AdminService
 
+    @Autowired
+    lateinit var projectService: ProjectService
+
     private val mapper = ObjectMapper()
 
     @Autowired
@@ -69,10 +71,11 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a student does have permissions to create repositories`() {
         val cookie = cookiesStudent()
+        val project = projectService.save(aProject().build())
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
@@ -81,10 +84,11 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to create repositories`() {
         val cookie = cookiesTeacher()
+        val project = projectService.save(aProject().build())
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
@@ -93,10 +97,11 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a admin does have permissions to create repositories`() {
         val cookie = cookiesAdmin()
+        val project = projectService.save(aProject().build())
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
@@ -141,10 +146,11 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 400 status when the repository has a null owner`() {
         val cookie = cookiesAdmin()
+        val project = projectService.save(aProject().withOwnerGithub(null).build())
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
@@ -153,10 +159,11 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 400 status when the repository has a empty owner`() {
         val cookie = cookiesAdmin()
+        val project = projectService.save(aProject().withOwnerGithub("").build())
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
@@ -165,11 +172,12 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 400 status when a admin create a repository and it has already exist`() {
         val cookie = cookiesAdmin()
-        repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
@@ -187,7 +195,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a student does have permissions to get repository if exist`() {
         val cookie = cookiesStudent()
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", repository.id.toString()).cookie(cookie)
@@ -197,7 +206,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to get repository if exist`() {
         val cookie = cookiesTeacher()
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", repository.id.toString()).cookie(cookie)
@@ -207,7 +217,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a admin does have permissions to get repository if exist`() {
         val cookie = cookiesAdmin()
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", repository.id.toString()).cookie(cookie)
@@ -246,12 +257,13 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a student does have permissions to update repositories`() {
         val cookie = cookiesStudent()
-        repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
@@ -260,12 +272,13 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to update repositories`() {
         val cookie = cookiesTeacher()
-        repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
@@ -274,12 +287,13 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a admin does have permissions to update repositories`() {
         val cookie = cookiesAdmin()
-        repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
@@ -288,12 +302,14 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 400 status when update a repository and it has a null name`() {
         val cookie = cookiesAdmin()
-        repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withName(null).build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withName(null)
+                    .withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
@@ -302,12 +318,14 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 400 status when update a repository and it has a empty name`() {
         val cookie = cookiesAdmin()
-        repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withName("").build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withName("")
+                    .withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
@@ -316,26 +334,14 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 400 status when update a repository and it has a name with special character not valid`() {
         val cookie = cookiesAdmin()
-        repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withName("App###").build()))
-                .cookie(cookie)
-                .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
-    }
-
-    @Test
-    fun `should throw a 400 status when update a repository and it has a null owner`() {
-        val cookie = cookiesAdmin()
-        repositoryService.save(aRepositoryDTO().build())
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.put("/repositories")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withName("App###")
+                    .withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
@@ -344,12 +350,12 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 400 status when update a repository and it has a empty owner`() {
         val cookie = cookiesAdmin()
-        repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().withOwnerGithub("").build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
@@ -372,10 +378,12 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 400 status when update a repository and it not found`() {
         val cookie = cookiesAdmin()
+        val project = projectService.save(aProject().build())
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withName("el-repo").build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withName("el-repo")
+                    .withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
@@ -410,7 +418,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a admin does have permissions to delete repositories`() {
         val cookie = cookiesAdmin()
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", repository.id.toString()).cookie(cookie)
@@ -473,7 +482,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when querying the page count of commits`() {
         val cookie = cookiesAdmin()
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedCommit")
                 .accept(MediaType.APPLICATION_JSON)
@@ -485,7 +495,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when querying the page count of issues`() {
         val cookie = cookiesAdmin()
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedIssue")
                 .accept(MediaType.APPLICATION_JSON)
@@ -497,7 +508,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when querying the page count of pull request`() {
         val cookie = cookiesAdmin()
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedPullRequest")
                 .accept(MediaType.APPLICATION_JSON)
@@ -509,7 +521,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when querying the page commits`() {
         val cookie = cookiesAdmin()
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pageCommit").accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("page", "0").param("size", "5").cookie(cookie)
@@ -519,7 +532,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when querying the page issue`() {
         val cookie = cookiesAdmin()
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pageIssue").accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("page", "0").param("size", "5").cookie(cookie)
@@ -529,7 +543,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when querying the page pull request`() {
         val cookie = cookiesAdmin()
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pagePullRequest").accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("page", "0").param("size", "5").cookie(cookie)
@@ -552,7 +567,8 @@ class RepositoryControllerTest {
     fun `should throw a 401 status when trying to get a repository with null cookies`() {
         cookiesStudent()
         val cookie = Cookie("jwt", "")
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", repository.id.toString()).cookie(cookie)
@@ -563,12 +579,13 @@ class RepositoryControllerTest {
     fun `should throw a 401 status when trying to update a repository with null cookies`() {
         cookiesStudent()
         val cookie = Cookie("jwt", "")
-        repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
@@ -577,7 +594,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 401 status when trying to delete a repository with null cookies`() {
         val cookie = Cookie("jwt", "")
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", repository.id.toString()).cookie(cookie)
@@ -597,7 +615,8 @@ class RepositoryControllerTest {
 
     fun `should throw a 401 status when trying to querying the page count of commits with null cookies`() {
         val cookie = Cookie("jwt", "")
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedCommit")
                 .accept(MediaType.APPLICATION_JSON)
@@ -609,7 +628,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 401 status when trying to querying the page count of issues with null cookies`() {
         val cookie = Cookie("jwt", "")
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedIssue")
                 .accept(MediaType.APPLICATION_JSON)
@@ -621,7 +641,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 401 status when trying to querying the page count of pull request with null cookies`() {
         val cookie = Cookie("jwt", "")
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedPullRequest")
                 .accept(MediaType.APPLICATION_JSON)
@@ -633,7 +654,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 401 status when trying page commit with null cookies`() {
         val cookie = Cookie("jwt", "")
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pageCommit").accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("page", "0").param("size", "5")
@@ -644,7 +666,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 401 status when trying page issue with null cookies`() {
         val cookie = Cookie("jwt", "")
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pageIssue").accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("page", "0").param("size", "5")
@@ -655,7 +678,8 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 401 status when trying page pull request with null cookies`() {
         val cookie = Cookie("jwt", "")
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pagePullRequest").accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("page", "0").param("size", "5")
