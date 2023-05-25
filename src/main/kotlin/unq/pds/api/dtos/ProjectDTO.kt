@@ -13,5 +13,11 @@ class ProjectDTO {
     @Schema(example = "unq pds")
     var name: String? = null
 
-    fun fromDTOToModel() = Project(name!!)
+    @Schema(example = "germangrecoventura")
+    var ownerGithub: String? = null
+
+    @Schema(example = "")
+    var tokenGithub: String? = null
+
+    fun fromDTOToModel() = Project(name!!, ownerGithub, tokenGithub)
 }

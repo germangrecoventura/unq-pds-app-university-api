@@ -18,6 +18,7 @@ open class ProjectServiceImpl : ProjectService {
     @Autowired private lateinit var repositoryService: RepositoryService
 
     override fun save(project: Project): Project {
+        project.setTokenGithub(project.getTokenGithub())
         return projectDAO.save(project)
     }
 
@@ -25,6 +26,8 @@ open class ProjectServiceImpl : ProjectService {
         if (project.id != null && projectDAO.existsById(project.id!!)) {
             val projectFind = projectDAO.findById(project.id!!).get()
             projectFind.name = project.name!!
+            projectFind.setOwnerGithub(project.ownerGithub)
+            projectFind.setTokenGithub(project.tokenGithub)
             return projectDAO.save(projectFind)
         }
          else throw NoSuchElementException("Project does not exist")

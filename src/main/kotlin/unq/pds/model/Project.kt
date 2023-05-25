@@ -1,8 +1,8 @@
 package unq.pds.model
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import com.fasterxml.jackson.annotation.*
 import io.swagger.v3.oas.annotations.media.Schema
+import org.jasypt.util.text.AES256TextEncryptor
 import javax.management.InvalidAttributeValueException
 import javax.persistence.*
 
@@ -10,7 +10,11 @@ import javax.persistence.*
 @Table(name = "Project")
 @JsonPropertyOrder("id", "name", "repositories")
 class Project(
-    name: String
+    name: String,
+    @Column(nullable = true)
+    @JsonProperty @field:Schema(example = "germangrecoventura") private var ownerGithub: String? = null,
+    @Column(nullable = true)
+    @JsonProperty @field:Schema(example = "") private var tokenGithub: String? = null
 ) {
     @Column(nullable = false)
     @JsonProperty
@@ -36,6 +40,21 @@ class Project(
     }
 
     fun getId() = id
+
+    fun getOwnerGithub() = ownerGithub
+
+    fun getTokenGithub() = tokenGithub
+
+    fun setOwnerGithub(ownerGithub: String?) {
+        this.ownerGithub = ownerGithub
+    }
+
+    fun setTokenGithub(token: String?) {
+        val encryptor = AES256TextEncryptor()
+        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
+        val myEncryptedToken = encryptor.encrypt(token)
+        this.tokenGithub = myEncryptedToken
+    }
 
     init { this.validateCreation() }
 

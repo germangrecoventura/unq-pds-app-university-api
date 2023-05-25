@@ -5,7 +5,7 @@ import unq.pds.api.dtos.GroupUpdateDTO
 import unq.pds.model.Group
 
 interface GroupService {
-    fun save(group: GroupDTO): Group
+    fun save(groupDTO: GroupDTO): Group
     fun update(groupUpdateDTO: GroupUpdateDTO): Group
     fun read(groupId: Long): Group
     fun delete(groupId: Long)

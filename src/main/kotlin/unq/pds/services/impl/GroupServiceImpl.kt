@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.GroupDTO
 import unq.pds.api.dtos.GroupUpdateDTO
+import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Group
 import unq.pds.model.Project
 import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
@@ -27,16 +28,17 @@ open class GroupServiceImpl : GroupService {
         if (groupDTO.nameProject.isNullOrBlank()) throw InvalidAttributeValueException("Name project cannot be empty")
         if (groupDTO.name.isNullOrBlank()) throw InvalidAttributeValueException("Name group cannot be empty")
         if (groupDTO.members!![0].isNullOrBlank())throw InvalidAttributeValueException("There must be at least one member")
-        val group = Group(groupDTO.name!!)
-       for (member in groupDTO.members!!){
+        val group = groupDTO.fromDTOToModel()
+        for (member in groupDTO.members!!){
            if (!member.isNullOrBlank()){
                group.addMember(studentService.findByEmail(member))
            }
        }
-        val project = Project(groupDTO.nameProject!!)
+        val project = Project(groupDTO.nameProject!!, groupDTO.ownerGithub, groupDTO.tokenGithub)
         group.addProject(projectService.save(project))
         return groupDAO.save(group)
     }
+
     override fun update(groupUpdateDTO: GroupUpdateDTO): Group {
         if (groupUpdateDTO.id != null && groupDAO.existsById(groupUpdateDTO.id!!)) {
             val groupFind = groupDAO.findById(groupUpdateDTO.id!!).get()

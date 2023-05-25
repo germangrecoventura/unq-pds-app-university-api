@@ -11,7 +11,6 @@ import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.model.exceptions.RepositoryHasAlreadyBeenAddedException
 import unq.pds.services.builder.BuilderProjectDTO.Companion.aProjectDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
-import unq.pds.services.builder.BuilderStudentDTO
 
 @SpringBootTest
 class ProjectServiceTest {

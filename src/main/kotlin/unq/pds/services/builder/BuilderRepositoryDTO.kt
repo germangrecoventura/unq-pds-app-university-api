@@ -9,7 +9,7 @@ class BuilderRepositoryDTO {
     private var token: String? = System.getenv("TOKEN_GITHUB")
 
     fun build(): RepositoryDTO {
-        var repositoryDTO = RepositoryDTO()
+        val repositoryDTO = RepositoryDTO()
         repositoryDTO.name = name
         repositoryDTO.owner = owner
         repositoryDTO.token = token

@@ -15,8 +15,15 @@ class GroupDTO {
     @NotNull(message = "There must be at least one member")
     @NotEmpty(message = "There must be at least one member")
     var members: List<String>? = null
+
     @NotBlank(message = "Name project cannot be empty")
     var nameProject: String? = null
+
+    @Schema(example = "germangrecoventura")
+    var ownerGithub: String? = null
+
+    @Schema(example = "")
+    var tokenGithub: String? = null
 
     fun fromDTOToModel() = Group(name!!)
 }
