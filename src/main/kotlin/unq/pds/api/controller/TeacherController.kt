@@ -27,7 +27,6 @@ class TeacherController {
     @RequestMapping("teachers")
     class TeacherController(
         private val teacherService: TeacherService,
-        // private val commissionService: CommissionService
     ) {
         private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
         private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
@@ -318,7 +317,7 @@ class TeacherController {
         }
 
 
-        @PostMapping("/addCommentGroup")
+        @PostMapping("/addComment")
         @Operation(
             summary = "Add comment to repository",
             description = "Add comment to repository",
@@ -378,7 +377,7 @@ class TeacherController {
         ): ResponseEntity<Any> {
             if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] != "STUDENT")
+            return if (body["role"] == "STUDENT")
                 ResponseEntity(
                     messageNotAccess,
                     HttpStatus.UNAUTHORIZED
