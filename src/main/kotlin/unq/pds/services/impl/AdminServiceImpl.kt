@@ -1,4 +1,4 @@
-package unq.pds.services
+package unq.pds.services.impl
 
 import org.jasypt.util.text.AES256TextEncryptor
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,6 +8,8 @@ import unq.pds.api.dtos.AdminCreateRequestDTO
 import unq.pds.model.Admin
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.persistence.AdminDAO
+import unq.pds.services.AdminService
+import unq.pds.services.UserService
 
 @Service
 @Transactional
