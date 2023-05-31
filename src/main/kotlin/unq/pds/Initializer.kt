@@ -30,6 +30,9 @@ class Initializer {
     @Autowired
     lateinit var adminService: AdminService
 
+    @Autowired
+    lateinit var deployInstanceService: DeployInstanceService
+
 
     fun cleanDataBase() {
         commissionService.clearCommissions()
@@ -40,6 +43,7 @@ class Initializer {
         projectService.clearProjects()
         repositoryService.clearRepositories()
         adminService.clearAdmins()
+        deployInstanceService.clearDeployInstances()
     }
 }
 /*
