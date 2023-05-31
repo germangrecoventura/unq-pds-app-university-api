@@ -14,7 +14,7 @@ class DeployInstance(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private var id: Long? = null
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     var name = name
         set(value) {
             this.validateName(value)
