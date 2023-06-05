@@ -19,6 +19,7 @@ import unq.pds.model.builder.MatterBuilder.Companion.aMatter
 import unq.pds.services.*
 import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
 import unq.pds.services.builder.BuilderCommissionDTO.Companion.aCommissionDTO
+import unq.pds.services.builder.BuilderGroupDTO.Companion.aGroupDTO
 import unq.pds.services.builder.BuilderLoginDTO.Companion.aLoginDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
@@ -823,274 +824,286 @@ class CommissionControllerTest {
         ).andExpect(status().isUnauthorized)
     }
 
-    /*
-        @Test
-        fun `should throw a 401 status when a student does have not permissions to add group to a commission`() {
-            val cookie = cookiesStudent()
-            matterService.save(aMatter().build())
-            val commission = commissionService.save(aCommission().build())
-            val group = groupService.save(aGroup().build())
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/addGroup/{commissionId}/{groupId}",
-                    commission.getId(),
-                    group.getId()
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isUnauthorized)
-        }
 
-        @Test
-        fun `should throw a 401 status when a teacher does have not permissions to add group to a commission except yourself`() {
-            val cookie = cookiesTeacher()
-            matterService.save(aMatter().build())
-            val commission = commissionService.save(aCommission().build())
-            val group = groupService.save(aGroup().build())
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/addGroup/{commissionId}/{groupId}",
-                    commission.getId(),
-                    group.getId()
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isUnauthorized)
-        }
+    @Test
+    fun `should throw a 401 status when a student does have not permissions to add group to a commission`() {
+        val cookie = cookiesStudent()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        val group = groupService.save(aGroupDTO().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/addGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
 
-        @Test
-        fun `should throw a 200 status when a teacher does have permissions to add group to a commission except yourself`() {
-            val cookie = cookiesTeacher()
-            matterService.save(aMatter().build())
-            val commission = commissionService.save(aCommission().build())
-            val group = groupService.save(aGroup().build())
-            val teacher = teacherService.findByEmail("docente@gmail.com")
-            commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/addGroup/{commissionId}/{groupId}",
-                    commission.getId(),
-                    group.getId()
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isOk)
-        }
 
-        @Test
-        fun `should throw a 200 status when a admin does have permissions to add group to a commission`() {
-            val cookie = cookiesAdmin()
-            matterService.save(aMatter().build())
-            val commission = commissionService.save(aCommission().build())
-            val group = groupService.save(aGroup().build())
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/addGroup/{commissionId}/{groupId}",
-                    commission.getId(),
-                    group.getId()
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isOk)
-        }
+    @Test
+    fun `should throw a 401 status when a teacher does have not permissions to add group to a commission except yourself`() {
+        val cookie = cookiesTeacher()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/addGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
 
-        @Test
-        fun `should throw a 404 status when trying to remove a group in a non-existent commission`() {
-            val cookie = cookiesAdmin()
-            val group = groupService.save(aGroup().build())
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/addGroup/{commissionId}/{groupId}",
-                    -1,
-                    group.getId()
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isNotFound)
-        }
 
-        @Test
-        fun `should throw a 404 status when add a non-existent group`() {
-            val cookie = cookiesAdmin()
-            matterService.save(aMatter().build())
-            val commission = commissionService.save(aCommission().build())
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/addGroup/{commissionId}/{groupId}",
-                    commission.getId(),
-                    -1
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isNotFound)
-        }
+    @Test
+    fun `should throw a 200 status when a teacher does have permissions to add group to a commission except yourself`() {
+        val cookie = cookiesTeacher()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
+        val teacher = teacherService.findByEmail("docente@gmail.com")
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/addGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isOk)
+    }
 
-        @Test
-        fun `should throw a 400 status when add group to a commission and it has already been added`() {
-            val cookie = cookiesAdmin()
-            matterService.save(aMatter().build())
-            val commission = commissionService.save(aCommission().build())
-            val group = groupService.save(aGroup().build())
-            commissionService.addGroup(commission.getId()!!, group.getId()!!)
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/addGroup/{commissionId}/{groupId}",
-                    commission.getId(),
-                    group.getId()
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isBadRequest)
-        }
+    @Test
+    fun `should throw a 200 status when a admin does have permissions to add group to a commission`() {
+        val cookie = cookiesAdmin()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/addGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isOk)
+    }
 
-        @Test
-        fun `should throw a 401 status when trying to remove group of a commission and is not authenticated`() {
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/removeGroup/{commissionId}/{groupId}",
-                    1, 1
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept("application/json")
-            ).andExpect(status().isUnauthorized)
-        }
+    @Test
+    fun `should throw a 404 status when trying to remove a group in a non-existent commission`() {
+        val cookie = cookiesAdmin()
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/addGroup/{commissionId}/{groupId}",
+                -1,
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isNotFound)
+    }
 
-        @Test
-        fun `should throw a 401 status when a student does have not permissions to remove group of a commission`() {
-            val cookie = cookiesStudent()
-            matterService.save(aMatter().build())
-            val commission = commissionService.save(aCommission().build())
-            val group = groupService.save(aGroup().build())
-            commissionService.addGroup(commission.getId()!!, group.getId()!!)
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/removeGroup/{commissionId}/{groupId}",
-                    commission.getId(),
-                    group.getId()
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isUnauthorized)
-        }
+    @Test
+    fun `should throw a 404 status when add a non-existent group`() {
+        val cookie = cookiesAdmin()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/addGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                -1
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isNotFound)
+    }
 
-        @Test
-        fun `should throw a 401 status when a teacher does have not permissions to remove group of a commission except yourself`() {
-            val cookie = cookiesTeacher()
-            matterService.save(aMatter().build())
-            val commission = commissionService.save(aCommission().build())
-            val group = groupService.save(aGroup().build())
-            commissionService.addGroup(commission.getId()!!, group.getId()!!)
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/removeGroup/{commissionId}/{groupId}",
-                    commission.getId(),
-                    group.getId()
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isUnauthorized)
-        }
+    @Test
+    fun `should throw a 400 status when add group to a commission and it has already been added`() {
+        val cookie = cookiesAdmin()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/addGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
+    }
 
-        @Test
-        fun `should throw a 200 status when a teacher does have permissions to remove group of a commission except yourself`() {
-            val cookie = cookiesTeacher()
-            matterService.save(aMatter().build())
-            val commission = commissionService.save(aCommission().build())
-            val group = groupService.save(aGroup().build())
-            val teacher = teacherService.findByEmail("docente@gmail.com")
-            commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
-            commissionService.addGroup(commission.getId()!!, group.getId()!!)
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/removeGroup/{commissionId}/{groupId}",
-                    commission.getId(),
-                    group.getId()
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isOk)
-        }
+    @Test
+    fun `should throw a 401 status when trying to remove group of a commission and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/removeGroup/{commissionId}/{groupId}",
+                1, 1
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
 
-        @Test
-        fun `should throw a 200 status when admin remove an existing group of a commission`() {
-            val cookie = cookiesAdmin()
-            matterService.save(aMatter().build())
-            val commission = commissionService.save(aCommission().build())
-            val group = groupService.save(aGroup().build())
-            commissionService.addGroup(commission.getId()!!, group.getId()!!)
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/removeGroup/{commissionId}/{groupId}",
-                    commission.getId(),
-                    group.getId()
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isOk)
-        }
+    @Test
+    fun `should throw a 401 status when a student does have not permissions to remove group of a commission`() {
+        val cookie = cookiesStudent()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        val group = groupService.save(aGroupDTO().build())
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/removeGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
 
-        @Test
-        fun `should throw a 404 status when remove a non-existent group`() {
-            val cookie = cookiesAdmin()
-            matterService.save(aMatter().build())
-            val commission = commissionService.save(aCommission().build())
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/removeGroup/{commissionId}/{groupId}",
-                    commission.getId(),
-                    -1
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isNotFound)
-        }
+    @Test
+    fun `should throw a 401 status when a teacher does have not permissions to remove group of a commission except yourself`() {
+        val cookie = cookiesTeacher()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/removeGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
 
-        @Test
-        fun `should throw a 404 status when non-existent commission to remove group`() {
-            val cookie = cookiesAdmin()
-            val group = groupService.save(aGroup().build())
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/removeGroup/{commissionId}/{groupId}",
-                    -1,
-                    group.getId()
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isNotFound)
-        }
+    @Test
+    fun `should throw a 200 status when a teacher does have permissions to remove group of a commission except yourself`() {
+        val cookie = cookiesTeacher()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
+        val teacher = teacherService.findByEmail("docente@gmail.com")
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/removeGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isOk)
+    }
 
-        @Test
-        fun `should throw a 404 status when trying to remove a group who does not belong to a commission`() {
-            val cookie = cookiesAdmin()
-            matterService.save(aMatter().build())
-            val commission = commissionService.save(aCommission().build())
-            val group = groupService.save(aGroup().build())
-            mockMvc.perform(
-                MockMvcRequestBuilders.put(
-                    "/commissions/removeGroup/{commissionId}/{groupId}",
-                    commission.getId(),
-                    group.getId()
-                )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .cookie(cookie)
-                    .accept("application/json")
-            ).andExpect(status().isNotFound)
-        }
-    */
+    @Test
+    fun `should throw a 200 status when admin remove an existing group of a commission`() {
+        val cookie = cookiesAdmin()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/removeGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `should throw a 404 status when remove a non-existent group`() {
+        val cookie = cookiesAdmin()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/removeGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                -1
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `should throw a 404 status when non-existent commission to remove group`() {
+        val cookie = cookiesAdmin()
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/removeGroup/{commissionId}/{groupId}",
+                -1,
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `should throw a 404 status when trying to remove a group who does not belong to a commission`() {
+        val cookie = cookiesAdmin()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/removeGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isNotFound)
+    }
+
     private fun cookiesStudent(): Cookie? {
         val student = studentService.save(aStudentDTO().build())
         val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").build()

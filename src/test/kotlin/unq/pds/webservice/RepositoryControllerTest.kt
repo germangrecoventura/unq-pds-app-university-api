@@ -10,11 +10,10 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
-import unq.pds.model.builder.ProjectBuilder
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.services.*
 import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
@@ -65,7 +64,7 @@ class RepositoryControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aRepositoryDTO().build()))
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -78,7 +77,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -91,7 +90,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -104,7 +103,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -116,7 +115,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withName(null).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -128,7 +127,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withName("").build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -140,7 +139,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withName("App##").build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -153,7 +152,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -166,7 +165,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -180,7 +179,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
 
@@ -189,7 +188,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -200,7 +199,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", repository.id.toString()).cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -211,7 +210,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", repository.id.toString()).cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -222,7 +221,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", repository.id.toString()).cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -231,7 +230,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", "-1").cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isNotFound)
+        ).andExpect(status().isNotFound)
     }
 
     @Test
@@ -241,7 +240,7 @@ class RepositoryControllerTest {
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", null)
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -251,7 +250,7 @@ class RepositoryControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aRepositoryDTO().build()))
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -266,7 +265,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -281,7 +280,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -296,7 +295,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -312,7 +311,7 @@ class RepositoryControllerTest {
                     .withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -328,7 +327,7 @@ class RepositoryControllerTest {
                     .withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -344,7 +343,7 @@ class RepositoryControllerTest {
                     .withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -358,7 +357,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -371,7 +370,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isNotFound)
+        ).andExpect(status().isNotFound)
     }
 
 
@@ -386,7 +385,7 @@ class RepositoryControllerTest {
                     .withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -394,7 +393,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -403,7 +402,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1").cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -412,7 +411,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1").cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -423,7 +422,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", repository.id.toString()).cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -432,7 +431,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", "-1").cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isNotFound)
+        ).andExpect(status().isNotFound)
     }
 
     @Test
@@ -442,7 +441,7 @@ class RepositoryControllerTest {
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", null)
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -451,7 +450,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/getAll").accept(MediaType.APPLICATION_JSON)
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -460,7 +459,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/getAll").accept(MediaType.APPLICATION_JSON)
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -469,14 +468,14 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/getAll").accept(MediaType.APPLICATION_JSON)
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
     fun `should throw a 401 status when trying to get all repositories and is not authenticated`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/getAll").accept(MediaType.APPLICATION_JSON)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -489,7 +488,7 @@ class RepositoryControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("size", "0")
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -502,7 +501,7 @@ class RepositoryControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("size", "0")
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -515,7 +514,7 @@ class RepositoryControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("size", "0")
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -526,7 +525,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pageCommit").accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("page", "0").param("size", "5").cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -537,7 +536,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pageIssue").accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("page", "0").param("size", "5").cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -548,7 +547,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pagePullRequest").accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("page", "0").param("size", "5").cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -560,7 +559,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().build()))
                 .accept("application/json")
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -572,7 +571,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", repository.id.toString()).cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -588,7 +587,7 @@ class RepositoryControllerTest {
                 .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
                 .cookie(cookie)
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -599,7 +598,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", repository.id.toString()).cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -608,7 +607,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/getAll").accept(MediaType.APPLICATION_JSON)
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -622,7 +621,7 @@ class RepositoryControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("size", "0")
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -635,7 +634,7 @@ class RepositoryControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("size", "0")
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -648,7 +647,7 @@ class RepositoryControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("size", "0")
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -660,7 +659,7 @@ class RepositoryControllerTest {
             MockMvcRequestBuilders.get("/repositories/pageCommit").accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("page", "0").param("size", "5")
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -672,7 +671,7 @@ class RepositoryControllerTest {
             MockMvcRequestBuilders.get("/repositories/pageIssue").accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("page", "0").param("size", "5")
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -684,7 +683,7 @@ class RepositoryControllerTest {
             MockMvcRequestBuilders.get("/repositories/pagePullRequest").accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name).param("page", "0").param("size", "5")
                 .cookie(cookie)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
 
@@ -696,7 +695,7 @@ class RepositoryControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(login))
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
 
         return response.andReturn().response.cookies[0]
     }
@@ -709,7 +708,7 @@ class RepositoryControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(login))
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
 
         return response.andReturn().response.cookies[0]
     }
@@ -722,7 +721,7 @@ class RepositoryControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(login))
                 .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        ).andExpect(status().isOk)
 
         return response.andReturn().response.cookies[0]
     }

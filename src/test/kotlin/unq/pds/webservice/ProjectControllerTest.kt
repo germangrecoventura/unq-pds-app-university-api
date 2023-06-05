@@ -14,10 +14,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
-import unq.pds.api.dtos.GroupDTO
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.services.*
 import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
+import unq.pds.services.builder.BuilderGroupDTO.Companion.aGroupDTO
 import unq.pds.services.builder.BuilderLoginDTO.Companion.aLoginDTO
 import unq.pds.services.builder.BuilderProjectDTO.Companion.aProjectDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
@@ -233,12 +233,7 @@ class ProjectControllerTest {
     fun `should throw a 200 status when a student does have permissions to update a project of a group to which he belongs`() {
         val cookie = cookiesStudent()
         val project = projectService.save(aProject().build())
-        val student = studentService.findByEmail("german@gmail.com")
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         groupService.addProject(group.getId()!!, project.getId()!!)
 
         project.name = "new name"
@@ -416,12 +411,7 @@ class ProjectControllerTest {
     fun `should throw a 200 status when a student does have permissions to add a repository to a project of a group to which he belongs`() {
         val cookie = cookiesStudent()
         val project = projectService.save(aProject().build())
-        val student = studentService.findByEmail("german@gmail.com")
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         groupService.addProject(group.getId()!!, project.getId()!!)
         val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
 

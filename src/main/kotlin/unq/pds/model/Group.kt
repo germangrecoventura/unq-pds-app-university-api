@@ -30,7 +30,7 @@ class Group(name: String) {
     var members: MutableSet<Student> = mutableSetOf()
 
     @Schema(example = "[]")
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JsonProperty
     var projects: MutableSet<Project> = mutableSetOf()
 

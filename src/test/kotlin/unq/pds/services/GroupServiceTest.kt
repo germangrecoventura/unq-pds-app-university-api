@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
-import unq.pds.api.dtos.GroupDTO
 import unq.pds.api.dtos.GroupUpdateDTO
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
+import unq.pds.services.builder.BuilderGroupDTO.Companion.aGroupDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 
 @SpringBootTest
@@ -34,23 +34,15 @@ class GroupServiceTest {
 
     @Test
     fun `should be create a group when it has valid credentials`() {
-        val student = studentService.save(aStudentDTO().build())
-        val groupDTO = GroupDTO()
-        groupDTO.name = "Test"
-        groupDTO.nameProject = "Test project"
-        groupDTO.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTO)
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
         Assertions.assertNotNull(group.getId())
     }
 
     @Test
     fun `should recover a group when it exists`() {
-        val student = studentService.save(aStudentDTO().build())
-        val groupDTO = GroupDTO()
-        groupDTO.name = "Test"
-        groupDTO.nameProject = "Test project"
-        groupDTO.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTO)
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
         val recoverGroup = groupService.read(group.getId()!!)
         Assertions.assertEquals(group.getId(), recoverGroup.getId())
         Assertions.assertEquals(group.name, recoverGroup.name)
@@ -67,12 +59,8 @@ class GroupServiceTest {
 
     @Test
     fun `should update a group when it exists`() {
-        val student = studentService.save(aStudentDTO().build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
         val groupDTO = GroupUpdateDTO()
         groupDTO.id = group.getId()
         groupDTO.name = "Group 3"
@@ -91,12 +79,8 @@ class GroupServiceTest {
 
     @Test
     fun `should delete a group when it exists`() {
-        val student = studentService.save(aStudentDTO().build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
         groupService.delete(group.getId()!!)
         Assertions.assertEquals(0, groupService.count())
     }
@@ -112,12 +96,8 @@ class GroupServiceTest {
 
     @Test
     fun `should add a member to a group when it was not previously added and both exist`() {
-        val student = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("test@gmail.com")).build())
         val member = studentService.save(aStudentDTO().build())
         Assertions.assertEquals(1, group.members.size)
         val groupWithAMember = groupService.addMember(group.getId()!!, member.getId()!!)
@@ -126,12 +106,8 @@ class GroupServiceTest {
 
     @Test
     fun `should throw an exception when trying to add the same member to the group twice and both exist`() {
-        val student = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("test@gmail.com")).build())
         val member = studentService.save(aStudentDTO().build())
         groupService.addMember(group.getId()!!, member.getId()!!)
         try {
@@ -143,12 +119,8 @@ class GroupServiceTest {
 
     @Test
     fun `should throw an exception when trying to add a member to a group and the member does not exist`() {
-        val student = studentService.save(aStudentDTO().build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
         try {
             groupService.addMember(group.getId()!!, -1)
         } catch (e: NoSuchElementException) {
@@ -169,11 +141,7 @@ class GroupServiceTest {
     @Test
     fun `should remove a member from a group when it was previously added and both exist`() {
         val student = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        val group = groupService.save(aGroupDTO().withMembers(listOf("test@gmail.com")).build())
         Assertions.assertEquals(1, group.members.size)
         val groupWithoutMembers = groupService.removeMember(group.getId()!!, student.getId()!!)
         Assertions.assertEquals(0, groupWithoutMembers.members.size)
@@ -181,12 +149,8 @@ class GroupServiceTest {
 
     @Test
     fun `should throw an exception when trying to remove a member who does not belong to the group and both exist`() {
-        val student = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("test@gmail.com")).build())
         val member = studentService.save(aStudentDTO().build())
         try {
             groupService.removeMember(group.getId()!!, member.getId()!!)
@@ -197,12 +161,8 @@ class GroupServiceTest {
 
     @Test
     fun `should throw an exception when trying to remove a member of a group and the member does not exist`() {
-        val student = studentService.save(aStudentDTO().build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
         try {
             groupService.removeMember(group.getId()!!, -1)
         } catch (e: NoSuchElementException) {
@@ -222,12 +182,8 @@ class GroupServiceTest {
 
     @Test
     fun `should add a project to a group when it was not previously added and both exist`() {
-        val student = studentService.save(aStudentDTO().build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
         val project = projectService.save(aProject().build())
         Assertions.assertEquals(1, group.projects.size)
         val groupWithAProject = groupService.addProject(group.getId()!!, project.getId()!!)
@@ -236,12 +192,8 @@ class GroupServiceTest {
 
     @Test
     fun `should throw an exception when trying to add a project to a group and the project does not exist`() {
-        val student = studentService.save(aStudentDTO().build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
         try {
             groupService.addProject(group.getId()!!, -1)
         } catch (e: NoSuchElementException) {
@@ -262,19 +214,11 @@ class GroupServiceTest {
 
     @Test
     fun `should throw an exception when trying to add a project to a group and the project already has an owner`() {
-        val student = studentService.save(aStudentDTO().build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
 
-        val student2 = studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
-        val groupDTOCreate2 = GroupDTO()
-        groupDTOCreate2.name = "Prueba"
-        groupDTOCreate2.nameProject = "Test New"
-        groupDTOCreate2.members = listOf(student2.getEmail()!!)
-        val group2 = groupService.save(groupDTOCreate2)
+        studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
+        val group2 = groupService.save(aGroupDTO().withMembers(listOf("prueba@gmail.com")).build())
 
         val project = projectService.save(aProject().build())
         groupService.addProject(group.getId()!!, project.getId()!!)
@@ -289,33 +233,21 @@ class GroupServiceTest {
     @Test
     fun `should be true to have a member with email when the member was added previously`() {
         val student = studentService.save(aStudentDTO().build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        val group = groupService.save(aGroupDTO().build())
         Assertions.assertTrue(groupService.hasAMemberWithEmail(group.getId()!!, student.getEmail()!!))
     }
 
     @Test
     fun `should be false to have a member with email when it was not added`() {
-        val student = studentService.save(aStudentDTO().build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
         Assertions.assertFalse(groupService.hasAMemberWithEmail(group.getId()!!, "emailFalso"))
     }
 
     @Test
     fun `should be true to have a group with a student with id and a project with id when both were added previously`() {
         val student = studentService.save(aStudentDTO().build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        val group = groupService.save(aGroupDTO().build())
         val project = projectService.save(aProject().build())
         groupService.addProject(group.getId()!!, project.getId()!!)
         Assertions.assertTrue(
@@ -328,23 +260,15 @@ class GroupServiceTest {
 
     @Test
     fun `should be false to have a group with a student with id and a project with id when both were not added`() {
-        val student = studentService.save(aStudentDTO().build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        groupService.save(groupDTOCreate)
+        studentService.save(aStudentDTO().build())
+        groupService.save(aGroupDTO().build())
         Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMember(-1, -1))
     }
 
     @Test
     fun `should be false to have a group with a student with id and a project with id when the project was not been added`() {
         val student = studentService.save(aStudentDTO().build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        groupService.save(groupDTOCreate)
+        groupService.save(aGroupDTO().build())
         Assertions.assertFalse(
             groupService.thereIsAGroupWithThisProjectAndThisMember(
                 -1,
@@ -355,12 +279,8 @@ class GroupServiceTest {
 
     @Test
     fun `should be false to have a group with a student with id and a project with id when the student was not been added`() {
-        val student = studentService.save(aStudentDTO().build())
-        val groupDTOCreate = GroupDTO()
-        groupDTOCreate.name = "Test"
-        groupDTOCreate.nameProject = "Test project"
-        groupDTOCreate.members = listOf(student.getEmail()!!)
-        val group = groupService.save(groupDTOCreate)
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
         val project = projectService.save(aProject().build())
         groupService.addProject(group.getId()!!, project.getId()!!)
         Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMember(project.getId()!!, -1))
@@ -373,18 +293,10 @@ class GroupServiceTest {
 
     @Test
     fun `should recover a list with two groups when recover all and there are exactly two persisted`() {
-        val student1 = studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
-        val groupDTOCreate1 = GroupDTO()
-        groupDTOCreate1.name = "The programmers"
-        groupDTOCreate1.nameProject = "Test project"
-        groupDTOCreate1.members = listOf(student1.getEmail()!!)
-        groupService.save(groupDTOCreate1)
-        val student2 = studentService.save(aStudentDTO().build())
-        val groupDTOCreate2 = GroupDTO()
-        groupDTOCreate2.name = "The group"
-        groupDTOCreate2.nameProject = "Test project"
-        groupDTOCreate2.members = listOf(student2.getEmail()!!)
-        groupService.save(groupDTOCreate2)
+        studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
+        groupService.save(aGroupDTO().withName("The programmers").withMembers(listOf("prueba@gmail.com")).build())
+        studentService.save(aStudentDTO().build())
+        groupService.save(aGroupDTO().withName("The group").build())
         val groups = groupService.readAll()
 
         Assertions.assertEquals(2, groups.size)
