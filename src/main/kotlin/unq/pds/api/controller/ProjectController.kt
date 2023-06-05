@@ -1,5 +1,6 @@
 package unq.pds.api.controller
 
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -14,9 +15,7 @@ import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Project
-import unq.pds.services.GroupService
 import unq.pds.services.ProjectService
-import unq.pds.services.StudentService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 
@@ -24,9 +23,7 @@ import javax.validation.constraints.NotBlank
 @CrossOrigin
 @RequestMapping("projects")
 class ProjectController(
-    private val projectService: ProjectService,
-    private val studentService: StudentService,
-    private val groupService: GroupService
+    private val projectService: ProjectService
 ) {
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
     private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
@@ -73,9 +70,8 @@ class ProjectController(
             )]
     )
     fun createProject(@CookieValue("jwt") jwt: String?, @RequestBody @Valid project: ProjectDTO): ResponseEntity<Any> {
-        return if (jwt.isNullOrBlank()) {
-            ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        } else ResponseEntity(projectService.save(project.fromDTOToModel()), HttpStatus.OK)
+        return if (!existJWT(jwt)) ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        else ResponseEntity(projectService.save(project.fromDTOToModel()), HttpStatus.OK)
     }
 
     @GetMapping
@@ -131,9 +127,7 @@ class ProjectController(
             )]
     )
     fun getProject(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(projectService.read(id), HttpStatus.OK)
     }
 
@@ -190,21 +184,8 @@ class ProjectController(
             )]
     )
     fun updateProject(@CookieValue("jwt") jwt: String?, @RequestBody project: ProjectDTO): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "TEACHER" || (body["role"] == "STUDENT" &&
-                    !groupService.thereIsAGroupWithThisProjectAndThisMember(
-                        project.id!!,
-                        body["id"].toString().toLong()
-                    )
-                    )
-        ) ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
-        else ResponseEntity(projectService.update(project), HttpStatus.OK)
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        return ResponseEntity(projectService.update(project), HttpStatus.OK)
     }
 
     @DeleteMapping
@@ -262,14 +243,9 @@ class ProjectController(
             )]
     )
     fun deleteProject(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        if (body["role"] != "ADMIN") return ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
+        if (isNotAdmin(body)) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         projectService.delete(id)
         return ResponseEntity(MessageDTO("Project has been deleted successfully"), HttpStatus.OK)
     }
@@ -331,18 +307,8 @@ class ProjectController(
         @NotBlank @PathVariable projectId: Long,
         @NotBlank @PathVariable repositoryId: Long
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "TEACHER" || (body["role"] == "STUDENT" &&
-                    !groupService.thereIsAGroupWithThisProjectAndThisMember(projectId, body["id"].toString().toLong())
-                    )
-        ) ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
-        else ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        return ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
     }
 
     @GetMapping("/getAll")
@@ -388,9 +354,15 @@ class ProjectController(
             )]
     )
     fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(projectService.readAll(), HttpStatus.OK)
+    }
+
+    private fun existJWT(jwt: String?): Boolean {
+        return !jwt.isNullOrBlank()
+    }
+
+    private fun isNotAdmin(body: Claims): Boolean {
+        return body["role"] != "ADMIN"
     }
 }

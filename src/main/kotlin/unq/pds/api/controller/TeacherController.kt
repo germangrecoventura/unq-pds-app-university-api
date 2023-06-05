@@ -196,12 +196,8 @@ class TeacherController {
         fun updateTeacher(@CookieValue("jwt") jwt: String?, @RequestBody teacher: Teacher): ResponseEntity<Any> {
             if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && body["id"].toString()
-                    .toLong() != teacher.getId())
-            ) ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            )
+            return if (isStudent(body) || (isTeacher(body) && !isSameId(body, teacher)))
+                ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
             else ResponseEntity(teacherService.update(teacher), HttpStatus.OK)
         }
 
@@ -310,9 +306,7 @@ class TeacherController {
                 )]
         )
         fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             return ResponseEntity(teacherService.readAll(), HttpStatus.OK)
         }
 
@@ -377,21 +371,28 @@ class TeacherController {
         ): ResponseEntity<Any> {
             if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] == "STUDENT")
-                ResponseEntity(
-                    messageNotAccess,
-                    HttpStatus.UNAUTHORIZED
-                )
+            return if (isStudent(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
             else ResponseEntity(teacherService.addCommentToRepository(comment), HttpStatus.OK)
         }
 
+        private fun isStudent(body: Claims): Boolean {
+            return body["role"] == "STUDENT"
+        }
+
+        private fun isTeacher(body: Claims): Boolean {
+            return body["role"] == "TEACHER"
+        }
 
         private fun existJWT(jwt: String?): Boolean {
             return !jwt.isNullOrBlank()
         }
 
-        private fun isNotAdmin(claim: Claims): Boolean {
-            return claim["role"] != "ADMIN"
+        private fun isNotAdmin(body: Claims): Boolean {
+            return body["role"] != "ADMIN"
+        }
+
+        private fun isSameId(body: Claims, teacher: Teacher): Boolean {
+            return body["id"].toString().toLong() == teacher.getId()
         }
     }
 }
