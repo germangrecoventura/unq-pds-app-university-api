@@ -43,7 +43,13 @@ class BaseController {
 
     @ExceptionHandler(GroupWithEmptyMemberException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleAlreadyRegisteredException(ex: GroupWithEmptyMemberException): ResponseEntity<MessageDTO> {
+    fun handleGroupWithEmptyMemberExceptionException(ex: GroupWithEmptyMemberException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.badRequest().body(MessageDTO(ex.message))
+    }
+
+    @ExceptionHandler(StudentsOfTheGroupNotEnrolledInTheCommissionException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleStudentsOfTheGroupNotEnrolledInTheCommissionExceptionException(ex: StudentsOfTheGroupNotEnrolledInTheCommissionException): ResponseEntity<MessageDTO> {
         return ResponseEntity.badRequest().body(MessageDTO(ex.message))
     }
 
