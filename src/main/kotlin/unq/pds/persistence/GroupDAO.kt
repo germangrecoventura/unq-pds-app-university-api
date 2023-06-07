@@ -47,4 +47,13 @@ interface GroupDAO : JpaRepository<Group, Long> {
          """
     )
     fun hasThisRepository(groupId: Long, repositoryId: Long): Boolean
+
+    @Query(
+        """
+             SELECT COUNT(m) 
+             FROM Group g
+             JOIN g.members m
+         """
+    )
+    fun countMembers(): Int
 }
