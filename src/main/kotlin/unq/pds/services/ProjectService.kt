@@ -9,8 +9,8 @@ interface ProjectService {
     fun read(projectId: Long): Project
     fun delete(projectId: Long)
     fun addRepository(projectId: Long, repositoryId: Long): Project
-    fun ThereIsACommissionWhereIsteacherAndTheProjectExists(teacherEmail: String, projectId: Long): Boolean
-    fun ThereIsAGroupWhereIsStudentAndTheProjectExists(studentEmail: String, projectId: Long): Boolean
+    fun thereIsACommissionWhereIsteacherAndTheProjectExists(teacherEmail: String, projectId: Long): Boolean
+    fun thereIsAGroupWhereIsStudentAndTheProjectExists(studentEmail: String, projectId: Long): Boolean
     fun readAll(): List<Project>
     fun count(): Int
     fun clearProjects()

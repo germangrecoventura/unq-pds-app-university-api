@@ -54,12 +54,12 @@ open class ProjectServiceImpl : ProjectService {
         return projectDAO.save(project)
     }
 
-    override fun ThereIsACommissionWhereIsteacherAndTheProjectExists(teacherEmail: String, projectId: Long): Boolean {
-        return projectDAO.ThereIsACommissionWhereIsteacherAndTheProjectExists(teacherEmail,projectId)
+    override fun thereIsACommissionWhereIsteacherAndTheProjectExists(teacherEmail: String, projectId: Long): Boolean {
+        return projectDAO.thereIsACommissionWhereIsteacherAndTheProjectExists(teacherEmail,projectId)
     }
 
-    override fun ThereIsAGroupWhereIsStudentAndTheProjectExists(studentEmail: String, projectId: Long): Boolean {
-        return projectDAO.ThereIsAGroupWhereIsStudentAndTheProjectExists(studentEmail,projectId)
+    override fun thereIsAGroupWhereIsStudentAndTheProjectExists(studentEmail: String, projectId: Long): Boolean {
+        return projectDAO.thereIsAGroupWhereIsStudentAndTheProjectExists(studentEmail,projectId)
     }
 
     override fun readAll(): List<Project> {

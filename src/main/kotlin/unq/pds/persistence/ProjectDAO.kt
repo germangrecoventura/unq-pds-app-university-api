@@ -27,7 +27,7 @@ interface ProjectDAO : JpaRepository<Project, Long> {
             WHERE t.email = ?1 AND pj.id = ?2
         """
     )
-    fun ThereIsACommissionWhereIsteacherAndTheProjectExists(teacherEmail: String, projectId: Long): Boolean
+    fun thereIsACommissionWhereIsteacherAndTheProjectExists(teacherEmail: String, projectId: Long): Boolean
 
     @Query(
         """
@@ -38,5 +38,5 @@ interface ProjectDAO : JpaRepository<Project, Long> {
             WHERE m.email = ?1 AND pj.id = ?2
         """
     )
-    fun ThereIsAGroupWhereIsStudentAndTheProjectExists(studentEmail: String, projectId: Long): Boolean
+    fun thereIsAGroupWhereIsStudentAndTheProjectExists(studentEmail: String, projectId: Long): Boolean
 }

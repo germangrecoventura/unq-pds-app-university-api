@@ -72,8 +72,18 @@ class ProjectController(
             )]
     )
     fun createProject(@CookieValue("jwt") jwt: String?, @RequestBody @Valid project: ProjectDTO): ResponseEntity<Any> {
-        return if (!existJWT(jwt)) ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        else ResponseEntity(projectService.save(project.fromDTOToModel()), HttpStatus.OK)
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
+                body.issuer!!,
+                project.id!!
+            ) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
+                body.issuer!!,
+                project.id!!
+            )
+                    ))
+        ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+        return ResponseEntity(projectService.save(project.fromDTOToModel()), HttpStatus.OK)
     }
 
     @GetMapping
@@ -188,10 +198,14 @@ class ProjectController(
     fun updateProject(@CookieValue("jwt") jwt: String?, @RequestBody project: ProjectDTO): ResponseEntity<Any> {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        if (isTeacher(body) && !projectService.ThereIsACommissionWhereIsteacherAndTheProjectExists(
+        if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
+                body.issuer!!,
+                project.id!!
+            ) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
                 body.issuer!!,
                 project.id!!
             )
+                    ))
         ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(projectService.update(project), HttpStatus.OK)
     }
