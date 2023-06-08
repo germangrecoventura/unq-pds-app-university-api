@@ -70,7 +70,6 @@ open class GroupServiceImpl : GroupService {
     }
 
     override fun removeMember(groupId: Long, studentId: Long): Group {
-        if ((groupDAO.countMembers() - 1) < 1) return throw GroupWithEmptyMemberException()
         val group = this.read(groupId)
         val student = studentService.findById(studentId)
         group.removeMember(student)

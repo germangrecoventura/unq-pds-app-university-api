@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Project
+import unq.pds.services.CommissionService
 import unq.pds.services.ProjectService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -23,7 +24,8 @@ import javax.validation.constraints.NotBlank
 @CrossOrigin
 @RequestMapping("projects")
 class ProjectController(
-    private val projectService: ProjectService
+    private val projectService: ProjectService,
+    private val commissionService: CommissionService
 ) {
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
     private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
@@ -185,6 +187,12 @@ class ProjectController(
     )
     fun updateProject(@CookieValue("jwt") jwt: String?, @RequestBody project: ProjectDTO): ResponseEntity<Any> {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if (isTeacher(body) && !projectService.ThereIsACommissionWhereIsteacherAndTheProjectExists(
+                body.issuer!!,
+                project.id!!
+            )
+        ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(projectService.update(project), HttpStatus.OK)
     }
 
@@ -364,5 +372,13 @@ class ProjectController(
 
     private fun isNotAdmin(body: Claims): Boolean {
         return body["role"] != "ADMIN"
+    }
+
+    private fun isStudent(body: Claims): Boolean {
+        return body["role"] == "STUDENT"
+    }
+
+    private fun isTeacher(body: Claims): Boolean {
+        return body["role"] == "TEACHER"
     }
 }

@@ -3,6 +3,7 @@ package unq.pds.model
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import io.swagger.v3.oas.annotations.media.Schema
+import unq.pds.model.exceptions.GroupWithEmptyMemberException
 import javax.management.InvalidAttributeValueException
 import javax.persistence.*
 
@@ -41,6 +42,7 @@ class Group(name: String) {
 
     fun removeMember(member: Student) {
         if (!isMember(member)) throw NoSuchElementException("The member is not in the group")
+        if (members.count() == 1) return throw GroupWithEmptyMemberException()
         members.remove(member)
     }
 
