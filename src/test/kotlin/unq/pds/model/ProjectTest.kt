@@ -1,6 +1,7 @@
 package unq.pds.model
 
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import unq.pds.model.builder.BuilderRepository.Companion.aRepository
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import javax.management.InvalidAttributeValueException
@@ -40,7 +41,7 @@ class ProjectTest {
         project.addRepository(aRepository().build())
         try {
             project.addRepository(aRepository().build())
-        }  catch (e: CloneNotSupportedException) {
+        } catch (e: CloneNotSupportedException) {
             Assertions.assertEquals("The repository is already in the project", e.message)
         }
     }

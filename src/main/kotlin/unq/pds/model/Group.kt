@@ -1,6 +1,7 @@
 package unq.pds.model
 
-import com.fasterxml.jackson.annotation.*
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.management.InvalidAttributeValueException
 import javax.persistence.*
@@ -8,7 +9,12 @@ import javax.persistence.*
 @Entity
 @Table(name = "groupApp")
 @JsonPropertyOrder("id", "name", "members", "projects")
-class Group (name: String): ProjectOwner() {
+class Group(name: String) {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty
+    @Schema(example = "1")
+    private var id: Long? = null
 
     @Column(nullable = false)
     @JsonProperty
@@ -23,6 +29,11 @@ class Group (name: String): ProjectOwner() {
     @JsonProperty
     var members: MutableSet<Student> = mutableSetOf()
 
+    @Schema(example = "[]")
+    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+    @JsonProperty
+    var projects: MutableSet<Project> = mutableSetOf()
+
     fun addMember(member: Student) {
         if (isMember(member)) throw CloneNotSupportedException("The member is already in the group")
         members.add(member)
@@ -33,11 +44,22 @@ class Group (name: String): ProjectOwner() {
         members.remove(member)
     }
 
+    fun addProject(project: Project) {
+        if (isMyProject(project)) throw CloneNotSupportedException("The project has already been added")
+        projects.add(project)
+    }
+
+    private fun isMyProject(project: Project): Boolean {
+        return projects.any { it.name == project.name }
+    }
+
     fun hasAMemberWithEmail(email: String): Boolean {
         return members.any { it.getEmail() == email }
     }
 
-    init { this.validateCreation() }
+    init {
+        this.validateCreation()
+    }
 
     private fun validateCreation() {
         validateName(name)
@@ -49,5 +71,9 @@ class Group (name: String): ProjectOwner() {
 
     private fun isMember(member: Student): Boolean {
         return members.any { it.getEmail() == member.getEmail() }
+    }
+
+    fun getId(): Long? {
+        return id
     }
 }

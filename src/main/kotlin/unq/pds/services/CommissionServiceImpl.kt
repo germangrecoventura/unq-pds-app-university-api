@@ -1,4 +1,4 @@
-package unq.pds.services.impl
+package unq.pds.services
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

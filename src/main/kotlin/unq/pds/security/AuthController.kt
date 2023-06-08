@@ -256,7 +256,7 @@ class AuthController(
         val issuer = teacher.getEmail()
         val role = teacher.getRole()
         val id = teacher.getId()!!
-        addCookie(id, role, issuer, response)
+        addCookie(id, role, issuer!!, response)
         return ResponseEntity(MessageDTO("You are logged in correctly"), HttpStatus.OK)
     }
 

@@ -1,5 +1,6 @@
 package unq.pds.api.controller
 
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -73,14 +74,9 @@ class StudentController {
             @CookieValue("jwt") jwt: String?,
             @RequestBody @Valid student: StudentCreateRequestDTO
         ): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] != "ADMIN") ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            )
+            return if (isNotAdmin(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
             else ResponseEntity(studentService.save(student), HttpStatus.OK)
         }
 
@@ -137,9 +133,7 @@ class StudentController {
                 )]
         )
         fun getStudent(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             return ResponseEntity(studentService.findById(id), HttpStatus.OK)
         }
 
@@ -199,14 +193,10 @@ class StudentController {
             @CookieValue("jwt") jwt: String?,
             @RequestBody @Valid student: StudentCreateRequestDTO
         ): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] == "TEACHER") ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "STUDENT" && body["id"].toString().toLong() != student.id) {
+            return if (isTeacher(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+            else if (isStudent(body) && !isSameId(body, student)) {
                 ResponseEntity(
                     MessageDTO("You do not have permissions to update students except yourself"),
                     HttpStatus.UNAUTHORIZED
@@ -269,88 +259,11 @@ class StudentController {
                 )]
         )
         fun deleteStudent(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            if (body["role"] != "ADMIN") return ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            )
+            if (isNotAdmin(body)) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
             studentService.deleteById(id)
             return ResponseEntity(MessageDTO("Student has been deleted successfully"), HttpStatus.OK)
-        }
-
-        @PutMapping("/addProject/{studentId}/{projectId}")
-        @Operation(
-            summary = "Add a project to a student",
-            description = "Add a project to a student",
-        )
-        @ApiResponses(
-            value = [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Success",
-                    content = [
-                        Content(
-                            mediaType = "application/json",
-                            schema = Schema(implementation = Student::class),
-                        )
-                    ]
-                ),
-                ApiResponse(
-                    responseCode = "400",
-                    description = "Bad request",
-                    content = [Content(
-                        mediaType = "application/json", examples = [ExampleObject(
-                            value = "{\n" +
-                                    "  \"message\": \"string\"\n" +
-                                    "}"
-                        )]
-                    )]
-                ),
-                ApiResponse(
-                    responseCode = "401",
-                    description = "Not authenticated",
-                    content = [Content(
-                        mediaType = "application/json", examples = [ExampleObject(
-                            value = "{\n" +
-                                    "  \"message\": \"string\"\n" +
-                                    "}"
-                        )]
-                    )
-                    ]
-                ),
-                ApiResponse(
-                    responseCode = "404",
-                    description = "Not found",
-                    content = [Content(
-                        mediaType = "application/json", examples = [ExampleObject(
-                            value = "{\n" +
-                                    "  \"message\": \"string\"\n" +
-                                    "}"
-                        )]
-                    )]
-                )]
-        )
-        fun addProject(
-            @CookieValue("jwt") jwt: String?,
-            @NotBlank @PathVariable studentId: Long,
-            @NotBlank @PathVariable projectId: Long
-        ): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-            }
-            val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] == "TEACHER") ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "STUDENT" && body["id"].toString().toLong() != studentId)
-                ResponseEntity(
-                    MessageDTO("You do not have permissions to update students except yourself"),
-                    HttpStatus.UNAUTHORIZED
-                )
-            else ResponseEntity(studentService.addProject(studentId, projectId), HttpStatus.OK)
         }
 
         @GetMapping("/getAll")
@@ -396,10 +309,28 @@ class StudentController {
                 )]
         )
         fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             return ResponseEntity(studentService.readAll(), HttpStatus.OK)
+        }
+
+        private fun existJWT(jwt: String?): Boolean {
+            return !jwt.isNullOrBlank()
+        }
+
+        private fun isNotAdmin(body: Claims): Boolean {
+            return body["role"] != "ADMIN"
+        }
+
+        private fun isStudent(body: Claims): Boolean {
+            return body["role"] == "STUDENT"
+        }
+
+        private fun isTeacher(body: Claims): Boolean {
+            return body["role"] == "TEACHER"
+        }
+
+        private fun isSameId(body: Claims, student: StudentCreateRequestDTO): Boolean {
+            return body["id"].toString().toLong() == student.id
         }
     }
 }

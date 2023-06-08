@@ -1,5 +1,6 @@
 package unq.pds.api.controller
 
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -81,14 +82,9 @@ class CommissionController(private val commissionService: CommissionService) {
         @CookieValue("jwt") jwt: String?,
         @RequestBody @Valid commission: CommissionDTO
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] != "ADMIN") ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
+        return if (isNotAdmin(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(commissionService.save(commission.fromDTOToModel()), HttpStatus.OK)
     }
 
@@ -145,9 +141,7 @@ class CommissionController(private val commissionService: CommissionService) {
             )]
     )
     fun getCommission(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(commissionService.read(id), HttpStatus.OK)
     }
 
@@ -206,14 +200,9 @@ class CommissionController(private val commissionService: CommissionService) {
             )]
     )
     fun deleteCommission(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        if (body["role"] != "ADMIN") return ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
+        if (isNotAdmin(body)) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         commissionService.delete(id)
         return ResponseEntity(MessageDTO("Commission has been deleted successfully"), HttpStatus.OK)
     }
@@ -275,18 +264,13 @@ class CommissionController(private val commissionService: CommissionService) {
         @NotBlank @PathVariable commissionId: Long,
         @NotBlank @PathVariable studentId: Long
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(
+        return if (isStudent(body) || (isTeacher(body) && !commissionService.hasATeacherWithEmail(
                 commissionId,
                 body.issuer
-            ))
-        ) ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
+            )))
+            ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(commissionService.addStudent(commissionId, studentId), HttpStatus.OK)
     }
 
@@ -347,18 +331,13 @@ class CommissionController(private val commissionService: CommissionService) {
         @NotBlank @PathVariable commissionId: Long,
         @NotBlank @PathVariable studentId: Long
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(
+        return if (isStudent(body) || (isTeacher(body) && !commissionService.hasATeacherWithEmail(
                 commissionId,
                 body.issuer
-            ))
-        ) ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
+            )))
+            ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(commissionService.removeStudent(commissionId, studentId), HttpStatus.OK)
     }
 
@@ -419,14 +398,9 @@ class CommissionController(private val commissionService: CommissionService) {
         @NotBlank @PathVariable commissionId: Long,
         @NotBlank @PathVariable teacherId: Long
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] != "ADMIN") ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
+        return if (isNotAdmin(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(commissionService.addTeacher(commissionId, teacherId), HttpStatus.OK)
     }
 
@@ -487,14 +461,9 @@ class CommissionController(private val commissionService: CommissionService) {
         @NotBlank @PathVariable commissionId: Long,
         @NotBlank @PathVariable teacherId: Long
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] != "ADMIN") ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
+        return if (isNotAdmin(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(commissionService.removeTeacher(commissionId, teacherId), HttpStatus.OK)
     }
 
@@ -555,18 +524,13 @@ class CommissionController(private val commissionService: CommissionService) {
         @NotBlank @PathVariable commissionId: Long,
         @NotBlank @PathVariable groupId: Long
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(
+        return if (isStudent(body) || (isTeacher(body) && !commissionService.hasATeacherWithEmail(
                 commissionId,
                 body.issuer
-            ))
-        ) ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
+            )))
+            ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(commissionService.addGroup(commissionId, groupId), HttpStatus.OK)
     }
 
@@ -627,18 +591,13 @@ class CommissionController(private val commissionService: CommissionService) {
         @NotBlank @PathVariable commissionId: Long,
         @NotBlank @PathVariable groupId: Long
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.hasATeacherWithEmail(
+        return if (isStudent(body) || (isTeacher(body) && !commissionService.hasATeacherWithEmail(
                 commissionId,
                 body.issuer
-            ))
-        ) ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
+            )))
+            ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(commissionService.removeGroup(commissionId, groupId), HttpStatus.OK)
     }
 
@@ -685,9 +644,23 @@ class CommissionController(private val commissionService: CommissionService) {
             )]
     )
     fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(commissionService.readAll(), HttpStatus.OK)
+    }
+
+    private fun existJWT(jwt: String?): Boolean {
+        return !jwt.isNullOrBlank()
+    }
+
+    private fun isNotAdmin(body: Claims): Boolean {
+        return body["role"] != "ADMIN"
+    }
+
+    private fun isStudent(body: Claims): Boolean {
+        return body["role"] == "STUDENT"
+    }
+
+    private fun isTeacher(body: Claims): Boolean {
+        return body["role"] == "TEACHER"
     }
 }

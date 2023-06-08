@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
 import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
-import unq.pds.model.builder.GroupBuilder.Companion.aGroup
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
+import unq.pds.services.builder.BuilderGroupDTO.Companion.aGroupDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
 
@@ -17,14 +17,19 @@ class CommissionServiceTest {
 
     @Autowired
     lateinit var commissionService: CommissionService
+
     @Autowired
     lateinit var matterService: MatterService
+
     @Autowired
     lateinit var studentService: StudentService
+
     @Autowired
     lateinit var teacherService: TeacherService
+
     @Autowired
     lateinit var groupService: GroupService
+
     @Autowired
     lateinit var initializer: Initializer
 
@@ -259,7 +264,8 @@ class CommissionServiceTest {
     fun `should add a group to a commission when it was not previously added and both exist`() {
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        val group = groupService.save(aGroup().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         Assertions.assertEquals(0, commission.groupsStudents.size)
         val commissionWithAGroup = commissionService.addGroup(commission.getId()!!, group.getId()!!)
         Assertions.assertEquals(1, commissionWithAGroup.groupsStudents.size)
@@ -268,8 +274,10 @@ class CommissionServiceTest {
     @Test
     fun `should throw an exception when trying to add the same group to a commission twice and both exist`() {
         matterService.save(aMatter().build())
+
         val commission = commissionService.save(aCommission().build())
-        val group = groupService.save(aGroup().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         try {
             commissionService.addGroup(commission.getId()!!, group.getId()!!)
@@ -291,7 +299,8 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to add a group to a commission and the commission does not exist`() {
-        val group = groupService.save(aGroup().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         try {
             commissionService.addGroup(-1, group.getId()!!)
         } catch (e: NoSuchElementException) {
@@ -303,7 +312,8 @@ class CommissionServiceTest {
     fun `should remove a group from a commission when it was previously added and both exist`() {
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        val group = groupService.save(aGroup().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         Assertions.assertEquals(0, commission.groupsStudents.size)
         val commissionWithAGroup = commissionService.addGroup(commission.getId()!!, group.getId()!!)
         Assertions.assertEquals(1, commissionWithAGroup.groupsStudents.size)
@@ -315,7 +325,8 @@ class CommissionServiceTest {
     fun `should throw an exception when trying to remove a group who does not belong to a commission and both exist`() {
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        val group = groupService.save(aGroup().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         try {
             commissionService.removeGroup(commission.getId()!!, group.getId()!!)
         } catch (e: NoSuchElementException) {
@@ -336,7 +347,8 @@ class CommissionServiceTest {
 
     @Test
     fun `should throw an exception when trying to remove a group of a commission and the commission does not exist`() {
-        val group = groupService.save(aGroup().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         try {
             commissionService.removeGroup(-1, group.getId()!!)
         } catch (e: NoSuchElementException) {
@@ -349,12 +361,13 @@ class CommissionServiceTest {
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val teacher = teacherService.save(aTeacherDTO().build())
-        val group = groupService.save(aGroup().build())
+        studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("test@gmail.com")).build())
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         Assertions.assertTrue(
             commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(
-                teacher.getEmail(),
+                teacher.getEmail()!!,
                 group.getId()!!
             )
         )
@@ -380,7 +393,7 @@ class CommissionServiceTest {
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         Assertions.assertFalse(
             commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(
-                teacher.getEmail(),
+                teacher.getEmail()!!,
                 -1
             )
         )
@@ -390,7 +403,8 @@ class CommissionServiceTest {
     fun `should be false to have a commission with a teacher with email and a group with id when the teacher has not been added`() {
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        val group = groupService.save(aGroup().build())
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         Assertions.assertFalse(
             commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(
@@ -416,7 +430,7 @@ class CommissionServiceTest {
         val commission = commissionService.save(aCommission().build())
         val teacher = teacherService.save(aTeacherDTO().build())
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
-        Assertions.assertTrue(commissionService.hasATeacherWithEmail(commission.getId()!!, teacher.getEmail()))
+        Assertions.assertTrue(commissionService.hasATeacherWithEmail(commission.getId()!!, teacher.getEmail()!!))
     }
 
     @Test

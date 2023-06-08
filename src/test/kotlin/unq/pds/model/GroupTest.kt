@@ -1,6 +1,7 @@
 package unq.pds.model
 
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import unq.pds.model.builder.BuilderStudent.Companion.aStudent
 import unq.pds.model.builder.GroupBuilder.Companion.aGroup
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject

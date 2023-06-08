@@ -3,13 +3,17 @@ package unq.pds.services.impl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import unq.pds.api.dtos.GroupDTO
 import unq.pds.api.dtos.GroupUpdateDTO
+import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Group
+import unq.pds.model.Project
 import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import unq.pds.persistence.GroupDAO
 import unq.pds.services.GroupService
 import unq.pds.services.ProjectService
 import unq.pds.services.StudentService
+import javax.management.InvalidAttributeValueException
 
 @Service
 @Transactional
@@ -19,7 +23,19 @@ open class GroupServiceImpl : GroupService {
     @Autowired private lateinit var studentService: StudentService
     @Autowired private lateinit var projectService: ProjectService
 
-    override fun save(group: Group): Group {
+    override fun save(groupDTO: GroupDTO): Group {
+        if (groupDTO.members!!.isEmpty()) throw NoSuchElementException("There must be at least one member")
+        if (groupDTO.nameProject.isNullOrBlank()) throw InvalidAttributeValueException("Name project cannot be empty")
+        if (groupDTO.name.isNullOrBlank()) throw InvalidAttributeValueException("Name group cannot be empty")
+        if (groupDTO.members!![0].isNullOrBlank())throw InvalidAttributeValueException("There must be at least one member")
+        val group = groupDTO.fromDTOToModel()
+        for (member in groupDTO.members!!){
+           if (!member.isNullOrBlank()){
+               group.addMember(studentService.findByEmail(member))
+           }
+       }
+        val project = Project(groupDTO.nameProject!!, groupDTO.ownerGithub, groupDTO.tokenGithub)
+        group.addProject(projectService.save(project))
         return groupDAO.save(group)
     }
 

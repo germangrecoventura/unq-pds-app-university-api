@@ -11,7 +11,6 @@ import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.model.exceptions.RepositoryHasAlreadyBeenAddedException
 import unq.pds.services.builder.BuilderProjectDTO.Companion.aProjectDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
-import unq.pds.services.builder.BuilderStudentDTO
 
 @SpringBootTest
 class ProjectServiceTest {
@@ -24,8 +23,6 @@ class ProjectServiceTest {
 
     @Autowired
     lateinit var initializer: Initializer
-
-    private var token: String = System.getenv("TOKEN_GITHUB")
 
     @Autowired
     lateinit var studentService: StudentService
@@ -96,8 +93,7 @@ class ProjectServiceTest {
     @Test
     fun `should add a repository to a project when it was not previously added and both exist`() {
         val project = projectService.save(aProject().build())
-        studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         Assertions.assertEquals(0, project.repositories.size)
         val projectWithARepository = projectService.addRepository(project.getId()!!, repository.id)
         Assertions.assertEquals(1, projectWithARepository.repositories.size)
@@ -106,8 +102,7 @@ class ProjectServiceTest {
     @Test
     fun `should throw an exception when trying to add the same repository to a project twice and both exist`() {
         val project = projectService.save(aProject().build())
-        studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         projectService.addRepository(project.getId()!!, repository.id)
 
         val thrown: RepositoryHasAlreadyBeenAddedException? =
@@ -136,8 +131,8 @@ class ProjectServiceTest {
 
     @Test
     fun `should throw an exception when trying to add a repository to a project and the project does not exist`() {
-        studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         try {
             projectService.addRepository(-1, repository.id)
         } catch (e: NoSuchElementException) {

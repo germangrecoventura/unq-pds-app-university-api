@@ -3,7 +3,7 @@ package unq.pds.model.builder
 import unq.pds.model.Group
 
 class GroupBuilder {
-    private var name: String = "The programmers"
+    private var name: String = "Group 2"
 
     fun build(): Group {
         return Group(name)

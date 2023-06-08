@@ -17,7 +17,6 @@ import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.TeacherCreateRequestDTO
 import unq.pds.model.Comment
 import unq.pds.model.Teacher
-import unq.pds.services.CommissionService
 import unq.pds.services.TeacherService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -28,7 +27,6 @@ class TeacherController {
     @RequestMapping("teachers")
     class TeacherController(
         private val teacherService: TeacherService,
-        private val commissionService: CommissionService
     ) {
         private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
         private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
@@ -198,12 +196,8 @@ class TeacherController {
         fun updateTeacher(@CookieValue("jwt") jwt: String?, @RequestBody teacher: Teacher): ResponseEntity<Any> {
             if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && body["id"].toString()
-                    .toLong() != teacher.getId())
-            ) ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            )
+            return if (isStudent(body) || (isTeacher(body) && !isSameId(body, teacher)))
+                ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
             else ResponseEntity(teacherService.update(teacher), HttpStatus.OK)
         }
 
@@ -312,16 +306,15 @@ class TeacherController {
                 )]
         )
         fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             return ResponseEntity(teacherService.readAll(), HttpStatus.OK)
         }
 
-        @PostMapping("/addCommentStudent")
+
+        @PostMapping("/addComment")
         @Operation(
-            summary = "Add comment to student",
-            description = "Add comment to student",
+            summary = "Add comment to repository",
+            description = "Add comment to repository",
         )
         @ApiResponses(
             value = [
@@ -372,102 +365,34 @@ class TeacherController {
                     ]
                 )]
         )
-        fun addCommentToStudent(
+        fun addCommentToRepository(
             @CookieValue("jwt") jwt: String?,
             @RequestBody @Valid comment: CommentCreateRequestDTO
         ): ResponseEntity<Any> {
             if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.thereIsACommissionWithATeacherWithEmailAndStudentWithId(
-                    body.issuer,
-                    comment.idToComment!!
-                )
-                        )
-            ) ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            )
-            else ResponseEntity(teacherService.addCommentToStudent(comment), HttpStatus.OK)
+            return if (isStudent(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+            else ResponseEntity(teacherService.addCommentToRepository(comment), HttpStatus.OK)
         }
 
-        @PostMapping("/addCommentGroup")
-        @Operation(
-            summary = "Add comment to group",
-            description = "Add comment to group",
-        )
-        @ApiResponses(
-            value = [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Success",
-                    content = [
-                        Content(
-                            mediaType = "application/json",
-                            schema = Schema(implementation = Comment::class),
-                        )
-                    ]
-                ),
-                ApiResponse(
-                    responseCode = "400",
-                    description = "Bad request",
-                    content = [Content(
-                        mediaType = "application/json", examples = [ExampleObject(
-                            value = "{\n" +
-                                    "  \"additionalProp1\": \"string\",\n" +
-                                    "  \"additionalProp2\": \"string\",\n" +
-                                    "  \"additionalProp3\": \"string\"\n" +
-                                    "}"
-                        )]
-                    )]
-                ), ApiResponse(
-                    responseCode = "401",
-                    description = "Not authenticated",
-                    content = [Content(
-                        mediaType = "application/json", examples = [ExampleObject(
-                            value = "{\n" +
-                                    "  \"message\": \"string\"\n" +
-                                    "}"
-                        )]
-                    )
-                    ]
-                ),
-                ApiResponse(
-                    responseCode = "404",
-                    description = "Not Found",
-                    content = [Content(
-                        mediaType = "application/json", examples = [ExampleObject(
-                            value = "{\n" +
-                                    "  \"message\": \"string\"\n" +
-                                    "}"
-                        )]
-                    )
-                    ]
-                )]
-        )
-        fun addCommentToGroup(
-            @CookieValue("jwt") jwt: String?,
-            @RequestBody @Valid comment: CommentCreateRequestDTO
-        ): ResponseEntity<Any> {
-            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-            val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(
-                    body.issuer,
-                    comment.idToComment!!
-                )
-                        )
-            ) ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            )
-            else ResponseEntity(teacherService.addCommentToGroup(comment), HttpStatus.OK)
+        private fun isStudent(body: Claims): Boolean {
+            return body["role"] == "STUDENT"
+        }
+
+        private fun isTeacher(body: Claims): Boolean {
+            return body["role"] == "TEACHER"
         }
 
         private fun existJWT(jwt: String?): Boolean {
             return !jwt.isNullOrBlank()
         }
 
-        private fun isNotAdmin(claim: Claims): Boolean {
-            return claim["role"] != "ADMIN"
+        private fun isNotAdmin(body: Claims): Boolean {
+            return body["role"] != "ADMIN"
+        }
+
+        private fun isSameId(body: Claims, teacher: Teacher): Boolean {
+            return body["id"].toString().toLong() == teacher.getId()
         }
     }
 }

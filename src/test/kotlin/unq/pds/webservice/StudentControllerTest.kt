@@ -15,9 +15,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
 import unq.pds.model.builder.BuilderStudent.Companion.aStudent
-import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.services.AdminService
-import unq.pds.services.ProjectService
 import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
 import unq.pds.services.builder.BuilderLoginDTO.Companion.aLoginDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
@@ -29,6 +27,7 @@ import javax.servlet.http.Cookie
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
 class StudentControllerTest {
+
     lateinit var mockMvc: MockMvc
 
     @Autowired
@@ -42,9 +41,6 @@ class StudentControllerTest {
 
     @Autowired
     lateinit var adminService: AdminService
-
-    @Autowired
-    lateinit var projectService: ProjectService
 
     private val mapper = ObjectMapper()
 
@@ -272,24 +268,6 @@ class StudentControllerTest {
         ).andExpect(status().isBadRequest)
     }
 
-
-    @Test
-    fun `should throw a 400 status when you save a student with owner is already registered`() {
-        val cookie = cookiesAdmin()
-        studentService.save(aStudentDTO().build())
-        var student2 = aStudentDTO().withEmail("prueba@gmail.com").build()
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.post("/students")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    mapper.writeValueAsString(student2)
-                )
-                .cookie(cookie)
-                .accept("application/json")
-        ).andExpect(status().isBadRequest)
-    }
-
     @Test
     fun `should throw a 401 status when trying to get a student and is not authenticated`() {
         mockMvc.perform(
@@ -301,7 +279,7 @@ class StudentControllerTest {
     @Test
     fun `should throw a 200 status when a student does have permissions to get student if exist`() {
         val cookie = cookiesStudent()
-        var student = studentService.save(aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").build())
+        var student = studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
                 .param("id", student.getId().toString()).cookie(cookie)
@@ -404,7 +382,7 @@ class StudentControllerTest {
     @Test
     fun `should throw a 401 status when a student does not have permissions to update students except yourself`() {
         val cookie = cookiesStudent()
-        var student2 = studentService.save(aStudentDTO().withEmail("jose@gmail.com").withOwnerGithub("prueba").build())
+        var student2 = studentService.save(aStudentDTO().withEmail("jose@gmail.com").build())
 
         student2.setFirstName("Jose")
         mockMvc.perform(
@@ -419,7 +397,7 @@ class StudentControllerTest {
     @Test
     fun `should throw a 401 status when a teacher does not have permissions to update students`() {
         val cookie = cookiesTeacher()
-        var student2 = studentService.save(aStudentDTO().withEmail("jose@gmail.com").withOwnerGithub("prueba").build())
+        var student2 = studentService.save(aStudentDTO().withEmail("jose@gmail.com").build())
 
         student2.setFirstName("Jose")
         mockMvc.perform(
@@ -434,7 +412,7 @@ class StudentControllerTest {
     @Test
     fun `should throw a 200 status when a admin does have permissions to update students`() {
         val cookie = cookiesAdmin()
-        var student2 = studentService.save(aStudentDTO().withEmail("jose@gmail.com").withOwnerGithub("prueba").build())
+        var student2 = studentService.save(aStudentDTO().withEmail("jose@gmail.com").build())
 
         student2.setFirstName("Jose")
         mockMvc.perform(
@@ -493,7 +471,6 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${""}\",\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
@@ -515,7 +492,6 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${"G2erman"}\",\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
@@ -537,7 +513,6 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${"G@rman"}\",\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
@@ -560,7 +535,6 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": ${student.getFirstName()},\n" +
                             "  \"lastName\": \"${null}\"\n" +
                             "}"
@@ -582,7 +556,6 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${student.getFirstName()}\",\n" +
                             "  \"lastName\": \"${""}\"\n" +
                             "}"
@@ -604,7 +577,6 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${"Ger"}\",\n" +
                             "  \"lastName\": \"${"G2erman"}\"\n" +
                             "}"
@@ -626,7 +598,6 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${"Ger"}\",\n" +
                             "  \"lastName\": \"${"G@rman"}\"\n" +
                             "}"
@@ -649,7 +620,6 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${null}\",\n" +
-                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": ${student.getFirstName()},\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
@@ -671,7 +641,6 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${""}\",\n" +
-                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${student.getFirstName()}\",\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
@@ -693,7 +662,6 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student.getId()},\n" +
                             "  \"email\": \"${"germacom"}\",\n" +
-                            "  \"projects\": \"${student.projects}\",\n" +
                             "  \"firstName\": \"${student.getFirstName()}\",\n" +
                             "  \"lastName\": \"${student.getLastName()}\"\n" +
                             "}"
@@ -707,7 +675,7 @@ class StudentControllerTest {
     fun `should throw a 400 status when you update a student with already registered email`() {
         val cookie = cookiesAdmin()
         var student = studentService.save(aStudentDTO().build())
-        var student2 = studentService.save(aStudentDTO().withEmail("hola@gmail.com").withOwnerGithub("prueba").build())
+        var student2 = studentService.save(aStudentDTO().withEmail("hola@gmail.com").build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/students")
@@ -716,7 +684,6 @@ class StudentControllerTest {
                     "{\n" +
                             "  \"id\": ${student2.getId()},\n" +
                             "  \"email\": \"${student.getEmail()}\",\n" +
-                            "  \"projects\": \"${student2.projects}\",\n" +
                             "  \"firstName\": \"${student2.getFirstName()}\",\n" +
                             "  \"lastName\": \"${student2.getLastName()}\"\n" +
                             "}"
@@ -726,25 +693,6 @@ class StudentControllerTest {
         ).andExpect(status().isBadRequest)
     }
 
-
-    @Test
-    fun `should throw a 400 status when you update a student with owner is already registered`() {
-        val cookie = cookiesAdmin()
-        var student = studentService.save(aStudentDTO().build())
-        var student2 =
-            studentService.save(aStudentDTO().withEmail("prueba@gmail.com").withOwnerGithub("prueba").build())
-        student2.setOwnerGithub(student.getOwnerGithub())
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.put("/students")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    mapper.writeValueAsString(student2)
-                )
-                .cookie(cookie)
-                .accept("application/json")
-        ).andExpect(status().isBadRequest)
-    }
 
     @Test
     fun `should throw a 401 status when trying to delete a student and is not authenticated`() {
@@ -757,7 +705,7 @@ class StudentControllerTest {
     @Test
     fun `should throw a 401 status when a student does not have permissions to delete students`() {
         val cookie = cookiesStudent()
-        var student2 = studentService.save(aStudentDTO().withEmail("jose@gmail.com").withOwnerGithub("prueba").build())
+        var student2 = studentService.save(aStudentDTO().withEmail("jose@gmail.com").build())
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/students").accept(MediaType.APPLICATION_JSON)
                 .param("id", student2.getId().toString()).cookie(cookie)
@@ -768,7 +716,7 @@ class StudentControllerTest {
     @Test
     fun `should throw a 401 status when a teacher does not have permissions to delete students`() {
         val cookie = cookiesTeacher()
-        var student2 = studentService.save(aStudentDTO().withEmail("jose@gmail.com").withOwnerGithub("prueba").build())
+        var student2 = studentService.save(aStudentDTO().withEmail("jose@gmail.com").build())
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/students").accept(MediaType.APPLICATION_JSON)
                 .param("id", student2.getId().toString()).cookie(cookie)
@@ -807,54 +755,6 @@ class StudentControllerTest {
                 .param("id", "2").cookie(cookie)
         )
             .andExpect(status().isNotFound)
-    }
-
-    @Test
-    fun `should throw a 401 status when a teacher does not have permissions to add project`() {
-        val cookie = cookiesTeacher()
-        val project = projectService.save(aProject().build())
-        var student = studentService.save(aStudentDTO().withEmail("jose@gmail.com").withOwnerGithub("prueba").build())
-        mockMvc.perform(
-            MockMvcRequestBuilders.put(
-                "/students/addProject/${student.getId().toString()}/${
-                    project.getId().toString()
-                }"
-            ).accept(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
-        )
-            .andExpect(status().isUnauthorized)
-    }
-
-    @Test
-    fun `should throw a 401 status when a student does not have permissions to add project except yourself`() {
-        val cookie = cookiesStudent()
-        val project = projectService.save(aProject().build())
-        var student = studentService.save(aStudentDTO().withEmail("jose@gmail.com").withOwnerGithub("prueba").build())
-        mockMvc.perform(
-            MockMvcRequestBuilders.put(
-                "/students/addProject/${student.getId().toString()}/${
-                    project.getId().toString()
-                }"
-            ).accept(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
-        )
-            .andExpect(status().isUnauthorized)
-    }
-
-    @Test
-    fun `should throw a 200 status when a admin does have permissions to add project`() {
-        val cookie = cookiesAdmin()
-        val project = projectService.save(aProject().build())
-        var student = studentService.save(aStudentDTO().withEmail("jose@gmail.com").withOwnerGithub("prueba").build())
-        mockMvc.perform(
-            MockMvcRequestBuilders.put(
-                "/students/addProject/${student.getId().toString()}/${
-                    project.getId().toString()
-                }"
-            ).accept(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
-        )
-            .andExpect(status().isOk)
     }
 
     @Test

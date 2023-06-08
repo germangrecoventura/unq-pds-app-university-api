@@ -2,15 +2,14 @@ package unq.pds.services.builder
 
 import unq.pds.api.dtos.RepositoryDTO
 
-
 class BuilderRepositoryDTO {
     private var name: String? = "unq-pds-app-university-api"
-    private var owner: String? = "germangrecoventura"
+    private var projectId: Long = 1
 
     fun build(): RepositoryDTO {
-        var repositoryDTO = RepositoryDTO()
+        val repositoryDTO = RepositoryDTO()
         repositoryDTO.name = name
-        repositoryDTO.owner = owner
+        repositoryDTO.projectId = projectId
         return repositoryDTO
     }
 
@@ -19,8 +18,8 @@ class BuilderRepositoryDTO {
         return this
     }
 
-    fun withOwner(owner: String?): BuilderRepositoryDTO {
-        this.owner = owner
+    fun withProjectId(projectId: Long): BuilderRepositoryDTO {
+        this.projectId = projectId
         return this
     }
 
