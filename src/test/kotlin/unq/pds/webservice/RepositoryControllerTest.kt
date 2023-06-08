@@ -14,9 +14,12 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
+import unq.pds.model.builder.CommissionBuilder
+import unq.pds.model.builder.MatterBuilder
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.services.*
 import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
+import unq.pds.services.builder.BuilderGroupDTO
 import unq.pds.services.builder.BuilderLoginDTO.Companion.aLoginDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
@@ -46,6 +49,15 @@ class RepositoryControllerTest {
     @Autowired
     lateinit var projectService: ProjectService
 
+    @Autowired
+    lateinit var groupService: GroupService
+
+    @Autowired
+    lateinit var matterService: MatterService
+
+    @Autowired
+    lateinit var commissionService: CommissionService
+
     private val mapper = ObjectMapper()
 
     @Autowired
@@ -70,7 +82,15 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a student does have permissions to create repositories`() {
         val cookie = cookiesStudent()
-        val project = projectService.save(aProject().build())
+        matterService.save(MatterBuilder.aMatter().build())
+        val student = studentService.findByEmail("german@gmail.com")
+        val commission = commissionService.save(CommissionBuilder.aCommission().build())
+        val group = groupService.save(BuilderGroupDTO.aGroupDTO().withMembers(listOf("german@gmail.com")).build())
+
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+
+        val project = group.projects.elementAt(0)
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -83,7 +103,17 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to create repositories`() {
         val cookie = cookiesTeacher()
-        val project = projectService.save(aProject().build())
+        matterService.save(MatterBuilder.aMatter().build())
+        val teacher = teacherService.findByEmail("german@gmail.com")
+        val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val commission = commissionService.save(CommissionBuilder.aCommission().build())
+        val group = groupService.save(BuilderGroupDTO.aGroupDTO().withMembers(listOf("test@gmail.com")).build())
+
+        commissionService.addStudent(commission.getId()!!, student2.getId()!!)
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+
+        val project = group.projects.elementAt(0)
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -256,7 +286,15 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a student does have permissions to update repositories`() {
         val cookie = cookiesStudent()
-        val project = projectService.save(aProject().build())
+        matterService.save(MatterBuilder.aMatter().build())
+        val student = studentService.findByEmail("german@gmail.com")
+        val commission = commissionService.save(CommissionBuilder.aCommission().build())
+        val group = groupService.save(BuilderGroupDTO.aGroupDTO().withMembers(listOf("german@gmail.com")).build())
+
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+
+        val project = group.projects.elementAt(0)
         repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
 
         mockMvc.perform(
@@ -271,9 +309,19 @@ class RepositoryControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to update repositories`() {
         val cookie = cookiesTeacher()
-        val project = projectService.save(aProject().build())
-        repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
+        matterService.save(MatterBuilder.aMatter().build())
+        val teacher = teacherService.findByEmail("german@gmail.com")
+        val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val commission = commissionService.save(CommissionBuilder.aCommission().build())
+        val group = groupService.save(BuilderGroupDTO.aGroupDTO().withMembers(listOf("test@gmail.com")).build())
 
+        commissionService.addStudent(commission.getId()!!, student2.getId()!!)
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+
+        val project = group.projects.elementAt(0)
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
+        projectService.addRepository(project.getId()!!, repository.id)
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -307,8 +355,12 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withName(null)
-                    .withProjectId(project.getId()!!).build()))
+                .content(
+                    mapper.writeValueAsString(
+                        aRepositoryDTO().withName(null)
+                            .withProjectId(project.getId()!!).build()
+                    )
+                )
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
@@ -323,8 +375,12 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withName("")
-                    .withProjectId(project.getId()!!).build()))
+                .content(
+                    mapper.writeValueAsString(
+                        aRepositoryDTO().withName("")
+                            .withProjectId(project.getId()!!).build()
+                    )
+                )
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
@@ -339,8 +395,12 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withName("App###")
-                    .withProjectId(project.getId()!!).build()))
+                .content(
+                    mapper.writeValueAsString(
+                        aRepositoryDTO().withName("App###")
+                            .withProjectId(project.getId()!!).build()
+                    )
+                )
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
@@ -381,8 +441,12 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withName("el-repo")
-                    .withProjectId(project.getId()!!).build()))
+                .content(
+                    mapper.writeValueAsString(
+                        aRepositoryDTO().withName("el-repo")
+                            .withProjectId(project.getId()!!).build()
+                    )
+                )
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)

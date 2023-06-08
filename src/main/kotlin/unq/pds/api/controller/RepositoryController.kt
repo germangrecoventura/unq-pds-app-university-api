@@ -221,10 +221,10 @@ class RepositoryController(
         if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
                 body.issuer!!,
                 repository.projectId!!
-            ) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
+            ) && !projectService.isFoundRepository(repository.projectId!!,repository.name!!) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
                 body.issuer!!,
                 repository.projectId!!
-            )
+            ) && !projectService.isFoundRepository(repository.projectId!!,repository.name!!)
                     ))
         ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.update(repository), HttpStatus.OK)

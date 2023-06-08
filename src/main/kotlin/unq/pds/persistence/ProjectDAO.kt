@@ -39,4 +39,14 @@ interface ProjectDAO : JpaRepository<Project, Long> {
         """
     )
     fun thereIsAGroupWhereIsStudentAndTheProjectExists(studentEmail: String, projectId: Long): Boolean
+
+    @Query(
+        """
+            SELECT COUNT(p) > 0
+            FROM Project p
+            JOIN p.repositories r
+            WHERE p.id = ?1 AND r.name = ?2
+        """
+    )
+    fun isFoundRepository(projectId: Long, name: String): Boolean
 }

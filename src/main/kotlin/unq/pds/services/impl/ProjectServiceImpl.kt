@@ -62,6 +62,10 @@ open class ProjectServiceImpl : ProjectService {
         return projectDAO.thereIsAGroupWhereIsStudentAndTheProjectExists(studentEmail,projectId)
     }
 
+    override fun isFoundRepository(projectId: Long,name: String): Boolean {
+        return projectDAO.isFoundRepository(projectId,name)
+    }
+
     override fun readAll(): List<Project> {
         return projectDAO.findAll().toList()
     }
