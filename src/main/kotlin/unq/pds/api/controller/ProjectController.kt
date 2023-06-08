@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Project
-import unq.pds.services.CommissionService
 import unq.pds.services.ProjectService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -23,10 +22,7 @@ import javax.validation.constraints.NotBlank
 @RestController
 @CrossOrigin
 @RequestMapping("projects")
-class ProjectController(
-    private val projectService: ProjectService,
-    private val commissionService: CommissionService
-) {
+class ProjectController(private val projectService: ProjectService) {
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
     private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
 
@@ -320,6 +316,16 @@ class ProjectController(
         @NotBlank @PathVariable repositoryId: Long
     ): ResponseEntity<Any> {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
+                body.issuer!!,
+                projectId
+            ) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
+                body.issuer!!,
+                projectId
+            )
+                    ))
+        ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
     }
 

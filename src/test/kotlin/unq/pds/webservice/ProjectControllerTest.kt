@@ -14,6 +14,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
+import unq.pds.model.builder.CommissionBuilder
+import unq.pds.model.builder.MatterBuilder
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.services.*
 import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
@@ -50,6 +52,13 @@ class ProjectControllerTest {
 
     @Autowired
     lateinit var repositoryService: RepositoryService
+
+    @Autowired
+    lateinit var matterService: MatterService
+
+    @Autowired
+    lateinit var commissionService: CommissionService
+
 
     private val mapper = ObjectMapper()
 
@@ -201,8 +210,17 @@ class ProjectControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to update project`() {
         val cookie = cookiesTeacher()
-        val project = projectService.save(aProject().build())
+        matterService.save(MatterBuilder.aMatter().build())
+        val teacher = teacherService.findByEmail("german@gmail.com")
+        val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val commission = commissionService.save(CommissionBuilder.aCommission().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("test@gmail.com")).build())
 
+        commissionService.addStudent(commission.getId()!!, student2.getId()!!)
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+
+        val project = group.projects.elementAt(0)
         project.name = "new name"
         mockMvc.perform(
             MockMvcRequestBuilders.put("/projects")
@@ -216,7 +234,17 @@ class ProjectControllerTest {
     @Test
     fun `should throw a 200 status when a student does have permissions to update project`() {
         val cookie = cookiesStudent()
-        val project = projectService.save(aProject().build())
+        matterService.save(MatterBuilder.aMatter().build())
+        val student = studentService.findByEmail("german@gmail.com")
+        val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val commission = commissionService.save(CommissionBuilder.aCommission().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com", "test@gmail.com")).build())
+
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
+        commissionService.addStudent(commission.getId()!!, student2.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+
+        val project = group.projects.elementAt(0)
 
         project.name = "new name"
         mockMvc.perform(
@@ -378,8 +406,17 @@ class ProjectControllerTest {
     @Test
     fun `should throw a 200 status when a teacher does have permissions to add a repository to a project`() {
         val cookie = cookiesTeacher()
-        val project = projectService.save(aProject().build())
-        studentService.save(aStudentDTO().build())
+        matterService.save(MatterBuilder.aMatter().build())
+        val teacher = teacherService.findByEmail("german@gmail.com")
+        val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val commission = commissionService.save(CommissionBuilder.aCommission().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("test@gmail.com")).build())
+
+        commissionService.addStudent(commission.getId()!!, student2.getId()!!)
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+
+        val project = group.projects.elementAt(0)
         val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.put(
@@ -396,7 +433,17 @@ class ProjectControllerTest {
     @Test
     fun `should throw a 200 status when a student does have permissions to add a repository to a project`() {
         val cookie = cookiesStudent()
-        val project = projectService.save(aProject().build())
+        matterService.save(MatterBuilder.aMatter().build())
+        val student = studentService.findByEmail("german@gmail.com")
+        val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val commission = commissionService.save(CommissionBuilder.aCommission().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com", "test@gmail.com")).build())
+
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
+        commissionService.addStudent(commission.getId()!!, student2.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+
+        val project = group.projects.elementAt(0)
         val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.put(

@@ -51,11 +51,13 @@ class GroupTest {
     fun `should remove a member when it has been previously added`() {
         val group = aGroup().build()
         val member = aStudent().build()
+        val member2 = aStudent().withEmail("lucas@gmail.com").build()
         Assertions.assertEquals(0, group.members.size)
         group.addMember(member)
-        Assertions.assertEquals(1, group.members.size)
+        group.addMember(member2)
+        Assertions.assertEquals(2, group.members.size)
         group.removeMember(member)
-        Assertions.assertEquals(0, group.members.size)
+        Assertions.assertEquals(1, group.members.size)
     }
 
     @Test

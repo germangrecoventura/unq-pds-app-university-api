@@ -341,10 +341,11 @@ class GroupControllerTest {
     fun `should throw a 200 status when a teacher does have permissions to update group`() {
         val cookie = cookiesTeacher()
         val teacher = teacherService.findByEmail("docente@gmail.com")
-        studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
+        val student = studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
         val group = groupService.save(aGroupDTO().withMembers(listOf("prueba@gmail.com")).build())
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         val groupDTO = GroupUpdateDTO()
@@ -543,11 +544,13 @@ class GroupControllerTest {
     fun `should throw a 200 status when a teacher does have permissions to add member to group except yourself`() {
         val cookie = cookiesTeacher()
         val teacher = teacherService.findByEmail("docente@gmail.com")
-        studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
+        val student = studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
         val student2 = studentService.save(aStudentDTO().withEmail("prueba1@gmail.com").build())
         val group = groupService.save(aGroupDTO().withMembers(listOf("prueba@gmail.com")).build())
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
+        commissionService.addStudent(commission.getId()!!, student2.getId()!!)
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         mockMvc.perform(
@@ -684,9 +687,12 @@ class GroupControllerTest {
         val cookie = cookiesTeacher()
         val teacher = teacherService.findByEmail("docente@gmail.com")
         val student = studentService.save(aStudentDTO().build())
-        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
+        val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com","test@gmail.com")).build())
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
+        commissionService.addStudent(commission.getId()!!, student2.getId()!!)
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         mockMvc.perform(
@@ -705,7 +711,8 @@ class GroupControllerTest {
     fun `should throw a 200 status when admin remove an existing student to a group`() {
         val cookie = cookiesAdmin()
         val student = studentService.save(aStudentDTO().build())
-        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
+        val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf(student.getEmail()!!,student2.getEmail()!!)).build())
         mockMvc.perform(
             MockMvcRequestBuilders.put(
                 "/groups/removeMember/{groupId}/{studentId}",
@@ -821,10 +828,11 @@ class GroupControllerTest {
         val cookie = cookiesTeacher()
         val project = projectService.save(aProject().build())
         val teacher = teacherService.findByEmail("docente@gmail.com")
-        studentService.save(aStudentDTO().build())
+        val student = studentService.save(aStudentDTO().build())
         val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         mockMvc.perform(
@@ -982,10 +990,11 @@ class GroupControllerTest {
         val cookie = Cookie("jwt", "")
         val project = projectService.save(aProject().build())
         val teacher = teacherService.findByEmail("docente@gmail.com")
-        studentService.save(aStudentDTO().build())
+        val student = studentService.save(aStudentDTO().build())
         val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         mockMvc.perform(
