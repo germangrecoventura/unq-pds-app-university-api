@@ -73,16 +73,6 @@ class ProjectController(
     )
     fun createProject(@CookieValue("jwt") jwt: String?, @RequestBody @Valid project: ProjectDTO): ResponseEntity<Any> {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
-                body.issuer!!,
-                project.id!!
-            ) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
-                body.issuer!!,
-                project.id!!
-            )
-                    ))
-        ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(projectService.save(project.fromDTOToModel()), HttpStatus.OK)
     }
 
