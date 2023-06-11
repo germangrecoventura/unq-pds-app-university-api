@@ -42,7 +42,7 @@ class Group(name: String) {
 
     fun removeMember(member: Student) {
         if (!isMember(member)) throw NoSuchElementException("The member is not in the group")
-        if (members.count() == 1) return throw GroupWithEmptyMemberException()
+        if (members.count() == 1) throw GroupWithEmptyMemberException()
         members.remove(member)
     }
 

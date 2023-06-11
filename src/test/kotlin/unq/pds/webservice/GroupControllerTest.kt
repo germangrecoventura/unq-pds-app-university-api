@@ -76,7 +76,7 @@ class GroupControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     mapper.writeValueAsString(
-                        aGroupDTO().withMembers(listOf("prueba@gmail.com")).build()
+                        aGroupDTO().withMembers(listOf("german@gmail.com", "prueba@gmail.com")).build()
                     )
                 )
                 .cookie(cookie)
