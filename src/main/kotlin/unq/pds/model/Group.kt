@@ -3,6 +3,7 @@ package unq.pds.model
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import io.swagger.v3.oas.annotations.media.Schema
+import unq.pds.model.exceptions.GroupWithEmptyMemberException
 import javax.management.InvalidAttributeValueException
 import javax.persistence.*
 
@@ -30,7 +31,7 @@ class Group(name: String) {
     var members: MutableSet<Student> = mutableSetOf()
 
     @Schema(example = "[]")
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JsonProperty
     var projects: MutableSet<Project> = mutableSetOf()
 
@@ -41,6 +42,7 @@ class Group(name: String) {
 
     fun removeMember(member: Student) {
         if (!isMember(member)) throw NoSuchElementException("The member is not in the group")
+        if (members.count() == 1) throw GroupWithEmptyMemberException()
         members.remove(member)
     }
 

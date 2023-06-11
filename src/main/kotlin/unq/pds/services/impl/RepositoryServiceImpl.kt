@@ -153,6 +153,10 @@ open class RepositoryServiceImpl : RepositoryService {
         else throw NoSuchElementException("The repository with id $repositoryId is not registered")
     }
 
+    override fun existsById(repositoryId: Long): Boolean {
+        return repositoryDAO.existsById(repositoryId)
+    }
+
     override fun count(): Int {
         return repositoryDAO.count().toInt()
     }

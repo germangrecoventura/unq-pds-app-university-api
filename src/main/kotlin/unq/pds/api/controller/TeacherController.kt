@@ -17,6 +17,7 @@ import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.TeacherCreateRequestDTO
 import unq.pds.model.Comment
 import unq.pds.model.Teacher
+import unq.pds.services.ProjectService
 import unq.pds.services.TeacherService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -27,6 +28,7 @@ class TeacherController {
     @RequestMapping("teachers")
     class TeacherController(
         private val teacherService: TeacherService,
+        private val projectService: ProjectService
     ) {
         private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
         private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
@@ -196,12 +198,8 @@ class TeacherController {
         fun updateTeacher(@CookieValue("jwt") jwt: String?, @RequestBody teacher: Teacher): ResponseEntity<Any> {
             if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] == "STUDENT" || (body["role"] == "TEACHER" && body["id"].toString()
-                    .toLong() != teacher.getId())
-            ) ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            )
+            return if (isStudent(body) || (isTeacher(body) && !isSameId(body, teacher)))
+                ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
             else ResponseEntity(teacherService.update(teacher), HttpStatus.OK)
         }
 
@@ -310,9 +308,7 @@ class TeacherController {
                 )]
         )
         fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
-            if (jwt.isNullOrBlank()) {
-                return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-            }
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             return ResponseEntity(teacherService.readAll(), HttpStatus.OK)
         }
 
@@ -377,21 +373,33 @@ class TeacherController {
         ): ResponseEntity<Any> {
             if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (body["role"] == "STUDENT")
-                ResponseEntity(
-                    messageNotAccess,
-                    HttpStatus.UNAUTHORIZED
-                )
+            return if (isStudent(body) ||
+                (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheRepositoryExists(
+                    body.issuer!!,
+                    comment.repositoryId!!
+                ))
+            ) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
             else ResponseEntity(teacherService.addCommentToRepository(comment), HttpStatus.OK)
         }
 
+        private fun isStudent(body: Claims): Boolean {
+            return body["role"] == "STUDENT"
+        }
+
+        private fun isTeacher(body: Claims): Boolean {
+            return body["role"] == "TEACHER"
+        }
 
         private fun existJWT(jwt: String?): Boolean {
             return !jwt.isNullOrBlank()
         }
 
-        private fun isNotAdmin(claim: Claims): Boolean {
-            return claim["role"] != "ADMIN"
+        private fun isNotAdmin(body: Claims): Boolean {
+            return body["role"] != "ADMIN"
+        }
+
+        private fun isSameId(body: Claims, teacher: Teacher): Boolean {
+            return body["id"].toString().toLong() == teacher.getId()
         }
     }
 }

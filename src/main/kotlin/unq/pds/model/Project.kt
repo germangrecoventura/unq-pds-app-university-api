@@ -31,7 +31,7 @@ class Project(
     @Schema(example = "1")
     private var id: Long? = null
 
-    @OneToMany
+    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     var repositories: MutableSet<Repository> = mutableSetOf()
 
     fun addRepository(repository: Repository) {

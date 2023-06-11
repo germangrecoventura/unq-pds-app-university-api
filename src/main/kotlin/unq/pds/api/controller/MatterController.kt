@@ -1,5 +1,6 @@
 package unq.pds.api.controller
 
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -66,14 +67,9 @@ class MatterController(private val matterService: MatterService) {
             )]
     )
     fun createMatter(@CookieValue("jwt") jwt: String?, @RequestBody @Valid matter: MatterDTO): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] != "ADMIN") ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
+        return if (isNotAdmin(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(matterService.save(matter.fromDTOToModel()), HttpStatus.OK)
     }
 
@@ -130,9 +126,7 @@ class MatterController(private val matterService: MatterService) {
             )]
     )
     fun getMatter(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(matterService.read(id), HttpStatus.OK)
     }
 
@@ -189,14 +183,9 @@ class MatterController(private val matterService: MatterService) {
             )]
     )
     fun updateMatter(@CookieValue("jwt") jwt: String?, @RequestBody matter: Matter): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] != "ADMIN") ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
+        return if (isNotAdmin(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(matterService.update(matter), HttpStatus.OK)
     }
 
@@ -255,15 +244,9 @@ class MatterController(private val matterService: MatterService) {
             )]
     )
     fun deleteMatter(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        if (body["role"] != "ADMIN") return ResponseEntity(
-            messageNotAccess,
-            HttpStatus.UNAUTHORIZED
-        )
-
+        if (isNotAdmin(body)) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         matterService.delete(id)
         return ResponseEntity(MessageDTO("Matter has been deleted successfully"), HttpStatus.OK)
     }
@@ -311,9 +294,15 @@ class MatterController(private val matterService: MatterService) {
             )]
     )
     fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(matterService.readAll(), HttpStatus.OK)
+    }
+
+    private fun existJWT(jwt: String?): Boolean {
+        return !jwt.isNullOrBlank()
+    }
+
+    private fun isNotAdmin(body: Claims): Boolean {
+        return body["role"] != "ADMIN"
     }
 }
