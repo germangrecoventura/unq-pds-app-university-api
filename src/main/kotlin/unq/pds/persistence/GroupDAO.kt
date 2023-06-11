@@ -29,6 +29,18 @@ interface GroupDAO : JpaRepository<Group, Long> {
 
     @Query(
         """
+            SELECT COUNT(g) > 0
+            FROM Group g
+            JOIN g.members m
+            JOIN g.projects pj
+            JOIN pj.deployInstances deployIns
+            WHERE m.email = ?1 AND deployIns.id = ?2
+        """
+    )
+    fun thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(studentEmail: String, deployInstanceId: Long): Boolean
+
+    @Query(
+        """
              SELECT COUNT(g) = 1
              FROM Group g
              JOIN g.members m

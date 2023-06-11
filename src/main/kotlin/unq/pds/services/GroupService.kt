@@ -13,6 +13,7 @@ interface GroupService {
     fun removeMember(groupId: Long, studentId: Long): Group
     fun addProject(groupId: Long, projectId: Long): Group
     fun thereIsAGroupWithThisProjectAndThisMember(projectId: Long, studentId: Long): Boolean
+    fun thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(studentEmail: String, deployInstanceId: Long): Boolean
     fun hasAMemberWithEmail(groupId: Long, email: String): Boolean
     fun readAll(): List<Group>
     fun count(): Int
