@@ -3,6 +3,7 @@ package unq.pds.services.impl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import unq.pds.api.dtos.DeployInstanceDTO
 import unq.pds.model.DeployInstance
 import unq.pds.persistence.DeployInstanceDAO
 import unq.pds.services.DeployInstanceService
@@ -18,11 +19,11 @@ open class DeployInstanceImpl : DeployInstanceService {
         return deployInstanceDAO.save(deployInstance)
     }
 
-    override fun update(deployInstance: DeployInstance): DeployInstance {
-        if (deployInstance.getId() != null && deployInstanceDAO.existsById(deployInstance.getId()!!)) {
-            val deployInstanceFind = deployInstanceDAO.findById(deployInstance.getId()!!).get()
-            deployInstanceFind.name = deployInstance.name
-            deployInstanceFind.url = deployInstance.url
+    override fun update(deployInstance: DeployInstanceDTO): DeployInstance {
+        if (deployInstance.id != null && deployInstanceDAO.existsById(deployInstance.id!!)) {
+            val deployInstanceFind = deployInstanceDAO.findById(deployInstance.id!!).get()
+            deployInstanceFind.name = deployInstance.name!!
+            deployInstanceFind.url = deployInstance.url!!
             return deployInstanceDAO.save(deployInstanceFind)
         }
         else throw NoSuchElementException("Deploy instance does not exist")
