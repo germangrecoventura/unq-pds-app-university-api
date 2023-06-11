@@ -15,14 +15,22 @@ import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Project
+import unq.pds.services.CommissionService
+import unq.pds.services.GroupService
 import unq.pds.services.ProjectService
+import unq.pds.services.RepositoryService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 
 @RestController
 @CrossOrigin
 @RequestMapping("projects")
-class ProjectController(private val projectService: ProjectService) {
+class ProjectController(
+    private val projectService: ProjectService,
+    private val repositoryService: RepositoryService,
+    private val groupService: GroupService,
+    private val commissionService: CommissionService
+) {
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
     private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
 
@@ -69,6 +77,14 @@ class ProjectController(private val projectService: ProjectService) {
     )
     fun createProject(@CookieValue("jwt") jwt: String?, @RequestBody @Valid project: ProjectDTO): ResponseEntity<Any> {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if ((isStudent(body) && !groupService.hasAMemberWithEmail(project.groupId!!, body.issuer))
+            ||
+            (isTeacher(body) && !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(
+                    body.issuer,
+                    project.groupId!!
+            ))
+        ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(projectService.save(project.fromDTOToModel()), HttpStatus.OK)
     }
 
@@ -187,11 +203,10 @@ class ProjectController(private val projectService: ProjectService) {
         if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
                 body.issuer!!,
                 project.id!!
-            ) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
+            )) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
                 body.issuer!!,
                 project.id!!
-            )
-                    ))
+            ))
         ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(projectService.update(project), HttpStatus.OK)
     }
@@ -317,14 +332,15 @@ class ProjectController(private val projectService: ProjectService) {
     ): ResponseEntity<Any> {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if (!repositoryService.existsById(repositoryId))
+            return ResponseEntity(MessageDTO("Not found the repository"), HttpStatus.NOT_FOUND)
         if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
                 body.issuer!!,
                 projectId
-            ) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
+            )) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
                 body.issuer!!,
                 projectId
-            )
-                    ))
+            ))
         ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
     }

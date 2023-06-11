@@ -17,6 +17,7 @@ import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.TeacherCreateRequestDTO
 import unq.pds.model.Comment
 import unq.pds.model.Teacher
+import unq.pds.services.ProjectService
 import unq.pds.services.TeacherService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -27,6 +28,7 @@ class TeacherController {
     @RequestMapping("teachers")
     class TeacherController(
         private val teacherService: TeacherService,
+        private val projectService: ProjectService
     ) {
         private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
         private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
@@ -371,7 +373,12 @@ class TeacherController {
         ): ResponseEntity<Any> {
             if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-            return if (isStudent(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+            return if (isStudent(body) ||
+                (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheRepositoryExists(
+                    body.issuer!!,
+                    comment.repositoryId!!
+                ))
+            ) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
             else ResponseEntity(teacherService.addCommentToRepository(comment), HttpStatus.OK)
         }
 

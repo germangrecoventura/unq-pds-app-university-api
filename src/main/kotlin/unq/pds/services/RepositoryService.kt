@@ -19,6 +19,7 @@ interface RepositoryService {
     fun lengthPagesPaginatedPullRequest(name: String, size: Int): Int
     fun findPaginatedPullRequest(name: String,page: Int, size: Int): List<PullRequest>
     fun deleteById(repositoryId: Long)
+    fun existsById(repositoryId: Long): Boolean
     fun count(): Int
     fun clearRepositories()
 }

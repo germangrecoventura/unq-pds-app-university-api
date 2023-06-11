@@ -94,11 +94,10 @@ class RepositoryController(
         if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
                 body.issuer!!,
                 repository.projectId!!
-            ) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
+            )) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
                 body.issuer!!,
                 repository.projectId!!
-            )
-                    ))
+            ))
         ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.save(repository), HttpStatus.OK)
     }
@@ -218,14 +217,15 @@ class RepositoryController(
     ): ResponseEntity<Any> {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if (!projectService.isFoundRepository(repository.projectId!!, repository.name!!))
+            return ResponseEntity(MessageDTO("Not found the repository"), HttpStatus.NOT_FOUND)
         if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
                 body.issuer!!,
                 repository.projectId!!
-            ) && !projectService.isFoundRepository(repository.projectId!!,repository.name!!) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
+            )) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
                 body.issuer!!,
                 repository.projectId!!
-            ) && !projectService.isFoundRepository(repository.projectId!!,repository.name!!)
-                    ))
+            ))
         ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.update(repository), HttpStatus.OK)
     }

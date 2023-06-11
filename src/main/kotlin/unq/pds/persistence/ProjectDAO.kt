@@ -27,7 +27,20 @@ interface ProjectDAO : JpaRepository<Project, Long> {
             WHERE t.email = ?1 AND pj.id = ?2
         """
     )
-    fun thereIsACommissionWhereIsteacherAndTheProjectExists(teacherEmail: String, projectId: Long): Boolean
+    fun thereIsACommissionWhereIsTeacherAndTheProjectExists(teacherEmail: String, projectId: Long): Boolean
+
+    @Query(
+        """
+            SELECT COUNT(c) > 0
+            FROM Commission c
+            JOIN c.teachers t
+            JOIN c.groupsStudents gs
+            JOIN gs.projects pj
+            JOIN pj.repositories r
+            WHERE t.email = ?1 AND r.id = ?2
+        """
+    )
+    fun thereIsACommissionWhereIsTeacherAndTheRepositoryExists(teacherEmail: String, repositoryId: Long): Boolean
 
     @Query(
         """
