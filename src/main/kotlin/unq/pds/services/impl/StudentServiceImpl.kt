@@ -4,11 +4,16 @@ import org.jasypt.util.text.AES256TextEncryptor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import unq.pds.api.dtos.DeployInstanceCommentDTO
 import unq.pds.api.dtos.StudentCreateRequestDTO
+import unq.pds.model.Comment
 import unq.pds.model.Student
 import unq.pds.model.exceptions.AlreadyRegisteredException
+import unq.pds.persistence.CommentDAO
+import unq.pds.persistence.DeployInstanceDAO
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.StudentService
+import unq.pds.services.UserService
 
 @Service
 @Transactional
@@ -17,11 +22,20 @@ open class StudentServiceImpl : StudentService {
     @Autowired
     lateinit var studentDAO: StudentDAO
 
+    @Autowired
+    lateinit var userService: UserService
+
+    @Autowired
+    lateinit var deployInstanceDAO: DeployInstanceDAO
+
+    @Autowired
+    lateinit var commentDAO: CommentDAO
+
     override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
+        if (userService.theEmailIsRegistered(studentCreateRequestDTO.email!!)) throw AlreadyRegisteredException("email")
         val encryptor = AES256TextEncryptor()
         encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
         val myEncryptedPassword = encryptor.encrypt(studentCreateRequestDTO.password)
-        if (studentDAO.findByEmail(studentCreateRequestDTO.email!!).isPresent) throw AlreadyRegisteredException("email")
         val student = Student(
             studentCreateRequestDTO.firstName!!,
             studentCreateRequestDTO.lastName!!,
@@ -33,7 +47,9 @@ open class StudentServiceImpl : StudentService {
 
     override fun update(studentDTO: StudentCreateRequestDTO): Student {
         val studentWithEmail = studentDAO.findByEmail(studentDTO.email!!)
-        if (studentWithEmail.isPresent && studentDTO.id != studentWithEmail.get().getId()) {
+        if ((userService.theEmailIsRegistered(studentDTO.email!!) && !studentWithEmail.isPresent)
+            ||
+            (studentWithEmail.isPresent && studentDTO.id != studentWithEmail.get().getId())) {
             throw AlreadyRegisteredException("email")
         }
         val studentFind = findById(studentDTO.id!!)
@@ -67,6 +83,16 @@ open class StudentServiceImpl : StudentService {
 
     override fun readAll(): List<Student> {
         return studentDAO.findAll().toList()
+    }
+
+    override fun addCommentToDeployInstance(commentDTO: DeployInstanceCommentDTO): Comment {
+        val deployInstanceRecovery = deployInstanceDAO.findById(commentDTO.deployInstanceId!!).orElseThrow {
+            NoSuchElementException("Not found the deploy instance")
+        }
+        val comment = commentDAO.save(Comment(commentDTO.comment!!))
+        deployInstanceRecovery.addComment(comment)
+        deployInstanceDAO.save(deployInstanceRecovery)
+        return comment
     }
 
     override fun clearStudents() {

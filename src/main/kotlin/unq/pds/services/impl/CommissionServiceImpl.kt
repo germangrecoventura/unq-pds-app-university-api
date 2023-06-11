@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 import unq.pds.model.Commission
 import unq.pds.model.exceptions.StudentsOfTheGroupNotEnrolledInTheCommissionException
 import unq.pds.persistence.CommissionDAO
+import unq.pds.services.*
 
 @Service
 @Transactional
