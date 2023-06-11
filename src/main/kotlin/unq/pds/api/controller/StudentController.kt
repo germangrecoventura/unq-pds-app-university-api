@@ -12,9 +12,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import unq.pds.api.dtos.DeployInstanceCommentDTO
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.StudentCreateRequestDTO
+import unq.pds.model.Comment
 import unq.pds.model.Student
+import unq.pds.services.GroupService
 import unq.pds.services.StudentService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -23,7 +26,10 @@ class StudentController {
     @RestController
     @CrossOrigin
     @RequestMapping("students")
-    class StudentController(private val studentService: StudentService) {
+    class StudentController(
+        private val studentService: StudentService,
+        private val groupService: GroupService
+    ) {
         private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
         private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
 
@@ -311,6 +317,75 @@ class StudentController {
         fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
             if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
             return ResponseEntity(studentService.readAll(), HttpStatus.OK)
+        }
+
+        @PostMapping("/addComment")
+        @Operation(
+            summary = "Add comment to deploy instance",
+            description = "Add comment to deploy instance",
+        )
+        @ApiResponses(
+            value = [
+                ApiResponse(
+                    responseCode = "200",
+                    description = "Success",
+                    content = [
+                        Content(
+                            mediaType = "application/json",
+                            schema = Schema(implementation = Comment::class),
+                        )
+                    ]
+                ),
+                ApiResponse(
+                    responseCode = "400",
+                    description = "Bad request",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"additionalProp1\": \"string\",\n" +
+                                    "  \"additionalProp2\": \"string\",\n" +
+                                    "  \"additionalProp3\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )]
+                ), ApiResponse(
+                    responseCode = "401",
+                    description = "Not authenticated",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
+                ),
+                ApiResponse(
+                    responseCode = "404",
+                    description = "Not Found",
+                    content = [Content(
+                        mediaType = "application/json", examples = [ExampleObject(
+                            value = "{\n" +
+                                    "  \"message\": \"string\"\n" +
+                                    "}"
+                        )]
+                    )
+                    ]
+                )]
+        )
+        fun addCommentToDeployInstance(
+            @CookieValue("jwt") jwt: String?,
+            @RequestBody @Valid comment: DeployInstanceCommentDTO
+        ): ResponseEntity<Any> {
+            if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+            val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+            return if (isTeacher(body) ||
+                (isStudent(body) && !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
+                    body.issuer!!,
+                    comment.deployInstanceId!!
+                ))
+            ) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+            else ResponseEntity(studentService.addCommentToDeployInstance(comment), HttpStatus.OK)
         }
 
         private fun existJWT(jwt: String?): Boolean {

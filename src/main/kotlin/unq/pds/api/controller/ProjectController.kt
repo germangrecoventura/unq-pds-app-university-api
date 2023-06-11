@@ -345,6 +345,74 @@ class ProjectController(
         return ResponseEntity(projectService.addRepository(projectId, repositoryId), HttpStatus.OK)
     }
 
+    @PutMapping("/addDeployInstance/{projectId}/{deployInstanceId}")
+    @Operation(
+        summary = "Add a deploy instance to a project",
+        description = "Add a deploy instance to a project",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Success",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = Project::class),
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Bad request",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Not authenticated",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"string\"\n" +
+                                "}"
+                    )]
+                )]
+            )]
+    )
+    fun addDeployInstance(
+        @CookieValue("jwt") jwt: String?,
+        @NotBlank @PathVariable projectId: Long,
+        @NotBlank @PathVariable deployInstanceId: Long
+    ): ResponseEntity<Any> {
+        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if (isTeacher(body) ||
+            (isStudent(body) && !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
+                body.issuer!!,
+                deployInstanceId
+            ))
+        ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+        return ResponseEntity(projectService.addDeployInstance(projectId, deployInstanceId), HttpStatus.OK)
+    }
+
     @GetMapping("/getAll")
     @Operation(
         summary = "Get all projects",

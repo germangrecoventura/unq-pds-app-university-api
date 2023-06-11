@@ -16,13 +16,17 @@ import unq.pds.api.dtos.DeployInstanceDTO
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.DeployInstance
 import unq.pds.services.DeployInstanceService
+import unq.pds.services.GroupService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 
 @RestController
 @CrossOrigin
 @RequestMapping("deployInstances")
-class DeployInstanceController(private val deployInstanceService: DeployInstanceService) {
+class DeployInstanceController(
+    private val deployInstanceService: DeployInstanceService,
+    private val groupService: GroupService
+) {
 
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
     private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
@@ -71,7 +75,10 @@ class DeployInstanceController(private val deployInstanceService: DeployInstance
     fun createDeployInstance(@CookieValue("jwt") jwt: String?, @RequestBody @Valid deployInstance: DeployInstanceDTO): ResponseEntity<Any> {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (isTeacher(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+        return if (isTeacher(body) || (isStudent(body) &&
+                    !groupService.thereIsAGroupWithThisProjectAndThisMember(
+                        deployInstance.projectId!!, body.id.toLong())))
+            ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(deployInstanceService.save(deployInstance.fromDTOToModel()), HttpStatus.OK)
     }
 
@@ -187,7 +194,10 @@ class DeployInstanceController(private val deployInstanceService: DeployInstance
     fun updateDeployInstance(@CookieValue("jwt") jwt: String?, @RequestBody deployInstance: DeployInstanceDTO): ResponseEntity<Any> {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (isTeacher(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+        return if (isTeacher(body) || (isStudent(body) &&
+                    !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
+                        body.issuer, deployInstance.id!!)))
+            ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(deployInstanceService.update(deployInstance), HttpStatus.OK)
     }
 
@@ -248,7 +258,10 @@ class DeployInstanceController(private val deployInstanceService: DeployInstance
     fun deleteDeployInstance(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        if (isTeacher(body)) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+        if (isTeacher(body) || (isStudent(body) &&
+                    !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
+                        body.issuer, id)))
+            return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         deployInstanceService.delete(id)
         return ResponseEntity(MessageDTO("Deploy instance has been deleted successfully"), HttpStatus.OK)
     }
@@ -306,5 +319,9 @@ class DeployInstanceController(private val deployInstanceService: DeployInstance
 
     private fun isTeacher(body: Claims): Boolean {
         return body["role"] == "TEACHER"
+    }
+
+    private fun isStudent(body: Claims): Boolean {
+        return body["role"] == "STUDENT"
     }
 }

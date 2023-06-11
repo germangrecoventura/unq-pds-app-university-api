@@ -104,14 +104,14 @@ class GroupControllerTest {
     @Test
     fun `should throw a 200 status when a admin does have permissions to create group`() {
         val cookie = cookiesAdmin()
-        studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
+        studentService.save(aStudentDTO().withEmail("student@gmail.com").build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.post("/groups")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     mapper.writeValueAsString(
-                        aGroupDTO().withMembers(listOf("prueba@gmail.com")).build()
+                        aGroupDTO().withMembers(listOf("student@gmail.com")).build()
                     )
                 )
                 .cookie(cookie)
@@ -189,8 +189,8 @@ class GroupControllerTest {
     @Test
     fun `should throw a 200 status when admin looking for a group if it exists`() {
         val cookie = cookiesAdmin()
-        studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
-        val group = groupService.save(aGroupDTO().withMembers(listOf("prueba@gmail.com")).build())
+        studentService.save(aStudentDTO().withEmail("student@gmail.com").build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("student@gmail.com")).build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.get("/groups").accept(MediaType.APPLICATION_JSON)
@@ -305,8 +305,8 @@ class GroupControllerTest {
     @Test
     fun `should throw a 200 status when a admin does have permissions to update group`() {
         val cookie = cookiesAdmin()
-        studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
-        val group = groupService.save(aGroupDTO().withMembers(listOf("prueba@gmail.com")).build())
+        studentService.save(aStudentDTO().withEmail("student@gmail.com").build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("student@gmail.com")).build())
         val groupDTO = GroupUpdateDTO()
         groupDTO.id = group.getId()
         groupDTO.name = "New name"
@@ -395,8 +395,8 @@ class GroupControllerTest {
     @Test
     fun `should throw a 200 status when a admin does have permissions to delete groups`() {
         val cookie = cookiesAdmin()
-        studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
-        val group = groupService.save(aGroupDTO().withMembers(listOf("prueba@gmail.com")).build())
+        studentService.save(aStudentDTO().withEmail("student@gmail.com").build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("student@gmail.com")).build())
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/groups").accept(MediaType.APPLICATION_JSON)
                 .param("id", group.getId().toString()).cookie(cookie)
@@ -569,7 +569,7 @@ class GroupControllerTest {
     fun `should throw a 200 status when a admin does have permissions to add member to group`() {
         val cookie = cookiesAdmin()
         studentService.save(aStudentDTO().build())
-        val student2 = studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
+        val student2 = studentService.save(aStudentDTO().withEmail("student@gmail.com").build())
         val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         mockMvc.perform(
             MockMvcRequestBuilders.put(

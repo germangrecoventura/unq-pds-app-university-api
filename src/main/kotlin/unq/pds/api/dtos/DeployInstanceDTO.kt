@@ -19,5 +19,8 @@ class DeployInstanceDTO {
     @Schema(example = "https://railway.app/project/unq-pds-app-university-api")
     var url: String? = null
 
+    @Schema(example = "1")
+    var projectId: Long? = null
+
     fun fromDTOToModel() = DeployInstance(name!!, url!!)
 }

@@ -50,7 +50,7 @@ class DeployInstanceServiceTest {
         deployInstanceDTO.name = "Heroku"
         deployInstanceDTO.url = deployInstance.url
         val updatedDeployInstance = deployInstanceService.update(deployInstanceDTO)
-        Assertions.assertEquals(deployInstance.name, updatedDeployInstance.name)
+        Assertions.assertEquals(deployInstanceDTO.name, updatedDeployInstance.name)
     }
 
     @Test
