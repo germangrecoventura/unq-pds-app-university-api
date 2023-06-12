@@ -405,9 +405,9 @@ class ProjectController(
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         if (isTeacher(body) ||
-            (isStudent(body) && !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
-                body.issuer!!,
-                deployInstanceId
+            (isStudent(body) && !groupService.thereIsAGroupWithThisProjectAndThisMember(
+                projectId,
+                body["id"].toString().toLong()
             ))
         ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(projectService.addDeployInstance(projectId, deployInstanceId), HttpStatus.OK)

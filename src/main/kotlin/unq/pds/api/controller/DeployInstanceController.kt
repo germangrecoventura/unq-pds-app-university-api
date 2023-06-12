@@ -77,7 +77,7 @@ class DeployInstanceController(
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         return if (isTeacher(body) || (isStudent(body) &&
                     !groupService.thereIsAGroupWithThisProjectAndThisMember(
-                        deployInstance.projectId!!, body.id.toLong())))
+                        deployInstance.projectId!!, body["id"].toString().toLong())))
             ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(deployInstanceService.save(deployInstance.fromDTOToModel()), HttpStatus.OK)
     }
