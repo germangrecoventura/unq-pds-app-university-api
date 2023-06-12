@@ -31,6 +31,7 @@ import javax.validation.constraints.NotBlank
 class StudentController(private val studentService: StudentService) {
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
     private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
+    private val passwordEncrypt = JwtUtilService.JWT_SECRET_KEY
 
     @PostMapping
     @Operation(
@@ -82,7 +83,7 @@ class StudentController(private val studentService: StudentService) {
         var header = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         header = header.substring(7, header.length)
-        val body = Jwts.parser().setSigningKey(JwtUtilService.JWT_SECRET_KEY).parseClaimsJws(header).body
+        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
         return if (isNotAdmin(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(studentService.save(student), HttpStatus.OK)
     }
@@ -204,7 +205,7 @@ class StudentController(private val studentService: StudentService) {
         var header = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         header = header.substring(7, header.length)
-        val body = Jwts.parser().setSigningKey(JwtUtilService.JWT_SECRET_KEY).parseClaimsJws(header).body
+        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
         return if (isTeacher(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else if (isStudent(body) && !isSameId(body, student)) {
             ResponseEntity(
@@ -272,7 +273,7 @@ class StudentController(private val studentService: StudentService) {
         var header = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         header = header.substring(7, header.length)
-        val body = Jwts.parser().setSigningKey(JwtUtilService.JWT_SECRET_KEY).parseClaimsJws(header).body
+        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
         if (isNotAdmin(body)) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         studentService.deleteById(id)
         return ResponseEntity(MessageDTO("Student has been deleted successfully"), HttpStatus.OK)
