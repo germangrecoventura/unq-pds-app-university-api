@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import unq.pds.model.builder.BuilderStudent.Companion.aStudent
 import unq.pds.model.builder.GroupBuilder.Companion.aGroup
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
+import unq.pds.model.exceptions.GroupWithEmptyMemberException
 import javax.management.InvalidAttributeValueException
 
 class GroupTest {
@@ -61,6 +62,18 @@ class GroupTest {
     }
 
     @Test
+    fun `should throw an exception when trying to remove the only member of a group`() {
+        val group = aGroup().build()
+        val member = aStudent().build()
+        group.addMember(member)
+        try {
+            group.removeMember(member)
+        } catch (e: GroupWithEmptyMemberException) {
+            Assertions.assertEquals("The group cannot run out of students", e.message)
+        }
+    }
+
+    @Test
     fun `should throw an exception when trying to remove a member who does not belong to the group`() {
         val group = aGroup().build()
         try {
@@ -100,6 +113,8 @@ class GroupTest {
     @Test
     fun `should be false to have a member with email when it was not added`() {
         val group = aGroup().build()
+        val student = aStudent().build()
+        group.addMember(student)
         Assertions.assertFalse(group.hasAMemberWithEmail("emailFalso"))
     }
 }

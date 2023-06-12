@@ -7,10 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
 import unq.pds.api.dtos.ProjectDTO
+import unq.pds.model.builder.CommissionBuilder
+import unq.pds.model.builder.MatterBuilder
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.model.exceptions.RepositoryHasAlreadyBeenAddedException
+import unq.pds.services.builder.BuilderGroupDTO
 import unq.pds.services.builder.BuilderProjectDTO.Companion.aProjectDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
+import unq.pds.services.builder.BuilderStudentDTO
+import unq.pds.services.builder.BuilderTeacherDTO
 
 @SpringBootTest
 class ProjectServiceTest {
@@ -26,6 +31,18 @@ class ProjectServiceTest {
 
     @Autowired
     lateinit var studentService: StudentService
+
+    @Autowired
+    lateinit var commissionService: CommissionService
+
+    @Autowired
+    lateinit var matterService: MatterService
+
+    @Autowired
+    lateinit var teacherService: TeacherService
+
+    @Autowired
+    lateinit var groupService: GroupService
 
     @BeforeEach
     fun tearDown() {
@@ -138,6 +155,46 @@ class ProjectServiceTest {
         } catch (e: NoSuchElementException) {
             Assertions.assertEquals("There is no project with that id", e.message)
         }
+    }
+
+    @Test
+    fun `should be true to have a commission with a teacher with email and a repository with id when both were added previously`() {
+        matterService.save(MatterBuilder.aMatter().build())
+        val commission = commissionService.save(CommissionBuilder.aCommission().build())
+        val teacher = teacherService.save(BuilderTeacherDTO.aTeacherDTO().build())
+        val student = studentService.save(BuilderStudentDTO.aStudentDTO().withEmail("test@gmail.com").build())
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
+        projectService.addRepository(project.getId()!!, repository.id)
+        val group = groupService.save(BuilderGroupDTO.aGroupDTO().withMembers(listOf("test@gmail.com")).build())
+        groupService.addProject(group.getId()!!, project.getId()!!)
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        Assertions.assertTrue(projectService.thereIsACommissionWhereIsteacherAndTheRepositoryExists(
+            teacher.getEmail()!!, repository.id))
+    }
+
+    @Test
+    fun `should be false to have a commission with a teacher with email and a repository with id when both were not added`() {
+        matterService.save(MatterBuilder.aMatter().build())
+        commissionService.save(CommissionBuilder.aCommission().build())
+        Assertions.assertFalse(
+            projectService.thereIsACommissionWhereIsteacherAndTheRepositoryExists(
+                "emailFalso",
+                -1
+            )
+        )
+    }
+
+    @Test
+    fun `should be false to have a commission with a teacher with email and a repository with id when there is no commissions`() {
+        Assertions.assertFalse(
+            projectService.thereIsACommissionWhereIsteacherAndTheRepositoryExists(
+                "emailFalso",
+                -1
+            )
+        )
     }
 
     @Test

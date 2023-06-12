@@ -2,6 +2,7 @@ package unq.pds.model
 
 import com.fasterxml.jackson.annotation.*
 import io.swagger.v3.oas.annotations.media.Schema
+import unq.pds.model.exceptions.StudentsOfTheGroupNotEnrolledInTheCommissionException
 import javax.management.InvalidAttributeValueException
 import javax.persistence.*
 
@@ -54,6 +55,7 @@ class Commission(
 
     fun addGroup(group: Group) {
         if (isMyGroup(group)) throw CloneNotSupportedException("The group is already in the commission")
+        if (!students.containsAll(group.members)) throw StudentsOfTheGroupNotEnrolledInTheCommissionException()
         groupsStudents.add(group)
     }
 

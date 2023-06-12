@@ -7,7 +7,6 @@ import unq.pds.api.dtos.GroupDTO
 import unq.pds.api.dtos.GroupUpdateDTO
 import unq.pds.model.Group
 import unq.pds.model.Project
-import unq.pds.model.exceptions.GroupWithEmptyMemberException
 import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import unq.pds.persistence.GroupDAO
 import unq.pds.services.GroupService
