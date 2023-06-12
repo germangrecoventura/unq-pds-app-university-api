@@ -4,6 +4,7 @@ import io.jsonwebtoken.ExpiredJwtException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.validation.FieldError
 import org.springframework.validation.ObjectError
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -42,6 +43,12 @@ class BaseController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleAlreadyRegisteredException(ex: AlreadyRegisteredException): ResponseEntity<MessageDTO> {
         return ResponseEntity.badRequest().body(MessageDTO(ex.message))
+    }
+
+    @ExceptionHandler(UsernameNotFoundException::class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    fun userNotFound(ex: UsernameNotFoundException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MessageDTO(ex.message!!))
     }
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
