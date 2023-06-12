@@ -40,7 +40,7 @@ class JwtUtilService {
 
 
     companion object {
-        private const val JWT_SECRET_KEY = "TExBVkVfTVVZX1NFQ1JFVEE="
+        const val JWT_SECRET_KEY = "TExBVkVfTVVZX1NFQ1JFVEE="
         const val JWT_TOKEN_VALIDITY = 86400000L
     }
 }
