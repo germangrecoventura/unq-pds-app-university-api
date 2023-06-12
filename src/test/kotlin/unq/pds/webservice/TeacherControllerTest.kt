@@ -14,9 +14,15 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
-import unq.pds.services.AdminService
+import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
+import unq.pds.model.builder.MatterBuilder.Companion.aMatter
+import unq.pds.model.builder.ProjectBuilder.Companion.aProject
+import unq.pds.services.*
 import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
+import unq.pds.services.builder.BuilderCommentCreateDTO.Companion.aCommentDTO
+import unq.pds.services.builder.BuilderGroupDTO.Companion.aGroupDTO
 import unq.pds.services.builder.BuilderLoginDTO.Companion.aLoginDTO
+import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
 import unq.pds.services.impl.StudentServiceImpl
@@ -39,6 +45,21 @@ class TeacherControllerTest {
 
       @Autowired
       lateinit var adminService: AdminService
+
+      @Autowired
+      lateinit var matterService: MatterService
+
+      @Autowired
+      lateinit var commissionService: CommissionService
+
+      @Autowired
+      lateinit var groupService: GroupService
+
+      @Autowired
+      lateinit var projectService: ProjectService
+
+      @Autowired
+      lateinit var repositoryService: RepositoryService
 
       private val mapper = ObjectMapper()
 
@@ -859,6 +880,83 @@ class TeacherControllerTest {
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers/getAll").accept(MediaType.APPLICATION_JSON)
           ).andExpect(status().isUnauthorized)
+      }
+
+      @Test
+      fun `should throw a 401 status when trying to add a comment to a repository and is not authenticated`() {
+          mockMvc.perform(
+              MockMvcRequestBuilders.post("/teachers/addComment")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(mapper.writeValueAsString(aCommentDTO().build()))
+                  .accept("application/json")
+          ).andExpect(status().isUnauthorized)
+      }
+
+      @Test
+      fun `should throw a 401 status when student does not have permissions to add a comment to a repository`() {
+          val cookie = cookiesStudent()
+
+          mockMvc.perform(
+              MockMvcRequestBuilders.post("/teachers/addComment")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(mapper.writeValueAsString(aCommentDTO().build()))
+                  .cookie(cookie)
+                  .accept("application/json")
+          ).andExpect(status().isUnauthorized)
+      }
+
+      @Test
+      fun `should throw a 401 status when teacher does not have permissions to add a comment to a repository`() {
+          val cookie = cookiesTeacher()
+
+          mockMvc.perform(
+              MockMvcRequestBuilders.post("/teachers/addComment")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(mapper.writeValueAsString(aCommentDTO().build()))
+                  .cookie(cookie)
+                  .accept("application/json")
+          ).andExpect(status().isUnauthorized)
+      }
+
+      @Test
+      fun `should throw a 200 status when teacher does have permissions to add a comment to a repository`() {
+          val cookie = cookiesTeacher()
+          matterService.save(aMatter().build())
+          val teacher = teacherService.findByEmail("german@gmail.com")
+          val commission = commissionService.save(aCommission().build())
+          val student = studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
+          val group = groupService.save(aGroupDTO().withMembers(listOf("prueba@gmail.com")).build())
+          commissionService.addStudent(commission.getId()!!, student.getId()!!)
+          commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+          commissionService.addGroup(commission.getId()!!, group.getId()!!)
+          val project = projectService.save(aProject().build())
+          val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
+          groupService.addProject(group.getId()!!, project.getId()!!)
+          projectService.addRepository(project.getId()!!, repository.id)
+
+          mockMvc.perform(
+              MockMvcRequestBuilders.post("/teachers/addComment")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(mapper.writeValueAsString(aCommentDTO().withId(repository.id).build()))
+                  .cookie(cookie)
+                  .accept("application/json")
+          ).andExpect(status().isOk)
+      }
+
+      @Test
+      fun `should throw a 200 status when admin does have permissions to add a comment to a repository`() {
+          val cookie = cookiesAdmin()
+          val project = projectService.save(aProject().build())
+          val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
+          projectService.addRepository(project.getId()!!, repository.id)
+
+          mockMvc.perform(
+              MockMvcRequestBuilders.post("/teachers/addComment")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(mapper.writeValueAsString(aCommentDTO().withId(repository.id).build()))
+                  .cookie(cookie)
+                  .accept("application/json")
+          ).andExpect(status().isOk)
       }
 
       private fun cookiesTeacher(): Cookie? {

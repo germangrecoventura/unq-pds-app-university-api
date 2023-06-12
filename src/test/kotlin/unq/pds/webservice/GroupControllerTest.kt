@@ -67,6 +67,24 @@ class GroupControllerTest {
     }
 
     @Test
+    fun `should throw a 400 status when a student trying to create a group and the student is not a member`() {
+        val cookie = cookiesStudent()
+        studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/groups")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    mapper.writeValueAsString(
+                        aGroupDTO().withMembers(listOf("prueba@gmail.com")).build()
+                    )
+                )
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
+    }
+
+    @Test
     fun `should throw a 200 status when a student does have permissions to create group`() {
         val cookie = cookiesStudent()
         studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
@@ -723,6 +741,23 @@ class GroupControllerTest {
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `should throw a 400 status when trying to remove the only member of a group`() {
+        val cookie = cookiesAdmin()
+        val student = studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf(student.getEmail()!!)).build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/groups/removeMember/{groupId}/{studentId}",
+                group.getId(),
+                student.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
     }
 
     @Test

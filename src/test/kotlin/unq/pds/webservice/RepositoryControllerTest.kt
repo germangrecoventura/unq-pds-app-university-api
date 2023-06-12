@@ -80,6 +80,18 @@ class RepositoryControllerTest {
     }
 
     @Test
+    fun `should throw a 401 status when a student does not have permissions to create repositories`() {
+        val cookie = cookiesStudent()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/repositories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
     fun `should throw a 200 status when a student does have permissions to create repositories`() {
         val cookie = cookiesStudent()
         matterService.save(aMatter().build())
@@ -279,6 +291,23 @@ class RepositoryControllerTest {
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .accept("application/json")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when a student does not have permissions to update repositories`() {
+        val cookie = cookiesStudent()
+
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
+        projectService.addRepository(project.getId()!!, repository.id)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("/repositories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }

@@ -82,6 +82,18 @@ class ProjectControllerTest {
     }
 
     @Test
+    fun `should throw a 401 status when a student does not have permissions to create project`() {
+        val cookie = cookiesStudent()
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/projects")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aProjectDTO().withGroupId(-1).build()))
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
     fun `should throw a 200 status when a student does have permissions to create project`() {
         val cookie = cookiesStudent()
         val group = groupService.save(aGroupDTO().build())
@@ -213,6 +225,18 @@ class ProjectControllerTest {
             MockMvcRequestBuilders.put("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aProject().build()))
+                .accept("application/json")
+        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when a teacher does not have permissions to update project`() {
+        val cookie = cookiesTeacher()
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("/projects")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aProjectDTO().withId(-1).build()))
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -409,6 +433,23 @@ class ProjectControllerTest {
                 "1"
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .accept("application/json")
+        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when a teacher does not have permissions to add a repository to a project`() {
+        val cookie = cookiesTeacher()
+        val project = projectService.save(aProject().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/projects/addRepository/{projectId}/{repositoryId}",
+                "1",
+                repository.id.toString()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }

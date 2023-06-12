@@ -907,6 +907,25 @@ class CommissionControllerTest {
     }
 
     @Test
+    fun `should throw a 400 status when trying to add a group to a commission and the members of the group are not students of the commission`() {
+        val cookie = cookiesAdmin()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        val student = studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf(student.getEmail()!!)).build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/addGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
+    }
+
+    @Test
     fun `should throw a 404 status when trying to remove a group in a non-existent commission`() {
         val cookie = cookiesAdmin()
         studentService.save(aStudentDTO().build())
