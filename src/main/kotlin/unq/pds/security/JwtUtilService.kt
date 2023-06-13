@@ -7,12 +7,11 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.stereotype.Component
 import java.util.*
-import kotlin.collections.HashMap
 
 @Component
 class JwtUtilService {
     fun generateToken(authentication: Authentication): String {
-        val claim = HashMap<String,Any>()
+        val claim = HashMap<String, Any>()
         claim["role"] = authentication.authorities.stream().map(GrantedAuthority::getAuthority).toList()
         return Jwts
             .builder()
@@ -40,7 +39,7 @@ class JwtUtilService {
 
 
     companion object {
-        const val JWT_SECRET_KEY = "TExBVkVfTVVZX1NFQ1JFVEE="
+        val JWT_SECRET_KEY: String = System.getenv("ENCRYPT_PASSWORD")
         const val JWT_TOKEN_VALIDITY = 86400000L
     }
 }
