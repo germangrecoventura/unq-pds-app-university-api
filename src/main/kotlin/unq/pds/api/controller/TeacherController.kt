@@ -30,7 +30,6 @@ import javax.validation.constraints.NotBlank
 @CrossOrigin
 @RequestMapping("teachers")
 @SecurityRequirement(name = "bearerAuth")
-
 class TeacherController(
     private val teacherService: TeacherService,
 ) {
@@ -146,7 +145,7 @@ class TeacherController(
             )]
     )
     fun getTeacher(@NotBlank @RequestParam id: Long, request: HttpServletRequest): ResponseEntity<Any> {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(teacherService.findById(id), HttpStatus.OK)
     }
@@ -320,7 +319,7 @@ class TeacherController(
             )]
     )
     fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(teacherService.readAll(), HttpStatus.OK)
     }

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -26,6 +27,7 @@ import javax.validation.constraints.NotBlank
 @RestController
 @CrossOrigin
 @RequestMapping("matters")
+@SecurityRequirement(name = "bearerAuth")
 class MatterController(private val matterService: MatterService) {
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
     private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
@@ -134,7 +136,7 @@ class MatterController(private val matterService: MatterService) {
             )]
     )
     fun getMatter(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(matterService.read(id), HttpStatus.OK)
     }
@@ -307,7 +309,7 @@ class MatterController(private val matterService: MatterService) {
             )]
     )
     fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(matterService.readAll(), HttpStatus.OK)
     }
