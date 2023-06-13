@@ -9,8 +9,11 @@ import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.RepositoryDTO
@@ -18,20 +21,25 @@ import unq.pds.model.Commit
 import unq.pds.model.Issue
 import unq.pds.model.PullRequest
 import unq.pds.model.Repository
+import unq.pds.security.JwtUtilService
 import unq.pds.services.ProjectService
 import unq.pds.services.RepositoryService
+import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 
 @RestController
 @CrossOrigin
 @RequestMapping("repositories")
+@SecurityRequirement(name = "bearerAuth")
 class RepositoryController(
     private val repositoryService: RepositoryService,
     private val projectService: ProjectService
 ) {
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
     private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
+    private val passwordEncrypt = JwtUtilService.JWT_SECRET_KEY
+
 
     @PostMapping
     @Operation(
@@ -86,16 +94,18 @@ class RepositoryController(
             )]
     )
     fun createRepository(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @RequestBody @Valid repository: RepositoryDTO
     ): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        header = header.substring(7, header.length)
+        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
         if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
-                body.issuer!!,
+                body.subject!!,
                 repository.projectId!!
             )) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
-                body.issuer!!,
+                body.subject!!,
                 repository.projectId!!
             ))
         ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
@@ -154,8 +164,9 @@ class RepositoryController(
                 )]
             )]
     )
-    fun getRepository(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+    fun getRepository(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.findById(id), HttpStatus.OK)
     }
 
@@ -212,18 +223,20 @@ class RepositoryController(
             )]
     )
     fun updateRepository(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @RequestBody @Valid repository: RepositoryDTO
     ): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        header = header.substring(7, header.length)
+        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
         if (!projectService.isFoundRepository(repository.projectId!!, repository.name!!))
             return ResponseEntity(MessageDTO("Not found the repository"), HttpStatus.NOT_FOUND)
         if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
-                body.issuer!!,
+                body.subject!!,
                 repository.projectId!!
             )) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
-                body.issuer!!,
+                body.subject!!,
                 repository.projectId!!
             ))
         ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
@@ -284,9 +297,11 @@ class RepositoryController(
                 )]
             )]
     )
-    fun deleteRepository(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+    fun deleteRepository(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        header = header.substring(7, header.length)
+        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
         if (isNotAdmin(body)) return ResponseEntity(
             MessageDTO("You do not have permissions to access this resource"), HttpStatus.UNAUTHORIZED
         )
@@ -336,8 +351,9 @@ class RepositoryController(
                 ]
             )]
     )
-    fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+    fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.findByAll(), HttpStatus.OK)
     }
 
@@ -394,11 +410,12 @@ class RepositoryController(
             )]
     )
     fun lengthPagesPaginatedCommit(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.lengthPagesPaginatedCommit(name, size), HttpStatus.OK)
     }
 
@@ -453,12 +470,13 @@ class RepositoryController(
             )]
     )
     fun getPaginatedCommit(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam page: Int,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.findPaginatedCommit(name, page, size), HttpStatus.OK)
     }
 
@@ -515,11 +533,12 @@ class RepositoryController(
             )]
     )
     fun lengthPagesPaginatedIssue(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.lengthPagesPaginatedIssue(name, size), HttpStatus.OK)
     }
 
@@ -574,12 +593,13 @@ class RepositoryController(
             )]
     )
     fun getPaginatedIssue(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam page: Int,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.findPaginatedIssue(name, page, size), HttpStatus.OK)
     }
 
@@ -636,11 +656,12 @@ class RepositoryController(
             )]
     )
     fun lengthPagesPaginatedPullRequest(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.lengthPagesPaginatedPullRequest(name, size), HttpStatus.OK)
     }
 
@@ -695,28 +716,34 @@ class RepositoryController(
             )]
     )
     fun getPaginatedPullRequest(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam page: Int,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.findPaginatedPullRequest(name, page, size), HttpStatus.OK)
     }
 
     private fun existJWT(jwt: String?): Boolean {
-        return !jwt.isNullOrBlank()
+        return StringUtils.hasText(jwt) &&
+                jwt!!.startsWith("Bearer ")
+                && !jwt.substring(7, jwt.length).isNullOrEmpty()
     }
 
     private fun isNotAdmin(body: Claims): Boolean {
-        return body["role"] != "ADMIN"
+        val role = body["role"] as List<String>
+        return !role.contains("ADMIN")
     }
 
     private fun isStudent(body: Claims): Boolean {
-        return body["role"] == "STUDENT"
+        val role = body["role"] as List<String>
+        return role.contains("STUDENT")
     }
 
     private fun isTeacher(body: Claims): Boolean {
-        return body["role"] == "TEACHER"
+        val role = body["role"] as List<String>
+        return role.contains("TEACHER")
     }
 }
