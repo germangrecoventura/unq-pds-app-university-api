@@ -106,7 +106,7 @@ class AuthController(
         return ResponseEntity.ok().body(TokenInfo(token))
     }
 
-    @PostMapping("/logout")
+    @PostMapping("/log-out")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(
         summary = "Log out the page",
