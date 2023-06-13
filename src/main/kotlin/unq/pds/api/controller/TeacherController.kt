@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -21,6 +20,7 @@ import unq.pds.api.dtos.TeacherCreateRequestDTO
 import unq.pds.model.Comment
 import unq.pds.model.Teacher
 import unq.pds.security.JwtUtilService
+import unq.pds.services.ProjectService
 import unq.pds.services.TeacherService
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
@@ -29,9 +29,9 @@ import javax.validation.constraints.NotBlank
 @RestController
 @CrossOrigin
 @RequestMapping("teachers")
-@SecurityRequirement(name = "bearerAuth")
 class TeacherController(
     private val teacherService: TeacherService,
+    private val projectService: ProjectService
 ) {
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
     private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
@@ -80,8 +80,8 @@ class TeacherController(
             )]
     )
     fun createTeacher(
-        @RequestBody @Valid teacher: TeacherCreateRequestDTO,
-        request: HttpServletRequest
+        request: HttpServletRequest,
+        @RequestBody @Valid teacher: TeacherCreateRequestDTO
     ): ResponseEntity<Any> {
         var header = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
@@ -144,7 +144,7 @@ class TeacherController(
                 )]
             )]
     )
-    fun getTeacher(@NotBlank @RequestParam id: Long, request: HttpServletRequest): ResponseEntity<Any> {
+    fun getTeacher(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
         val header = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(teacherService.findById(id), HttpStatus.OK)
@@ -381,24 +381,20 @@ class TeacherController(
     )
     fun addCommentToRepository(
         request: HttpServletRequest,
-        @RequestBody @Valid comment: CommentCreateRequestDTO
+        @RequestBody @Valid comment:
+        CommentCreateRequestDTO
     ): ResponseEntity<Any> {
         var header = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         header = header.substring(7, header.length)
         val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
-        return if (isStudent(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+        return if (isStudent(body) ||
+            (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheRepositoryExists(
+                body.subject!!,
+                comment.repositoryId!!
+            ))
+        ) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(teacherService.addCommentToRepository(comment), HttpStatus.OK)
-    }
-
-    private fun isStudent(body: Claims): Boolean {
-        val role = body["role"] as List<String>
-        return role.contains("STUDENT")
-    }
-
-    private fun isTeacher(body: Claims): Boolean {
-        val role = body["role"] as List<String>
-        return role.contains("TEACHER")
     }
 
     private fun existJWT(jwt: String?): Boolean {
@@ -412,8 +408,17 @@ class TeacherController(
         return !role.contains("ADMIN")
     }
 
+    private fun isStudent(body: Claims): Boolean {
+        val role = body["role"] as List<String>
+        return role.contains("STUDENT")
+    }
+
+    private fun isTeacher(body: Claims): Boolean {
+        val role = body["role"] as List<String>
+        return role.contains("TEACHER")
+    }
+
     private fun isSameId(body: Claims, teacher: Teacher): Boolean {
         return teacherService.findByEmail(body.subject).getId() == teacher.getId()
     }
-
 }

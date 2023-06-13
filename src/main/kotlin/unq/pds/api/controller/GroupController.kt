@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -29,7 +28,6 @@ import javax.validation.constraints.NotBlank
 @RestController
 @CrossOrigin
 @RequestMapping("groups")
-@SecurityRequirement(name = "bearerAuth")
 class GroupController(private val groupService: GroupService, private val commissionService: CommissionService) {
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
     private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
@@ -76,8 +74,15 @@ class GroupController(private val groupService: GroupService, private val commis
             )]
     )
     fun createGroup(request: HttpServletRequest, @RequestBody @Valid group: GroupDTO): ResponseEntity<Any> {
-        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        header = header.substring(7, header.length)
+        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
+        if (isStudent(body) && !group.members!!.contains(body.subject))
+            return ResponseEntity(
+                MessageDTO("The group to be created must have you as a member"),
+                HttpStatus.BAD_REQUEST
+            )
         return ResponseEntity(groupService.save(group), HttpStatus.OK)
     }
 
@@ -134,7 +139,7 @@ class GroupController(private val groupService: GroupService, private val commis
             )]
     )
     fun getGroup(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(groupService.read(id), HttpStatus.OK)
     }
@@ -533,16 +538,6 @@ class GroupController(private val groupService: GroupService, private val commis
         return ResponseEntity(groupService.readAll(), HttpStatus.OK)
     }
 
-    private fun isStudent(body: Claims): Boolean {
-        val role = body["role"] as List<String>
-        return role.contains("STUDENT")
-    }
-
-    private fun isTeacher(body: Claims): Boolean {
-        val role = body["role"] as List<String>
-        return role.contains("TEACHER")
-    }
-
     private fun existJWT(jwt: String?): Boolean {
         return StringUtils.hasText(jwt) &&
                 jwt!!.startsWith("Bearer ")
@@ -552,5 +547,15 @@ class GroupController(private val groupService: GroupService, private val commis
     private fun isNotAdmin(body: Claims): Boolean {
         val role = body["role"] as List<String>
         return !role.contains("ADMIN")
+    }
+
+    private fun isStudent(body: Claims): Boolean {
+        val role = body["role"] as List<String>
+        return role.contains("STUDENT")
+    }
+
+    private fun isTeacher(body: Claims): Boolean {
+        val role = body["role"] as List<String>
+        return role.contains("TEACHER")
     }
 }

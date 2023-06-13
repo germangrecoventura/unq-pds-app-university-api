@@ -14,10 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import unq.pds.api.dtos.MessageDTO
-import unq.pds.model.exceptions.AlreadyRegisteredException
-import unq.pds.model.exceptions.NotAuthenticatedException
-import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
-import unq.pds.model.exceptions.RepositoryHasAlreadyBeenAddedException
+import unq.pds.model.exceptions.*
 import java.sql.SQLIntegrityConstraintViolationException
 import java.util.function.Consumer
 import javax.management.InvalidAttributeValueException
@@ -42,6 +39,18 @@ class BaseController {
     @ExceptionHandler(AlreadyRegisteredException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleAlreadyRegisteredException(ex: AlreadyRegisteredException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.badRequest().body(MessageDTO(ex.message))
+    }
+
+    @ExceptionHandler(GroupWithEmptyMemberException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleGroupWithEmptyMemberExceptionException(ex: GroupWithEmptyMemberException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.badRequest().body(MessageDTO(ex.message))
+    }
+
+    @ExceptionHandler(StudentsOfTheGroupNotEnrolledInTheCommissionException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleStudentsOfTheGroupNotEnrolledInTheCommissionExceptionException(ex: StudentsOfTheGroupNotEnrolledInTheCommissionException): ResponseEntity<MessageDTO> {
         return ResponseEntity.badRequest().body(MessageDTO(ex.message))
     }
 

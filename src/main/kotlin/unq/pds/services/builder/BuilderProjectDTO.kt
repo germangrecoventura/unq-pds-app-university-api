@@ -7,6 +7,7 @@ class BuilderProjectDTO {
     private var name: String? = "unq-pds-app-university-api"
     private var ownerGithub: String? = "germangrecoventura"
     private var tokenGithub: String? = System.getenv("TOKEN_GITHUB")
+    private var groupId: Long? = null
 
     fun build(): ProjectDTO {
         val project = ProjectDTO()
@@ -14,6 +15,7 @@ class BuilderProjectDTO {
         project.name = name
         project.ownerGithub = ownerGithub
         project.tokenGithub = tokenGithub
+        project.groupId = groupId
         return project
     }
 
@@ -34,6 +36,11 @@ class BuilderProjectDTO {
 
     fun withToken(token: String?): BuilderProjectDTO {
         this.tokenGithub = token
+        return this
+    }
+
+    fun withGroupId(groupId: Long?): BuilderProjectDTO {
+        this.groupId = groupId
         return this
     }
 
