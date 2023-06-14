@@ -24,7 +24,7 @@ import unq.pds.services.builder.BuilderLoginDTO.Companion.aLoginDTO
 import unq.pds.services.builder.BuilderMatterDTO.Companion.aMatterDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
-import javax.servlet.http.Cookie
+
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
@@ -56,6 +56,7 @@ class MatterControllerTest {
         initializer.cleanDataBase()
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
     }
+
 
     @Test
     fun `should throw a 401 status when trying to create a matter and is not authenticated`() {
@@ -482,17 +483,16 @@ class MatterControllerTest {
         val cookie = cookiesTeacher()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters/getAll").accept(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", headerTeacher())
         )
             .andExpect(status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a admin does have permissions to get all matters`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters/getAll").accept(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
         )
             .andExpect(status().isOk)
     }
@@ -506,64 +506,59 @@ class MatterControllerTest {
 
     @Test
     fun `should throw a 401 status when a create matter with cookie empty`() {
-        val cookie = Cookie("jwt", "")
         mockMvc.perform(
             MockMvcRequestBuilders.post("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aMatterDTO().build()))
-                .cookie(cookie)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when get matter with cookie empty`() {
-        val cookie = Cookie("jwt", "")
         val matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", matter.getId().toString()).cookie(cookie)
+                .param("id", matter.getId().toString()).header("Authorization", "")
         )
             .andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when update matter with cookie empty`() {
-        val cookie = Cookie("jwt", "")
         val matter = matterService.save(aMatter().build())
-
         matter.name = "Lengua"
         mockMvc.perform(
             MockMvcRequestBuilders.put("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(matter))
-                .cookie(cookie)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when delete matter with cookie empty`() {
-        val cookie = Cookie("jwt", "")
         var matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", matter.getId().toString()).cookie(cookie)
+                .param("id", matter.getId().toString()).header("Authorization", "")
         )
             .andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when get all matters with cookie empty`() {
-        val cookie = Cookie("jwt", "")
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters/getAll").accept(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", "")
         )
             .andExpect(status().isUnauthorized)
     }
 
-    private fun cookiesTeacher(): Cookie? {
+
+    private fun headerTeacher(): String {
         val teacher = teacherService.save(aTeacherDTO().build())
         val login = aLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
@@ -573,10 +568,11 @@ class MatterControllerTest {
                 .accept("application/json")
         ).andExpect(status().isOk)
 
-        return response.andReturn().response.cookies[0]
+        val stringToken = response.andReturn().response.contentAsString
+        return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
     }
 
-    private fun cookiesStudent(): Cookie? {
+    private fun headerStudent(): String {
         val student = studentService.save(aStudentDTO().build())
         val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
@@ -586,10 +582,11 @@ class MatterControllerTest {
                 .accept("application/json")
         ).andExpect(status().isOk)
 
-        return response.andReturn().response.cookies[0]
+        val stringToken = response.andReturn().response.contentAsString
+        return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
     }
 
-    private fun cookiesAdmin(): Cookie? {
+    private fun headerAdmin(): String {
         val admin = adminService.save(aAdminDTO().build())
         val login = aLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
@@ -598,7 +595,7 @@ class MatterControllerTest {
                 .content(mapper.writeValueAsString(login))
                 .accept("application/json")
         ).andExpect(status().isOk)
-
-        return response.andReturn().response.cookies[0]
+        val stringToken = response.andReturn().response.contentAsString
+        return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
     }
 }
