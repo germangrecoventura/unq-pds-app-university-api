@@ -25,7 +25,6 @@ import unq.pds.services.builder.BuilderMatterDTO.Companion.aMatterDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
 
-
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
 class MatterControllerTest {
@@ -70,61 +69,55 @@ class MatterControllerTest {
 
     @Test
     fun `should throw a 401 status when a student does not have permissions to create matter`() {
-        val cookie = cookiesStudent()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aMatterDTO().build()))
-                .cookie(cookie)
+                .header("Authorization", headerStudent())
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when a teacher does not have permissions to create matter`() {
-        val cookie = cookiesTeacher()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aMatterDTO().build()))
-                .cookie(cookie)
+                .header("Authorization", headerTeacher())
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 200 status when a admin does have permissions to create matter`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aMatterDTO().build()))
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(status().isOk)
     }
 
     @Test
     fun `should throw a 400 status when the matter has a null name`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aMatterDTO().withName(null).build()))
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
-
     @Test
     fun `should throw a 400 status when the matter has a empty name`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aMatterDTO().withName("").build()))
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
@@ -139,98 +132,86 @@ class MatterControllerTest {
 
     @Test
     fun `should throw a 200 status when a student does have permissions to get matter if exist`() {
-        val cookie = cookiesStudent()
         val matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", matter.getId().toString()).cookie(cookie)
-        )
-            .andExpect(status().isOk)
+                .param("id", matter.getId().toString())
+                .header("Authorization", headerStudent())
+        ).andExpect(status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a teacher does have permissions to get matter if exist`() {
-        val cookie = cookiesTeacher()
         val matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", matter.getId().toString()).cookie(cookie)
-        )
-            .andExpect(status().isOk)
+                .param("id", matter.getId().toString())
+                .header("Authorization", headerTeacher())
+        ).andExpect(status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a admin does have permissions to get matter if exist`() {
-        val cookie = cookiesAdmin()
         val matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", matter.getId().toString()).cookie(cookie)
-        )
-            .andExpect(status().isOk)
+                .param("id", matter.getId().toString())
+                .header("Authorization", headerAdmin())
+        ).andExpect(status().isOk)
     }
 
     @Test
     fun `should throw a 404 status when a student does have permissions to get matter if not exist`() {
-        val cookie = cookiesStudent()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", "-1").cookie(cookie)
-        )
-            .andExpect(status().isNotFound)
+                .param("id", "-1")
+                .header("Authorization", headerStudent())
+        ).andExpect(status().isNotFound)
     }
 
     @Test
     fun `should throw a 404 status when a teacher does have permissions to get matter if not exist`() {
-        val cookie = cookiesTeacher()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", "-1").cookie(cookie)
-        )
-            .andExpect(status().isNotFound)
+                .param("id", "-1")
+                .header("Authorization", headerTeacher())
+        ).andExpect(status().isNotFound)
     }
 
     @Test
     fun `should throw a 404 status when a admin does have permissions to get matter if not exist`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", "-1").cookie(cookie)
-        )
-            .andExpect(status().isNotFound)
+                .param("id", "-1")
+                .header("Authorization", headerAdmin())
+        ).andExpect(status().isNotFound)
     }
 
     @Test
     fun `should throw a 400 status when a student are looking for a matter with id and the id is not the proper type`() {
-        val cookie = cookiesStudent()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
                 .param("id", "DOS")
-                .cookie(cookie)
-        )
-            .andExpect(status().isBadRequest)
+                .header("Authorization", headerStudent())
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when a teacher are looking for a matter with id and the id is not the proper type`() {
-        val cookie = cookiesTeacher()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
                 .param("id", "DOS")
-                .cookie(cookie)
-        )
-            .andExpect(status().isBadRequest)
+                .header("Authorization", headerTeacher())
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when a admin are looking for a matter with id and the id is not the proper type`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
                 .param("id", "DOS")
-                .cookie(cookie)
-        )
-            .andExpect(status().isBadRequest)
+                .header("Authorization", headerAdmin())
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -245,7 +226,6 @@ class MatterControllerTest {
 
     @Test
     fun `should throw a 401 status when a student does not have permissions to update matter`() {
-        val cookie = cookiesStudent()
         val matter = matterService.save(aMatter().build())
 
         matter.name = "Lengua"
@@ -253,14 +233,13 @@ class MatterControllerTest {
             MockMvcRequestBuilders.put("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(matter))
-                .cookie(cookie)
+                .header("Authorization", headerStudent())
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when a teacher does not have permissions to update matter`() {
-        val cookie = cookiesTeacher()
         val matter = matterService.save(aMatter().build())
 
         matter.name = "Lengua"
@@ -268,14 +247,13 @@ class MatterControllerTest {
             MockMvcRequestBuilders.put("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(matter))
-                .cookie(cookie)
+                .header("Authorization", headerTeacher())
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 200 status when a admin does have permissions to update matters`() {
-        val cookie = cookiesAdmin()
         val matter = matterService.save(aMatter().build())
 
         matter.name = "Lengua"
@@ -283,14 +261,13 @@ class MatterControllerTest {
             MockMvcRequestBuilders.put("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(matter))
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(status().isOk)
     }
 
     @Test
     fun `should throw a 404 status when you update a matter that does not exist`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.put("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -300,15 +277,14 @@ class MatterControllerTest {
                             "  \"name\": \"Lengua\"\n" +
                             "}"
                 )
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(status().isNotFound)
     }
 
     @Test
     fun `should throw a 400 status when you update a matter with id null`() {
-        val cookie = cookiesAdmin()
-        var matter = matterService.save(aMatter().build())
+        val matter = matterService.save(aMatter().build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/matters")
@@ -319,15 +295,14 @@ class MatterControllerTest {
                             "  \"name\": \"${matter.name}\",\n" +
                             "}"
                 )
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when you update a matter with id empty`() {
-        val cookie = cookiesAdmin()
-        var matter = matterService.save(aMatter().build())
+        val matter = matterService.save(aMatter().build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/matters")
@@ -338,15 +313,14 @@ class MatterControllerTest {
                             "  \"name\": \"${matter.name}\",\n" +
                             "}"
                 )
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when you update a matter with name null`() {
-        val cookie = cookiesAdmin()
-        var matter = matterService.save(aMatter().build())
+        val matter = matterService.save(aMatter().build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/matters")
@@ -357,15 +331,14 @@ class MatterControllerTest {
                             "  \"name\": \"${null}\",\n" +
                             "}"
                 )
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when you update a matter with name empty`() {
-        val cookie = cookiesAdmin()
-        var matter = matterService.save(aMatter().build())
+        val matter = matterService.save(aMatter().build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/matters")
@@ -376,14 +349,13 @@ class MatterControllerTest {
                             "  \"name\": \"${""}\",\n" +
                             "}"
                 )
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when a admin update a matter with already registered name`() {
-        val cookie = cookiesAdmin()
         matterService.save(aMatter().withName("Math").build())
         val newMatter = matterService.save(aMatter().withName("Applications development").build())
 
@@ -392,7 +364,7 @@ class MatterControllerTest {
             MockMvcRequestBuilders.put("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(newMatter))
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
@@ -407,85 +379,75 @@ class MatterControllerTest {
 
     @Test
     fun `should throw a 401 status when a student does not have permissions to delete matter`() {
-        val cookie = cookiesStudent()
-        var matter = matterService.save(aMatter().build())
+        val matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", matter.getId().toString()).cookie(cookie)
-        )
-            .andExpect(status().isUnauthorized)
+                .param("id", matter.getId().toString())
+                .header("Authorization", headerStudent())
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when a teacher does not have permissions to delete matter`() {
-        val cookie = cookiesTeacher()
-        var matter = matterService.save(aMatter().build())
+        val matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", matter.getId().toString()).cookie(cookie)
-        )
-            .andExpect(status().isUnauthorized)
+                .param("id", matter.getId().toString())
+                .header("Authorization", headerTeacher())
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 200 status when a admin does have permissions to delete matter`() {
-        val cookie = cookiesAdmin()
-        var matter = matterService.save(aMatter().build())
+        val matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", matter.getId().toString()).cookie(cookie)
-        )
-            .andExpect(status().isOk)
+                .param("id", matter.getId().toString())
+                .header("Authorization", headerAdmin())
+        ).andExpect(status().isOk)
     }
 
     @Test
     fun `should throw a 400 status when the matter id is empty`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", "").cookie(cookie)
-        )
-            .andExpect(status().isBadRequest)
+                .param("id", "")
+                .header("Authorization", headerAdmin())
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the id is not the proper type`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", "ala").cookie(cookie)
-        )
-            .andExpect(status().isBadRequest)
+                .param("id", "ala")
+                .header("Authorization", headerAdmin())
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun `should throw a 404 status you want to delete a matter that does not exist`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/groups").accept(MediaType.APPLICATION_JSON)
-                .param("id", "2").cookie(cookie)
-        )
-            .andExpect(status().isNotFound)
+                .param("id", "2")
+                .header("Authorization", headerAdmin())
+        ).andExpect(status().isNotFound)
     }
 
     @Test
     fun `should throw a 200 status when a student does have permissions to get all matters`() {
-        val cookie = cookiesStudent()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters/getAll").accept(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
-        )
-            .andExpect(status().isOk)
+                .header("Authorization", headerStudent())
+        ).andExpect(status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a teacher does have permissions to get all matters`() {
-        val cookie = cookiesTeacher()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters/getAll").accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", headerTeacher())
-        )
-            .andExpect(status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -493,8 +455,7 @@ class MatterControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters/getAll").accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", headerAdmin())
-        )
-            .andExpect(status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -505,7 +466,7 @@ class MatterControllerTest {
     }
 
     @Test
-    fun `should throw a 401 status when a create matter with cookie empty`() {
+    fun `should throw a 401 status when a create matter with header empty`() {
         mockMvc.perform(
             MockMvcRequestBuilders.post("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -516,17 +477,16 @@ class MatterControllerTest {
     }
 
     @Test
-    fun `should throw a 401 status when get matter with cookie empty`() {
+    fun `should throw a 401 status when get matter with header empty`() {
         val matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
                 .param("id", matter.getId().toString()).header("Authorization", "")
-        )
-            .andExpect(status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
-    fun `should throw a 401 status when update matter with cookie empty`() {
+    fun `should throw a 401 status when update matter with header empty`() {
         val matter = matterService.save(aMatter().build())
         matter.name = "Lengua"
         mockMvc.perform(
@@ -539,22 +499,20 @@ class MatterControllerTest {
     }
 
     @Test
-    fun `should throw a 401 status when delete matter with cookie empty`() {
-        var matter = matterService.save(aMatter().build())
+    fun `should throw a 401 status when delete matter with header empty`() {
+        val matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/matters").accept(MediaType.APPLICATION_JSON)
                 .param("id", matter.getId().toString()).header("Authorization", "")
-        )
-            .andExpect(status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
-    fun `should throw a 401 status when get all matters with cookie empty`() {
+    fun `should throw a 401 status when get all matters with header empty`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters/getAll").accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", "")
-        )
-            .andExpect(status().isUnauthorized)
+        ).andExpect(status().isUnauthorized)
     }
 
 
