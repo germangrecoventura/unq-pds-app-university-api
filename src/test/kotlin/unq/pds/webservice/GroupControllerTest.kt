@@ -878,7 +878,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 401 status when a create group with cookie empty`() {
+    fun `should throw a 401 status when a create group with header empty`() {
         mockMvc.perform(
             MockMvcRequestBuilders.post("/groups")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -892,7 +892,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 401 status when looking for a group with cookies empty`() {
+    fun `should throw a 401 status when looking for a group with header empty`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/groups").accept(MediaType.APPLICATION_JSON)
                 .param("id", "2")
@@ -900,7 +900,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 401 status when a update group with cookie empty`() {
+    fun `should throw a 401 status when a update group with header empty`() {
         val group = GroupUpdateDTO()
 
         mockMvc.perform(
@@ -912,7 +912,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 401 status when a delete groups with cookie empty`() {
+    fun `should throw a 401 status when a delete groups with header empty`() {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/groups").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
@@ -920,7 +920,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 401 status when add member to group with cookie empty`() {
+    fun `should throw a 401 status when add member to group with header empty`() {
         mockMvc.perform(
             MockMvcRequestBuilders.put(
                 "/groups/addMember/{groupId}/{studentId}",
@@ -933,7 +933,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 401 status when remove member to group with cookie empty`() {
+    fun `should throw a 401 status when remove member to group with header empty`() {
         mockMvc.perform(
             MockMvcRequestBuilders.put(
                 "/groups/removeMember/{groupId}/{studentId}",
@@ -946,7 +946,7 @@ class GroupControllerTest {
     }
 
     @Test
-    fun `should throw a 401 status when add project to group with cookie empty`() {
+    fun `should throw a 401 status when add project to group with header empty`() {
         headerTeacher()
         val project = projectService.save(aProject().build())
         val teacher = teacherService.findByEmail("docente@gmail.com")
