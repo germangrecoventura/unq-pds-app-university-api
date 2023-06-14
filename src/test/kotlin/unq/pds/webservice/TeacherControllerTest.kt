@@ -25,9 +25,6 @@ import unq.pds.services.builder.BuilderLoginDTO.Companion.aLoginDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
-import unq.pds.services.impl.StudentServiceImpl
-import unq.pds.services.impl.TeacherServiceImpl
-import javax.servlet.http.Cookie
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
@@ -38,10 +35,10 @@ class TeacherControllerTest {
       lateinit var context: WebApplicationContext
 
       @Autowired
-      lateinit var studentService: StudentServiceImpl
+      lateinit var studentService: StudentService
 
       @Autowired
-      lateinit var teacherService: TeacherServiceImpl
+      lateinit var teacherService: TeacherService
 
       @Autowired
       lateinit var adminService: AdminService
@@ -72,6 +69,7 @@ class TeacherControllerTest {
           mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
       }
 
+
       @Test
       fun `should throw a 401 status when trying to create a teacher and is not authenticated`() {
           mockMvc.perform(
@@ -84,219 +82,198 @@ class TeacherControllerTest {
 
       @Test
       fun `should throw a 401 status when a student does not have permissions to create teacher`() {
-          val cookie = cookiesStudent()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withEmail("prueba@gmail.com").build()))
-                  .cookie(cookie)
+                  .header("Authorization", headerStudent())
                   .accept("application/json")
           ).andExpect(status().isUnauthorized)
       }
 
       @Test
       fun `should throw a 401 status when a teacher does not have permissions to create teacher`() {
-          val cookie = cookiesTeacher()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withEmail("prueba@gmail.com").build()))
-                  .cookie(cookie)
+                  .header("Authorization", headerTeacher())
                   .accept("application/json")
           ).andExpect(status().isUnauthorized)
       }
 
       @Test
       fun `should throw a 200 status when a admin does have permissions to create teacher`() {
-          val cookie = cookiesAdmin()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withEmail("prueba@gmail.com").build()))
-                  .cookie(cookie)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isOk)
       }
 
       @Test
       fun `should throw a 400 status when if firstname is null to create`() {
-          val cookies = cookiesAdmin()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withFirstName(null).build()))
-                  .cookie(cookies)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when if firstname is empty to create`() {
-          val cookies = cookiesAdmin()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withFirstName("").build()))
-                  .cookie(cookies)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when if the firstname has any special characters to create`() {
-          val cookies = cookiesAdmin()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withFirstName("J@").build()))
-                  .cookie(cookies)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
-
       @Test
       fun `should throw a 400 status when if the firstname has any number to create`() {
-          val cookies = cookiesAdmin()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withFirstName("Jav1er").build()))
-                  .cookie(cookies)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when if lastname is null to create`() {
-          val cookies = cookiesAdmin()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withLastName(null).build()))
-                  .cookie(cookies)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when if lastname is empty to create`() {
-          val cookies = cookiesAdmin()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withLastName("").build()))
-                  .cookie(cookies)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when if the lastname has any special characters to create`() {
-          val cookies = cookiesAdmin()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withLastName("J@").build()))
-                  .cookie(cookies)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
-
       @Test
       fun `should throw a 400 status when if the lastname has any number to create`() {
-          val cookies = cookiesAdmin()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withLastName("Jav1er").build()))
-                  .cookie(cookies)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
-
       @Test
       fun `should throw a 400 status when if email is null to create`() {
-          val cookies = cookiesAdmin()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withEmail(null).build()))
-                  .cookie(cookies)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when if email is empty to create`() {
-          val cookies = cookiesAdmin()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withEmail("").build()))
-                  .cookie(cookies)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when the email is already registered to create`() {
-          val cookies = cookiesAdmin()
           teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().build()))
-                  .cookie(cookies)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when the email is not valid to create`() {
-          val cookies = cookiesAdmin()
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withEmail("juanPerezgmail.com").build()))
-                  .cookie(cookies)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 200 status when a student does have permissions to get student if exist`() {
-          val cookie = cookiesStudent()
-          var teacher = teacherService.save(aTeacherDTO().withEmail("pruebaa@gmail.com").build())
+          val teacher = teacherService.save(aTeacherDTO().withEmail("pruebaa@gmail.com").build())
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", teacher.getId().toString()).cookie(cookie)
-          )
-              .andExpect(status().isOk)
+                  .param("id", teacher.getId().toString())
+                  .header("Authorization", headerStudent())
+          ).andExpect(status().isOk)
       }
 
       @Test
       fun `should throw a 200 status when a teacher does have permissions to get student if exist`() {
-          val cookie = cookiesTeacher()
-          var teacher = teacherService.save(aTeacherDTO().withEmail("prueba@gmail.com").build())
+          val teacher = teacherService.save(aTeacherDTO().withEmail("prueba@gmail.com").build())
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", teacher.getId().toString()).cookie(cookie)
-          )
-              .andExpect(status().isOk)
+                  .param("id", teacher.getId().toString())
+                  .header("Authorization", headerTeacher())
+          ).andExpect(status().isOk)
       }
 
       @Test
       fun `should throw a 200 status when a admin does have permissions to get student if exist`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", teacher.getId().toString()).cookie(cookie)
-          )
-              .andExpect(status().isOk)
+                  .param("id", teacher.getId().toString())
+                  .header("Authorization", headerAdmin())
+          ).andExpect(status().isOk)
       }
 
       @Test
@@ -309,68 +286,56 @@ class TeacherControllerTest {
 
       @Test
       fun `should throw a 400 status when a student are looking for a teacher with id null`() {
-          val cookie = cookiesStudent()
-
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", null).cookie(cookie)
-          )
-              .andExpect(status().isBadRequest)
+                  .param("id", null)
+                  .header("Authorization", headerStudent())
+          ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when a teacher are looking for a teacher with id null`() {
-          val cookie = cookiesTeacher()
-
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", null).cookie(cookie)
-          )
-              .andExpect(status().isBadRequest)
+                  .param("id", null)
+                  .header("Authorization", headerTeacher())
+          ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when a admin are looking for a teacher with id null`() {
-          val cookie = cookiesAdmin()
-
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", null).cookie(cookie)
-          )
-              .andExpect(status().isBadRequest)
+                  .param("id", null)
+                  .header("Authorization", headerAdmin())
+          ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 404 status when a student are looking for a teacher does not exist`() {
-          val cookie = cookiesStudent()
-
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", "-1").cookie(cookie)
-          )
-              .andExpect(status().isNotFound)
+                  .param("id", "-1")
+                  .header("Authorization", headerStudent())
+          ).andExpect(status().isNotFound)
       }
 
       @Test
       fun `should throw a 404 status when a teacher are looking for a teacher does not exist`() {
-          val cookie = cookiesTeacher()
-
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", "-1").cookie(cookie)
-          )
-              .andExpect(status().isNotFound)
+                  .param("id", "-1")
+                  .header("Authorization", headerTeacher())
+          ).andExpect(status().isNotFound)
       }
 
       @Test
       fun `should throw a 404 status when a admin are looking for a teacher does not exist`() {
-          val cookie = cookiesAdmin()
-
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", "-1").cookie(cookie)
-          )
-              .andExpect(status().isNotFound)
+                  .param("id", "-1")
+                  .header("Authorization", headerAdmin())
+          ).andExpect(status().isNotFound)
       }
 
       @Test
@@ -386,53 +351,49 @@ class TeacherControllerTest {
 
       @Test
       fun `should throw a 401 status when a student does not have permissions to update teacher`() {
-          val cookie = cookiesStudent()
-          var teacher = teacherService.save(aTeacherDTO().withEmail("pruebaa@gmail.com").build())
+          val teacher = teacherService.save(aTeacherDTO().withEmail("pruebaa@gmail.com").build())
 
           teacher.setFirstName("Jose")
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(teacher))
-                  .cookie(cookie)
+                  .header("Authorization", headerStudent())
                   .accept("application/json")
           ).andExpect(status().isUnauthorized)
       }
 
       @Test
       fun `should throw a 401 status when a teacher does not have permissions to update teacher except yourself`() {
-          val cookie = cookiesTeacher()
-          var teacher = teacherService.save(aTeacherDTO().withEmail("newTeacher@gmail.com").build())
+          val teacher = teacherService.save(aTeacherDTO().withEmail("newTeacher@gmail.com").build())
 
           teacher.setFirstName("Jose")
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(teacher))
-                  .cookie(cookie)
+                  .header("Authorization", headerTeacher())
                   .accept("application/json")
           ).andExpect(status().isUnauthorized)
       }
 
       @Test
       fun `should throw a 200 status when a admin does have permissions to update teachers`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
 
           teacher.setFirstName("Pepe")
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(teacher))
-                  .cookie(cookie)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isOk)
       }
 
       @Test
       fun `should throw a 400 status when admin update a teacher with id null`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -444,15 +405,15 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${teacher.getLastName()}\"\n" +
                               "  \"password\": \"${teacher.getPassword()}\"\n" +
                               "}"
-                  ).cookie(cookie)
+                  )
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when admin update a teacher with id empty`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -464,15 +425,15 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${teacher.getLastName()}\"\n" +
                               "  \"password\": \"${teacher.getPassword()}\"\n" +
                               "}"
-                  ).cookie(cookie)
+                  )
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when admin update a teacher with first name null`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -484,15 +445,15 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${teacher.getLastName()}\"\n" +
                               "  \"password\": \"${teacher.getPassword()}\"\n" +
                               "}"
-                  ).cookie(cookie)
+                  )
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when admin update a teacher with first name empty`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -504,15 +465,15 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${teacher.getLastName()}\"\n" +
                               "  \"password\": \"${teacher.getPassword()}\"\n" +
                               "}"
-                  ).cookie(cookie)
+                  )
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when admin update a teacher with first name with number`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -524,15 +485,15 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${teacher.getLastName()}\"\n" +
                               "  \"password\": \"${teacher.getPassword()}\"\n" +
                               "}"
-                  ).cookie(cookie)
+                  )
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
-      fun `should throw a 400 status when admin update a teacher with first name with special character `() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+      fun `should throw a 400 status when admin update a teacher with first name with special character`() {
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -544,16 +505,15 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${teacher.getLastName()}\"\n" +
                               "  \"password\": \"${teacher.getPassword()}\"\n" +
                               "}"
-                  ).cookie(cookie)
+                  )
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
-
       @Test
       fun `should throw a 400 status when admin update a teacher with last name null`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -565,15 +525,15 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${null}\"\n" +
                               "  \"password\": \"${teacher.getPassword()}\"\n" +
                               "}"
-                  ).cookie(cookie)
+                  )
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when admin update a teacher with last name empty`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -585,15 +545,15 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${""}\"\n" +
                               "  \"password\": \"${teacher.getPassword()}\"\n" +
                               "}"
-                  ).cookie(cookie)
+                  )
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when admin update a teacher with last name with number`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -605,15 +565,15 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${"P3rez"}\"\n" +
                               "  \"password\": \"${teacher.getPassword()}\"\n" +
                               "}"
-                  ).cookie(cookie)
+                  )
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when admin update a teacher with last name with special character `() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/students")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -625,15 +585,15 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${"#"}\"\n" +
                               "  \"password\": \"${teacher.getPassword()}\"\n" +
                               "}"
-                  ).cookie(cookie)
+                  )
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when admin update a teacher with password null`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -645,15 +605,15 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${teacher.getLastName()}\"\n" +
                               "  \"password\": \"${null}\"\n" +
                               "}"
-                  ).cookie(cookie)
+                  )
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when admin update a teacher with password empty`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -665,15 +625,15 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${teacher.getLastName()}\"\n" +
                               "  \"password\": \"${""}\"\n" +
                               "}"
-                  ).cookie(cookie)
+                  )
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when you update a student with mail null`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
 
           mockMvc.perform(
               MockMvcRequestBuilders.put("/students")
@@ -687,15 +647,14 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${teacher.getLastName()}\"\n" +
                               "}"
                   )
-                  .cookie(cookie)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when you update a student with mail empty`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
 
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
@@ -709,15 +668,14 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${teacher.getLastName()}\"\n" +
                               "}"
                   )
-                  .cookie(cookie)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when you update a student with an invalid email`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -730,16 +688,15 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${teacher.getLastName()}\"\n" +
                               "}"
                   )
-                  .cookie(cookie)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 400 status when admin update a teacher with already registered email`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
-          var teacher2 = teacherService.save(aTeacherDTO().withEmail("hola@gmail.com").build())
+          val teacher = teacherService.save(aTeacherDTO().build())
+          val teacher2 = teacherService.save(aTeacherDTO().withEmail("hola@gmail.com").build())
 
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
@@ -753,15 +710,14 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${teacher2.getLastName()}\"\n" +
                               "}"
                   )
-                  .cookie(cookie)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 404 status when admin update a teacher if not exists`() {
-          val cookie = cookiesAdmin()
-          var teacher = teacherService.save(aTeacherDTO().build())
+          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
@@ -774,7 +730,7 @@ class TeacherControllerTest {
                               "  \"lastName\": \"${teacher.getLastName()}\"\n" +
                               "}"
                   )
-                  .cookie(cookie)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isNotFound)
       }
@@ -789,90 +745,74 @@ class TeacherControllerTest {
 
       @Test
       fun `should throw a 401 status when a student does not have permissions to delete teachers`() {
-          val cookie = cookiesStudent()
           val teacher = teacherService.save(aTeacherDTO().withEmail("germanF@gmail.com").build())
           mockMvc.perform(
               MockMvcRequestBuilders.delete("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", teacher.getId().toString()).cookie(cookie)
-          )
-              .andExpect(status().isUnauthorized)
+                  .param("id", teacher.getId().toString())
+                  .header("Authorization", headerStudent())
+          ).andExpect(status().isUnauthorized)
       }
 
       @Test
       fun `should throw a 401 status when a teacher does not have permissions to delete teachers`() {
-          val cookie = cookiesTeacher()
           val teacher = teacherService.save(aTeacherDTO().withEmail("germanF@gmail.com").build())
           mockMvc.perform(
               MockMvcRequestBuilders.delete("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", teacher.getId().toString()).cookie(cookie)
-          )
-              .andExpect(status().isUnauthorized)
+                  .param("id", teacher.getId().toString())
+                  .header("Authorization", headerTeacher())
+          ).andExpect(status().isUnauthorized)
       }
 
       @Test
       fun `should throw a 200 status when a admin does have permissions to delete teachers`() {
-          val cookie = cookiesAdmin()
           val teacher = teacherService.save(aTeacherDTO().withEmail("germanF@gmail.com").build())
           mockMvc.perform(
               MockMvcRequestBuilders.delete("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", teacher.getId().toString()).cookie(cookie)
-          )
-              .andExpect(status().isOk)
+                  .param("id", teacher.getId().toString())
+                  .header("Authorization", headerAdmin())
+          ).andExpect(status().isOk)
       }
 
       @Test
       fun `should throw a 400 status when admin deleting a teacher with id null`() {
-          val cookie = cookiesAdmin()
-
           mockMvc.perform(
               MockMvcRequestBuilders.delete("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", null).cookie(cookie)
-          )
-              .andExpect(status().isBadRequest)
+                  .param("id", null)
+                  .header("Authorization", headerAdmin())
+          ).andExpect(status().isBadRequest)
       }
 
       @Test
       fun `should throw a 404 status when admin deleting a non-existent teacher`() {
-          val cookie = cookiesAdmin()
-
           mockMvc.perform(
               MockMvcRequestBuilders.delete("/teachers").accept(MediaType.APPLICATION_JSON)
-                  .param("id", "-1").cookie(cookie)
-          )
-              .andExpect(status().isNotFound)
+                  .param("id", "-1")
+                  .header("Authorization", headerAdmin())
+          ).andExpect(status().isNotFound)
       }
 
       @Test
       fun `should throw a 200 status when student recover an empty list of teachers when recover all and there is no persistence to student`() {
-          val cookie = cookiesStudent()
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers/getAll").accept(MediaType.APPLICATION_JSON)
-
-                  .cookie(cookie)
-          )
-              .andExpect(status().isOk)
+                  .header("Authorization", headerStudent())
+          ).andExpect(status().isOk)
       }
 
       @Test
       fun `should throw a 200 status when teacher recover an empty list of teachers when recover all and there is no persistence to student`() {
-          val cookie = cookiesTeacher()
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers/getAll").accept(MediaType.APPLICATION_JSON)
-
-                  .cookie(cookie)
-          )
-              .andExpect(status().isOk)
+                  .header("Authorization", headerTeacher())
+          ).andExpect(status().isOk)
       }
 
       @Test
       fun `should throw a 200 status when admin recover an empty list of teachers when recover all and there is no persistence to student`() {
-          val cookie = cookiesAdmin()
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers/getAll").accept(MediaType.APPLICATION_JSON)
-
-                  .cookie(cookie)
-          )
-              .andExpect(status().isOk)
+                  .header("Authorization", headerAdmin())
+          ).andExpect(status().isOk)
       }
 
       @Test
@@ -894,33 +834,29 @@ class TeacherControllerTest {
 
       @Test
       fun `should throw a 401 status when student does not have permissions to add a comment to a repository`() {
-          val cookie = cookiesStudent()
-
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers/addComment")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aCommentDTO().build()))
-                  .cookie(cookie)
+                  .header("Authorization", headerStudent())
                   .accept("application/json")
           ).andExpect(status().isUnauthorized)
       }
 
       @Test
       fun `should throw a 401 status when teacher does not have permissions to add a comment to a repository`() {
-          val cookie = cookiesTeacher()
-
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers/addComment")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aCommentDTO().build()))
-                  .cookie(cookie)
+                  .header("Authorization", headerTeacher())
                   .accept("application/json")
           ).andExpect(status().isUnauthorized)
       }
 
       @Test
       fun `should throw a 200 status when teacher does have permissions to add a comment to a repository`() {
-          val cookie = cookiesTeacher()
+          val header = headerTeacher()
           matterService.save(aMatter().build())
           val teacher = teacherService.findByEmail("german@gmail.com")
           val commission = commissionService.save(aCommission().build())
@@ -938,14 +874,13 @@ class TeacherControllerTest {
               MockMvcRequestBuilders.post("/teachers/addComment")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aCommentDTO().withId(repository.id).build()))
-                  .cookie(cookie)
+                  .header("Authorization", header)
                   .accept("application/json")
           ).andExpect(status().isOk)
       }
 
       @Test
       fun `should throw a 200 status when admin does have permissions to add a comment to a repository`() {
-          val cookie = cookiesAdmin()
           val project = projectService.save(aProject().build())
           val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
           projectService.addRepository(project.getId()!!, repository.id)
@@ -954,12 +889,13 @@ class TeacherControllerTest {
               MockMvcRequestBuilders.post("/teachers/addComment")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aCommentDTO().withId(repository.id).build()))
-                  .cookie(cookie)
+                  .header("Authorization", headerAdmin())
                   .accept("application/json")
           ).andExpect(status().isOk)
       }
 
-      private fun cookiesTeacher(): Cookie? {
+
+      private fun headerTeacher(): String {
           teacherService.save(aTeacherDTO().build())
           val login = aLoginDTO().build()
           val response = mockMvc.perform(
@@ -969,10 +905,11 @@ class TeacherControllerTest {
                   .accept("application/json")
           ).andExpect(status().isOk)
 
-          return response.andReturn().response.cookies[0]
+          val stringToken = response.andReturn().response.contentAsString
+          return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
       }
 
-      private fun cookiesStudent(): Cookie? {
+      private fun headerStudent(): String {
           studentService.save(aStudentDTO().build())
           val login = aLoginDTO().build()
           val response = mockMvc.perform(
@@ -982,10 +919,11 @@ class TeacherControllerTest {
                   .accept("application/json")
           ).andExpect(status().isOk)
 
-          return response.andReturn().response.cookies[0]
+          val stringToken = response.andReturn().response.contentAsString
+          return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
       }
 
-      private fun cookiesAdmin(): Cookie? {
+      private fun headerAdmin(): String {
           val admin = adminService.save(aAdminDTO().build())
           val login = aLoginDTO().withEmail(admin.getEmail()).build()
           val response = mockMvc.perform(
@@ -995,6 +933,7 @@ class TeacherControllerTest {
                   .accept("application/json")
           ).andExpect(status().isOk)
 
-          return response.andReturn().response.cookies[0]
+          val stringToken = response.andReturn().response.contentAsString
+          return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
       }
 }

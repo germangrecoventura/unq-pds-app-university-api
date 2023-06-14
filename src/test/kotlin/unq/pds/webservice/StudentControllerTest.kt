@@ -16,12 +16,12 @@ import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
 import unq.pds.model.builder.BuilderStudent.Companion.aStudent
 import unq.pds.services.AdminService
+import unq.pds.services.StudentService
+import unq.pds.services.TeacherService
 import unq.pds.services.builder.BuilderAdminDTO.Companion.aAdminDTO
 import unq.pds.services.builder.BuilderLoginDTO.Companion.aLoginDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
-import unq.pds.services.impl.StudentServiceImpl
-import unq.pds.services.impl.TeacherServiceImpl
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
@@ -33,10 +33,10 @@ class StudentControllerTest {
     lateinit var context: WebApplicationContext
 
     @Autowired
-    lateinit var studentService: StudentServiceImpl
+    lateinit var studentService: StudentService
 
     @Autowired
-    lateinit var teacherService: TeacherServiceImpl
+    lateinit var teacherService: TeacherService
 
     @Autowired
     lateinit var adminService: AdminService
