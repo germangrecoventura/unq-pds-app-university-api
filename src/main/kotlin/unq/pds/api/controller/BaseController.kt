@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.validation.FieldError
 import org.springframework.validation.ObjectError
@@ -130,5 +131,11 @@ class BaseController {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     fun handleNoSuchElementException(ex: NoSuchElementException): ResponseEntity<MessageDTO> {
         return ResponseEntity(MessageDTO(ex.message!!), HttpStatus.NOT_FOUND)
+    }
+
+    @ExceptionHandler(BadCredentialsException::class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    fun handleNoSuchElementException(ex: BadCredentialsException): ResponseEntity<MessageDTO> {
+        return ResponseEntity(MessageDTO(ex.message!!), HttpStatus.UNAUTHORIZED)
     }
 }
