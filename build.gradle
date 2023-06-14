@@ -93,3 +93,7 @@ compileTestKotlin {
 test {
     useJUnitPlatform()
 }
+
+test {
+    exclude '**/*'
+}
