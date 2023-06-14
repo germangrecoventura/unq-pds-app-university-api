@@ -140,11 +140,12 @@ class GroupServiceTest {
 
     @Test
     fun `should remove a member from a group when it was previously added and both exist`() {
-        val student = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
-        val group = groupService.save(aGroupDTO().withMembers(listOf("test@gmail.com")).build())
-        Assertions.assertEquals(1, group.members.size)
-        val groupWithoutMembers = groupService.removeMember(group.getId()!!, student.getId()!!)
-        Assertions.assertEquals(0, groupWithoutMembers.members.size)
+        val student1 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        studentService.save(aStudentDTO().withEmail("german@gmail.com").build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf("test@gmail.com","german@gmail.com")).build())
+        Assertions.assertEquals(2, group.members.size)
+        val groupWithoutMembers = groupService.removeMember(group.getId()!!, student1.getId()!!)
+        Assertions.assertEquals(1, groupWithoutMembers.members.size)
     }
 
     @Test

@@ -70,6 +70,9 @@ class GroupController(private val groupService: GroupService, private val commis
     )
     fun createGroup(@CookieValue("jwt") jwt: String?, @RequestBody @Valid group: GroupDTO): ResponseEntity<Any> {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if (isStudent(body) && !group.members!!.contains(body.issuer))
+            return ResponseEntity(MessageDTO("The group to be created must have you as a member"), HttpStatus.BAD_REQUEST)
         return ResponseEntity(groupService.save(group), HttpStatus.OK)
     }
 

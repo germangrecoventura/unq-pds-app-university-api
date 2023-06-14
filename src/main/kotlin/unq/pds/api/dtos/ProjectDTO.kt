@@ -19,5 +19,8 @@ class ProjectDTO {
     @Schema(example = "")
     var tokenGithub: String? = null
 
+    @Schema(example = "1")
+    var groupId: Long? = null
+
     fun fromDTOToModel() = Project(name!!, ownerGithub, tokenGithub)
 }

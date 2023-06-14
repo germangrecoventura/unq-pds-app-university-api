@@ -18,6 +18,7 @@ import unq.pds.model.Commit
 import unq.pds.model.Issue
 import unq.pds.model.PullRequest
 import unq.pds.model.Repository
+import unq.pds.services.ProjectService
 import unq.pds.services.RepositoryService
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
@@ -25,8 +26,12 @@ import javax.validation.constraints.NotBlank
 @RestController
 @CrossOrigin
 @RequestMapping("repositories")
-class RepositoryController(private val repositoryService: RepositoryService) {
+class RepositoryController(
+    private val repositoryService: RepositoryService,
+    private val projectService: ProjectService
+) {
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
+    private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
 
     @PostMapping
     @Operation(
@@ -85,6 +90,15 @@ class RepositoryController(private val repositoryService: RepositoryService) {
         @RequestBody @Valid repository: RepositoryDTO
     ): ResponseEntity<Any> {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
+                body.issuer!!,
+                repository.projectId!!
+            )) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
+                body.issuer!!,
+                repository.projectId!!
+            ))
+        ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.save(repository), HttpStatus.OK)
     }
 
@@ -202,6 +216,17 @@ class RepositoryController(private val repositoryService: RepositoryService) {
         @RequestBody @Valid repository: RepositoryDTO
     ): ResponseEntity<Any> {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        if (!projectService.isFoundRepository(repository.projectId!!, repository.name!!))
+            return ResponseEntity(MessageDTO("Not found the repository"), HttpStatus.NOT_FOUND)
+        if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
+                body.issuer!!,
+                repository.projectId!!
+            )) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
+                body.issuer!!,
+                repository.projectId!!
+            ))
+        ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.update(repository), HttpStatus.OK)
     }
 
@@ -263,7 +288,8 @@ class RepositoryController(private val repositoryService: RepositoryService) {
         if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
         if (isNotAdmin(body)) return ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"), HttpStatus.UNAUTHORIZED)
+            MessageDTO("You do not have permissions to access this resource"), HttpStatus.UNAUTHORIZED
+        )
         repositoryService.deleteById(id)
         return ResponseEntity(MessageDTO("Repository has been deleted successfully"), HttpStatus.OK)
     }
@@ -684,5 +710,13 @@ class RepositoryController(private val repositoryService: RepositoryService) {
 
     private fun isNotAdmin(body: Claims): Boolean {
         return body["role"] != "ADMIN"
+    }
+
+    private fun isStudent(body: Claims): Boolean {
+        return body["role"] == "STUDENT"
+    }
+
+    private fun isTeacher(body: Claims): Boolean {
+        return body["role"] == "TEACHER"
     }
 }

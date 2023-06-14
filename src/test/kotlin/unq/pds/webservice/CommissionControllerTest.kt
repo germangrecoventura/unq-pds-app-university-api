@@ -869,8 +869,9 @@ class CommissionControllerTest {
         val cookie = cookiesTeacher()
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        studentService.save(aStudentDTO().build())
-        val group = groupService.save(aGroupDTO().build())
+        val student = studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf(student.getEmail()!!)).build())
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
         val teacher = teacherService.findByEmail("docente@gmail.com")
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
         mockMvc.perform(
@@ -890,8 +891,9 @@ class CommissionControllerTest {
         val cookie = cookiesAdmin()
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        studentService.save(aStudentDTO().build())
-        val group = groupService.save(aGroupDTO().build())
+        val student = studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf(student.getEmail()!!)).build())
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
         mockMvc.perform(
             MockMvcRequestBuilders.put(
                 "/commissions/addGroup/{commissionId}/{groupId}",
@@ -902,6 +904,25 @@ class CommissionControllerTest {
                 .cookie(cookie)
                 .accept("application/json")
         ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `should throw a 400 status when trying to add a group to a commission and the members of the group are not students of the commission`() {
+        val cookie = cookiesAdmin()
+        matterService.save(aMatter().build())
+        val commission = commissionService.save(aCommission().build())
+        val student = studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf(student.getEmail()!!)).build())
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/commissions/addGroup/{commissionId}/{groupId}",
+                commission.getId(),
+                group.getId()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(cookie)
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -943,8 +964,9 @@ class CommissionControllerTest {
         val cookie = cookiesAdmin()
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        studentService.save(aStudentDTO().build())
-        val group = groupService.save(aGroupDTO().build())
+        val student = studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf(student.getEmail()!!)).build())
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         mockMvc.perform(
             MockMvcRequestBuilders.put(
@@ -975,7 +997,9 @@ class CommissionControllerTest {
         val cookie = cookiesStudent()
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        val group = groupService.save(aGroupDTO().build())
+        val student = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf(student.getEmail()!!)).build())
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         mockMvc.perform(
             MockMvcRequestBuilders.put(
@@ -994,8 +1018,9 @@ class CommissionControllerTest {
         val cookie = cookiesTeacher()
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        studentService.save(aStudentDTO().build())
-        val group = groupService.save(aGroupDTO().build())
+        val student = studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf(student.getEmail()!!)).build())
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         mockMvc.perform(
             MockMvcRequestBuilders.put(
@@ -1014,10 +1039,11 @@ class CommissionControllerTest {
         val cookie = cookiesTeacher()
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        studentService.save(aStudentDTO().build())
-        val group = groupService.save(aGroupDTO().build())
+        val student = studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf(student.getEmail()!!)).build())
         val teacher = teacherService.findByEmail("docente@gmail.com")
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         mockMvc.perform(
             MockMvcRequestBuilders.put(
@@ -1036,8 +1062,11 @@ class CommissionControllerTest {
         val cookie = cookiesAdmin()
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
-        studentService.save(aStudentDTO().build())
-        val group = groupService.save(aGroupDTO().build())
+        val student = studentService.save(aStudentDTO().build())
+        val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
+        val group = groupService.save(aGroupDTO().withMembers(listOf(student.getEmail()!!,student2.getEmail()!!)).build())
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
+        commissionService.addStudent(commission.getId()!!, student2.getId()!!)
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
         mockMvc.perform(
             MockMvcRequestBuilders.put(
