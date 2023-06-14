@@ -481,7 +481,8 @@ class MatterControllerTest {
         val matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", matter.getId().toString()).header("Authorization", "")
+                .param("id", matter.getId().toString())
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -503,7 +504,8 @@ class MatterControllerTest {
         val matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", matter.getId().toString()).header("Authorization", "")
+                .param("id", matter.getId().toString())
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -553,6 +555,7 @@ class MatterControllerTest {
                 .content(mapper.writeValueAsString(login))
                 .accept("application/json")
         ).andExpect(status().isOk)
+
         val stringToken = response.andReturn().response.contentAsString
         return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
     }
