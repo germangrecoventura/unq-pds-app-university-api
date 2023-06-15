@@ -6,6 +6,7 @@ import unq.pds.model.builder.BuilderStudent.Companion.aStudent
 import unq.pds.model.builder.BuilderTeacher.Companion.aTeacher
 import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
 import unq.pds.model.builder.GroupBuilder.Companion.aGroup
+import unq.pds.model.exceptions.StudentsOfTheGroupNotEnrolledInTheCommissionException
 import javax.management.InvalidAttributeValueException
 
 class CommissionTest {
@@ -108,6 +109,18 @@ class CommissionTest {
     }
 
     @Test
+    fun `should add a group with a member when the student has already been added to the commission and the group was not previously added`() {
+        val commission = aCommission().build()
+        val student = aStudent().build()
+        val group = aGroup().build()
+        commission.addStudent(student)
+        group.addMember(student)
+        Assertions.assertEquals(0, commission.groupsStudents.size)
+        commission.addGroup(group)
+        Assertions.assertEquals(1, commission.groupsStudents.size)
+    }
+
+    @Test
     fun `should throw an exception when trying to add the same group to the commission twice`() {
         val commission = aCommission().build()
         commission.addGroup(aGroup().build())
@@ -115,6 +128,18 @@ class CommissionTest {
             commission.addGroup(aGroup().build())
         } catch (e: CloneNotSupportedException) {
             Assertions.assertEquals("The group is already in the commission", e.message)
+        }
+    }
+
+    @Test
+    fun `should throw an exception when trying to add a group to a commission and the members of the group are not students of the commission`() {
+        val commission = aCommission().build()
+        val group = aGroup().build()
+        group.addMember(aStudent().build())
+        try {
+            commission.addGroup(group)
+        } catch (e: StudentsOfTheGroupNotEnrolledInTheCommissionException) {
+            Assertions.assertEquals("There are students who are not enrolled in the commission", e.message)
         }
     }
 

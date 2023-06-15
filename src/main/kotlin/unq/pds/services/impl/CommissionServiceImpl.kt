@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.model.Commission
-import unq.pds.model.exceptions.StudentsOfTheGroupNotEnrolledInTheCommissionException
 import unq.pds.persistence.CommissionDAO
 import unq.pds.services.*
 
@@ -73,7 +72,6 @@ open class CommissionServiceImpl : CommissionService {
     override fun addGroup(commissionId: Long, groupId: Long): Commission {
         val commission = this.read(commissionId)
         val group = groupService.read(groupId)
-        if (!commission.students.containsAll(group.members)) return throw StudentsOfTheGroupNotEnrolledInTheCommissionException()
         commission.addGroup(group)
 
         return commissionDAO.save(commission)
