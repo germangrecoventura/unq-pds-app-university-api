@@ -1,7 +1,7 @@
 package unq.pds.services
 
-import org.jasypt.util.text.AES256TextEncryptor
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.AdminCreateRequestDTO
@@ -20,9 +20,8 @@ open class AdminServiceImpl : AdminService {
 
     override fun save(adminCreateRequestDTO: AdminCreateRequestDTO): Admin {
         if (userService.theEmailIsRegistered(adminCreateRequestDTO.email!!)) throw AlreadyRegisteredException("email")
-        val encryptor = AES256TextEncryptor()
-        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
-        val myEncryptedPassword = encryptor.encrypt(adminCreateRequestDTO.password)
+        val encryptor = BCryptPasswordEncoder()
+        val myEncryptedPassword = encryptor.encode(adminCreateRequestDTO.password)
         val admin = Admin(
             adminCreateRequestDTO.email!!,
             myEncryptedPassword

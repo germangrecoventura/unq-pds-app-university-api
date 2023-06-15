@@ -25,7 +25,6 @@ import unq.pds.services.builder.BuilderProjectDTO.Companion.aProjectDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import unq.pds.services.builder.BuilderTeacherDTO.Companion.aTeacherDTO
-import javax.servlet.http.Cookie
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
@@ -71,6 +70,7 @@ class ProjectControllerTest {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
     }
 
+
     @Test
     fun `should throw a 401 status when trying to create a project and is not authenticated`() {
         mockMvc.perform(
@@ -83,32 +83,31 @@ class ProjectControllerTest {
 
     @Test
     fun `should throw a 401 status when a student does not have permissions to create project`() {
-        val cookie = cookiesStudent()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aProjectDTO().withGroupId(-1).build()))
-                .cookie(cookie)
+                .header("Authorization", headerStudent())
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 200 status when a student does have permissions to create project`() {
-        val cookie = cookiesStudent()
+        val header = headerStudent()
         val group = groupService.save(aGroupDTO().build())
         mockMvc.perform(
             MockMvcRequestBuilders.post("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aProjectDTO().withGroupId(group.getId()).build()))
-                .cookie(cookie)
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a teacher does have permissions to create project`() {
-        val cookie = cookiesTeacher()
+        val header = headerTeacher()
         matterService.save(aMatter().build())
         val commission = commissionService.save(aCommission().build())
         val teacher = teacherService.findByEmail("german@gmail.com")
@@ -122,43 +121,40 @@ class ProjectControllerTest {
             MockMvcRequestBuilders.post("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aProjectDTO().withGroupId(group.getId()).build()))
-                .cookie(cookie)
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a admin does have permissions to create project`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aProjectDTO().build()))
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 400 status when the project has a null name`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aProjectDTO().withName(null).build()))
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
     }
 
     @Test
     fun `should throw a 400 status when the project has a empty name`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.post("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aProjectDTO().withName("").build()))
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
     }
@@ -173,49 +169,49 @@ class ProjectControllerTest {
 
     @Test
     fun `should throw a 200 status when a student does have permissions to get project if exist`() {
-        val cookie = cookiesStudent()
         val project = projectService.save(aProject().build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/projects").accept(MediaType.APPLICATION_JSON)
-                .param("id", project.getId().toString()).cookie(cookie)
+                .param("id", project.getId().toString())
+                .header("Authorization", headerStudent())
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a teacher does have permissions to get project if exist`() {
-        val cookie = cookiesTeacher()
         val project = projectService.save(aProject().build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/projects").accept(MediaType.APPLICATION_JSON)
-                .param("id", project.getId().toString()).cookie(cookie)
+                .param("id", project.getId().toString())
+                .header("Authorization", headerTeacher())
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a admin does have permissions to get project if exist`() {
-        val cookie = cookiesAdmin()
         val project = projectService.save(aProject().build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/projects").accept(MediaType.APPLICATION_JSON)
-                .param("id", project.getId().toString()).cookie(cookie)
+                .param("id", project.getId().toString())
+                .header("Authorization", headerAdmin())
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 404 status when a admin does have permissions to get project if not exist`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/projects").accept(MediaType.APPLICATION_JSON)
-                .param("id", "-1").cookie(cookie)
+                .param("id", "-1")
+                .header("Authorization", headerAdmin())
         ).andExpect(MockMvcResultMatchers.status().isNotFound)
     }
 
     @Test
     fun `should throw a 400 status when a admin trying to get project with id null`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/projects").accept(MediaType.APPLICATION_JSON)
-                .param("id", null).cookie(cookie)
+                .param("id", null)
+                .header("Authorization", headerAdmin())
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
     }
 
@@ -231,19 +227,18 @@ class ProjectControllerTest {
 
     @Test
     fun `should throw a 401 status when a teacher does not have permissions to update project`() {
-        val cookie = cookiesTeacher()
         mockMvc.perform(
             MockMvcRequestBuilders.put("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aProjectDTO().withId(-1).build()))
-                .cookie(cookie)
+                .header("Authorization", headerTeacher())
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 200 status when a teacher does have permissions to update project`() {
-        val cookie = cookiesTeacher()
+        val header = headerTeacher()
         matterService.save(aMatter().build())
         val teacher = teacherService.findByEmail("german@gmail.com")
         val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
@@ -260,14 +255,14 @@ class ProjectControllerTest {
             MockMvcRequestBuilders.put("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(project))
-                .cookie(cookie)
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a student does have permissions to update project`() {
-        val cookie = cookiesStudent()
+        val header = headerStudent()
         matterService.save(aMatter().build())
         val student = studentService.findByEmail("german@gmail.com")
         val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
@@ -285,14 +280,14 @@ class ProjectControllerTest {
             MockMvcRequestBuilders.put("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(project))
-                .cookie(cookie)
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a student does have permissions to update a project of a group to which he belongs`() {
-        val cookie = cookiesStudent()
+        val header = headerStudent()
         val project = projectService.save(aProject().build())
         val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         groupService.addProject(group.getId()!!, project.getId()!!)
@@ -302,14 +297,13 @@ class ProjectControllerTest {
             MockMvcRequestBuilders.put("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(project))
-                .cookie(cookie)
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a admin does have permissions to update a project`() {
-        val cookie = cookiesAdmin()
         val project = projectService.save(aProject().build())
 
         project.name = "new name"
@@ -317,20 +311,18 @@ class ProjectControllerTest {
             MockMvcRequestBuilders.put("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(project))
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 404 status when trying to update a project that does not exist`() {
-        val cookie = cookiesAdmin()
-
         mockMvc.perform(
             MockMvcRequestBuilders.put("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aProject().build()))
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isNotFound)
     }
@@ -345,75 +337,72 @@ class ProjectControllerTest {
 
     @Test
     fun `should throw a 401 status when a student does not have permissions to delete project`() {
-        val cookie = cookiesStudent()
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/projects").accept(MediaType.APPLICATION_JSON)
-                .param("id", "1").cookie(cookie)
+                .param("id", "1")
+                .header("Authorization", headerStudent())
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when a teacher does not have permissions to delete project`() {
-        val cookie = cookiesTeacher()
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/projects").accept(MediaType.APPLICATION_JSON)
-                .param("id", "1").cookie(cookie)
+                .param("id", "1")
+                .header("Authorization", headerTeacher())
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 200 status when a admin does have permissions to delete project`() {
-        val cookie = cookiesAdmin()
         val project = projectService.save(aProject().build())
 
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/projects").accept(MediaType.APPLICATION_JSON)
-                .param("id", project.getId().toString()).cookie(cookie)
+                .param("id", project.getId().toString())
+                .header("Authorization", headerAdmin())
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 404 status when a admin does have permissions to delete project if not exist`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/projects").accept(MediaType.APPLICATION_JSON)
-                .param("id", "-1").cookie(cookie)
+                .param("id", "-1")
+                .header("Authorization", headerAdmin())
         ).andExpect(MockMvcResultMatchers.status().isNotFound)
     }
 
     @Test
     fun `should throw a 400 status when a admin trying to delete project with id null`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/projects").accept(MediaType.APPLICATION_JSON)
-                .param("id", null).cookie(cookie)
+                .param("id", null)
+                .header("Authorization", headerAdmin())
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
     }
 
     @Test
     fun `should throw a 200 status when a student does have permissions to get all projects`() {
-        val cookie = cookiesStudent()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/projects/getAll").accept(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", headerStudent())
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a teacher does have permissions to get all projects`() {
-        val cookie = cookiesTeacher()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/projects/getAll").accept(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", headerTeacher())
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a admin does have permissions to get all projects`() {
-        val cookie = cookiesAdmin()
         mockMvc.perform(
             MockMvcRequestBuilders.get("/projects/getAll").accept(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
@@ -439,7 +428,6 @@ class ProjectControllerTest {
 
     @Test
     fun `should throw a 401 status when a teacher does not have permissions to add a repository to a project`() {
-        val cookie = cookiesTeacher()
         val project = projectService.save(aProject().build())
         val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
@@ -449,14 +437,14 @@ class ProjectControllerTest {
                 repository.id.toString()
             )
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", headerTeacher())
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 200 status when a teacher does have permissions to add a repository to a project`() {
-        val cookie = cookiesTeacher()
+        val header = headerTeacher()
         matterService.save(aMatter().build())
         val teacher = teacherService.findByEmail("german@gmail.com")
         val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
@@ -476,14 +464,14 @@ class ProjectControllerTest {
                 repository.id.toString()
             )
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a student does have permissions to add a repository to a project`() {
-        val cookie = cookiesStudent()
+        val header = headerStudent()
         matterService.save(aMatter().build())
         val student = studentService.findByEmail("german@gmail.com")
         val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
@@ -503,14 +491,14 @@ class ProjectControllerTest {
                 repository.id.toString()
             )
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a student does have permissions to add a repository to a project of a group to which he belongs`() {
-        val cookie = cookiesStudent()
+        val header = headerStudent()
         val project = projectService.save(aProject().build())
         val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
         groupService.addProject(group.getId()!!, project.getId()!!)
@@ -523,14 +511,13 @@ class ProjectControllerTest {
                 repository.id.toString()
             )
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 200 status when a admin does have permissions to add a repository to a project`() {
-        val cookie = cookiesAdmin()
         val project = projectService.save(aProject().build())
         studentService.save(aStudentDTO().build())
         val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
@@ -542,14 +529,13 @@ class ProjectControllerTest {
                 repository.id.toString()
             )
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
     }
 
     @Test
     fun `should throw a 404 status when add a non-existent project`() {
-        val cookie = cookiesAdmin()
         studentService.save(aStudentDTO().build())
         val project = projectService.save(aProject().build())
         val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
@@ -561,14 +547,13 @@ class ProjectControllerTest {
                 repository.id.toString()
             )
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isNotFound)
     }
 
     @Test
     fun `should throw a 404 status when add a non-existent repository`() {
-        val cookie = cookiesAdmin()
         val project = projectService.save(aProject().build())
 
         mockMvc.perform(
@@ -578,14 +563,13 @@ class ProjectControllerTest {
                 "-1"
             )
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isNotFound)
     }
 
     @Test
     fun `should throw a 400 status when add a repository to a project and it has already been added`() {
-        val cookie = cookiesAdmin()
         val project = projectService.save(aProject().build())
         studentService.save(aStudentDTO().build())
         val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
@@ -598,12 +582,13 @@ class ProjectControllerTest {
                 repository.id.toString()
             )
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(cookie)
+                .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
     }
 
-    private fun cookiesTeacher(): Cookie? {
+
+    private fun headerTeacher(): String {
         val teacher = teacherService.save(aTeacherDTO().build())
         val login = aLoginDTO().withEmail(teacher.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
@@ -613,10 +598,11 @@ class ProjectControllerTest {
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
 
-        return response.andReturn().response.cookies[0]
+        val stringToken = response.andReturn().response.contentAsString
+        return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
     }
 
-    private fun cookiesStudent(): Cookie? {
+    private fun headerStudent(): String {
         val student = studentService.save(aStudentDTO().build())
         val login = aLoginDTO().withEmail(student.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
@@ -626,10 +612,11 @@ class ProjectControllerTest {
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
 
-        return response.andReturn().response.cookies[0]
+        val stringToken = response.andReturn().response.contentAsString
+        return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
     }
 
-    private fun cookiesAdmin(): Cookie? {
+    private fun headerAdmin(): String {
         val admin = adminService.save(aAdminDTO().build())
         val login = aLoginDTO().withEmail(admin.getEmail()).withPassword("funciona").build()
         val response = mockMvc.perform(
@@ -639,6 +626,7 @@ class ProjectControllerTest {
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
 
-        return response.andReturn().response.cookies[0]
+        val stringToken = response.andReturn().response.contentAsString
+        return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
     }
 }

@@ -1,9 +1,11 @@
 package unq.pds.api.controller
 
-import io.jsonwebtoken.ExpiredJwtException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.validation.FieldError
 import org.springframework.validation.ObjectError
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -17,8 +19,6 @@ import unq.pds.model.exceptions.*
 import java.sql.SQLIntegrityConstraintViolationException
 import java.util.function.Consumer
 import javax.management.InvalidAttributeValueException
-import javax.servlet.http.Cookie
-import javax.servlet.http.HttpServletResponse
 
 @RestControllerAdvice
 class BaseController {
@@ -47,10 +47,22 @@ class BaseController {
         return ResponseEntity.badRequest().body(MessageDTO(ex.message))
     }
 
+    @ExceptionHandler(AuthenticationCredentialsNotFoundException::class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    fun handleException(ex: AuthenticationCredentialsNotFoundException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(MessageDTO(ex.message!!))
+    }
+
     @ExceptionHandler(StudentsOfTheGroupNotEnrolledInTheCommissionException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleStudentsOfTheGroupNotEnrolledInTheCommissionExceptionException(ex: StudentsOfTheGroupNotEnrolledInTheCommissionException): ResponseEntity<MessageDTO> {
         return ResponseEntity.badRequest().body(MessageDTO(ex.message))
+    }
+
+    @ExceptionHandler(UsernameNotFoundException::class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    fun userNotFound(ex: UsernameNotFoundException): ResponseEntity<MessageDTO> {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MessageDTO(ex.message!!))
     }
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
@@ -121,13 +133,9 @@ class BaseController {
         return ResponseEntity(MessageDTO(ex.message!!), HttpStatus.NOT_FOUND)
     }
 
-    @ExceptionHandler(ExpiredJwtException::class)
+    @ExceptionHandler(BadCredentialsException::class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    fun handleExpiredJwtException(response: HttpServletResponse): ResponseEntity<MessageDTO> {
-        val cookie = Cookie("jwt", null)
-        cookie.isHttpOnly = true
-        cookie.maxAge = 0
-        response.addCookie(cookie)
-        return ResponseEntity(MessageDTO("Your token expired"), HttpStatus.UNAUTHORIZED)
+    fun handleNoSuchElementException(ex: BadCredentialsException): ResponseEntity<MessageDTO> {
+        return ResponseEntity(MessageDTO(ex.message!!), HttpStatus.UNAUTHORIZED)
     }
 }

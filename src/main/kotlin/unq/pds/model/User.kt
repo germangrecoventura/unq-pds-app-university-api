@@ -2,7 +2,7 @@ package unq.pds.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
-import org.jasypt.util.text.AES256TextEncryptor
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import unq.pds.api.Validator
 import javax.management.InvalidAttributeValueException
 import javax.persistence.*
@@ -14,7 +14,7 @@ abstract class User(
         nullable = false,
         unique = true
     ) @JsonProperty @field:Schema(example = "german@gmail.com") private var email: String,
-    @JsonProperty @field:Schema(example = "QVNm6Z3nmXAqTzQUDWrGgTGLoyVKPw+z+RZ4784R4MZi5E2OpjqR01ChmR2qTmgo") private var password: String
+    @JsonProperty @field:Schema(example = "$" + "2a" + "$" + "10" + "$" + "lfY4d1BFwiKH3kV1LL1cXuVmiZdWi6zQLlx6M9" + "/" + "6t2aHo9FP2Ky0i") private var password: String
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -59,16 +59,8 @@ abstract class User(
 
     fun setPassword(password: String) {
         validatePassword(password)
-        val encryptor = AES256TextEncryptor()
-        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
-        val myEncryptedPassword = encryptor.encrypt(password)
+        val encryptor = BCryptPasswordEncoder()
+        val myEncryptedPassword = encryptor.encode(password)
         this.password = myEncryptedPassword
-    }
-
-    fun comparePassword(password: String): Boolean {
-        val encryptor = AES256TextEncryptor()
-        encryptor.setPassword(System.getenv("ENCRYPT_PASSWORD"))
-        val myEncryptedPassword = encryptor.decrypt(getPassword())
-        return password == myEncryptedPassword
     }
 }
