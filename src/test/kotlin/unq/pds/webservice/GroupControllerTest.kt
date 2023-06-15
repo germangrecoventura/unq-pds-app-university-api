@@ -135,15 +135,15 @@ class GroupControllerTest {
 
     @Test
     fun `should throw a 401 status when trying to create a group and is not authenticated`() {
-        studentService.save(aStudentDTO().withEmail("prueba@gmail.com").build())
         mockMvc.perform(
             MockMvcRequestBuilders.post("/groups")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     mapper.writeValueAsString(
-                        aGroupDTO().withMembers(listOf("prueba@gmail.com")).build()
+                        aGroupDTO().build()
                     )
                 )
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -211,6 +211,7 @@ class GroupControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/groups").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -256,6 +257,7 @@ class GroupControllerTest {
             MockMvcRequestBuilders.put("/groups")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(GroupUpdateDTO()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -357,6 +359,7 @@ class GroupControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/groups").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -449,6 +452,7 @@ class GroupControllerTest {
     fun `should throw a 401 status when trying to get all groups and is not authenticated`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/groups/getAll").accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -460,6 +464,7 @@ class GroupControllerTest {
                 1, 1
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -597,6 +602,7 @@ class GroupControllerTest {
                 1, 1
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -751,6 +757,7 @@ class GroupControllerTest {
                 1, 1
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -888,6 +895,7 @@ class GroupControllerTest {
                         aGroupDTO().build()
                     )
                 )
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -897,6 +905,7 @@ class GroupControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/groups").accept(MediaType.APPLICATION_JSON)
                 .param("id", "2")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -908,6 +917,7 @@ class GroupControllerTest {
             MockMvcRequestBuilders.put("/groups")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(group))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -917,6 +927,7 @@ class GroupControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/groups").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -929,6 +940,7 @@ class GroupControllerTest {
                 1
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -942,29 +954,21 @@ class GroupControllerTest {
                 -1
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when add project to group with header empty`() {
-        headerTeacher()
-        val project = projectService.save(aProject().build())
-        val teacher = teacherService.findByEmail("docente@gmail.com")
-        val student = studentService.save(aStudentDTO().build())
-        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
-        matterService.save(aMatter().build())
-        val commission = commissionService.save(aCommission().build())
-        commissionService.addStudent(commission.getId()!!, student.getId()!!)
-        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
-        commissionService.addGroup(commission.getId()!!, group.getId()!!)
         mockMvc.perform(
             MockMvcRequestBuilders.put(
                 "/groups/addProject/{groupId}/{projectId}",
-                group.getId(),
-                project.getId()
+                "1",
+                "1"
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }

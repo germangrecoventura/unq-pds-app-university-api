@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
+import unq.pds.model.builder.BuilderTeacher.Companion.aTeacher
 import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
@@ -76,6 +77,7 @@ class TeacherControllerTest {
               MockMvcRequestBuilders.post("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aTeacherDTO().withEmail("prueba@gmail.com").build()))
+                  .header("Authorization", "")
                   .accept("application/json")
           ).andExpect(status().isUnauthorized)
       }
@@ -281,6 +283,7 @@ class TeacherControllerTest {
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers").accept(MediaType.APPLICATION_JSON)
                   .param("id", "1")
+                  .header("Authorization", "")
           ).andExpect(status().isUnauthorized)
       }
 
@@ -340,11 +343,11 @@ class TeacherControllerTest {
 
       @Test
       fun `should throw a 401 status when trying to update a teacher and is not authenticated`() {
-          val teacher = teacherService.save(aTeacherDTO().build())
           mockMvc.perform(
               MockMvcRequestBuilders.put("/teachers")
                   .contentType(MediaType.APPLICATION_JSON)
-                  .content(mapper.writeValueAsString(teacher))
+                  .content(mapper.writeValueAsString(aTeacher().build()))
+                  .header("Authorization", "")
                   .accept("application/json")
           ).andExpect(status().isUnauthorized)
       }
@@ -740,6 +743,7 @@ class TeacherControllerTest {
           mockMvc.perform(
               MockMvcRequestBuilders.delete("/teachers").accept(MediaType.APPLICATION_JSON)
                   .param("id", "1")
+                  .header("Authorization", "")
           ).andExpect(status().isUnauthorized)
       }
 
@@ -819,6 +823,7 @@ class TeacherControllerTest {
       fun `should throw a 401 status when trying to recover all teachers and is not authenticated`() {
           mockMvc.perform(
               MockMvcRequestBuilders.get("/teachers/getAll").accept(MediaType.APPLICATION_JSON)
+                  .header("Authorization", "")
           ).andExpect(status().isUnauthorized)
       }
 
@@ -828,6 +833,7 @@ class TeacherControllerTest {
               MockMvcRequestBuilders.post("/teachers/addComment")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(mapper.writeValueAsString(aCommentDTO().build()))
+                  .header("Authorization", "")
                   .accept("application/json")
           ).andExpect(status().isUnauthorized)
       }

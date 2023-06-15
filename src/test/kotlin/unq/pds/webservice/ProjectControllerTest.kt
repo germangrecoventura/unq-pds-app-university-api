@@ -77,6 +77,7 @@ class ProjectControllerTest {
             MockMvcRequestBuilders.post("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aProjectDTO().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -164,6 +165,7 @@ class ProjectControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/projects").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -221,6 +223,7 @@ class ProjectControllerTest {
             MockMvcRequestBuilders.put("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aProject().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -332,6 +335,7 @@ class ProjectControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/projects").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -410,6 +414,7 @@ class ProjectControllerTest {
     fun `should throw a 401 status when trying to get all projects and is not authenticated`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/projects/getAll").accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -422,6 +427,7 @@ class ProjectControllerTest {
                 "1"
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }

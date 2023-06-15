@@ -59,6 +59,7 @@ class StudentControllerTest {
             MockMvcRequestBuilders.post("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudentDTO().withEmail("prueba@gmail.com").build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -256,6 +257,7 @@ class StudentControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/students").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -349,6 +351,7 @@ class StudentControllerTest {
             MockMvcRequestBuilders.put("/students")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aStudent().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -655,6 +658,7 @@ class StudentControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/students").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -735,6 +739,7 @@ class StudentControllerTest {
     fun `should throw a 401 status when trying to get all students and is not authenticated`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/students/getAll").accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
