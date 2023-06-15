@@ -209,7 +209,7 @@ class DeployInstanceController(
         val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
         return if (isTeacher(body) || (isStudent(body) &&
                     !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
-                        body.issuer, deployInstance.id!!)))
+                        body.subject, deployInstance.id!!)))
             ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(deployInstanceService.update(deployInstance), HttpStatus.OK)
     }
@@ -275,7 +275,7 @@ class DeployInstanceController(
         val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
         if (isTeacher(body) || (isStudent(body) &&
                     !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
-                        body.issuer, id)))
+                        body.subject, id)))
             return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         deployInstanceService.delete(id)
         return ResponseEntity(MessageDTO("Deploy instance has been deleted successfully"), HttpStatus.OK)

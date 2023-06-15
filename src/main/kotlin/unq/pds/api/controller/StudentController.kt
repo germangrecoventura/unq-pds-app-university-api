@@ -397,7 +397,7 @@ class StudentController(
         val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
         return if (isTeacher(body) ||
             (isStudent(body) && !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
-                body.issuer!!,
+                body.subject,
                 comment.deployInstanceId!!
             ))
         ) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
