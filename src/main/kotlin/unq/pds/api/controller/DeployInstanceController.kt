@@ -9,20 +9,26 @@ import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.DeployInstanceDTO
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.DeployInstance
+import unq.pds.security.JwtUtilService
 import unq.pds.services.DeployInstanceService
 import unq.pds.services.GroupService
+import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 
 @RestController
 @CrossOrigin
 @RequestMapping("deployInstances")
+@SecurityRequirement(name = "bearerAuth")
 class DeployInstanceController(
     private val deployInstanceService: DeployInstanceService,
     private val groupService: GroupService
@@ -30,6 +36,7 @@ class DeployInstanceController(
 
     private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
     private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
+    private val passwordEncrypt = JwtUtilService.JWT_SECRET_KEY
 
     @PostMapping
     @Operation(
@@ -72,9 +79,12 @@ class DeployInstanceController(
                 ]
             )]
     )
-    fun createDeployInstance(@CookieValue("jwt") jwt: String?, @RequestBody @Valid deployInstance: DeployInstanceDTO): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+    fun createDeployInstance(@RequestBody @Valid deployInstance: DeployInstanceDTO,
+                             request: HttpServletRequest): ResponseEntity<Any> {
+        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        header = header.substring(7, header.length)
+        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
         return if (isTeacher(body) || (isStudent(body) &&
                     !groupService.thereIsAGroupWithThisProjectAndThisMember(
                         deployInstance.projectId!!, body["id"].toString().toLong())))
@@ -134,8 +144,9 @@ class DeployInstanceController(
                 )]
             )]
     )
-    fun getDeployInstance(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+    fun getDeployInstance(@NotBlank @RequestParam id: Long, request: HttpServletRequest): ResponseEntity<Any> {
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(deployInstanceService.read(id), HttpStatus.OK)
     }
 
@@ -191,9 +202,11 @@ class DeployInstanceController(
                 )]
             )]
     )
-    fun updateDeployInstance(@CookieValue("jwt") jwt: String?, @RequestBody deployInstance: DeployInstanceDTO): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+    fun updateDeployInstance(@RequestBody deployInstance: DeployInstanceDTO, request: HttpServletRequest): ResponseEntity<Any> {
+        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        header = header.substring(7, header.length)
+        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
         return if (isTeacher(body) || (isStudent(body) &&
                     !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
                         body.issuer, deployInstance.id!!)))
@@ -255,9 +268,11 @@ class DeployInstanceController(
                 )]
             )]
     )
-    fun deleteDeployInstance(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+    fun deleteDeployInstance(@NotBlank @RequestParam id: Long, request: HttpServletRequest): ResponseEntity<Any> {
+        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        header = header.substring(7, header.length)
+        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
         if (isTeacher(body) || (isStudent(body) &&
                     !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
                         body.issuer, id)))
@@ -308,20 +323,25 @@ class DeployInstanceController(
                 ]
             )]
     )
-    fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+    fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(deployInstanceService.readAll(), HttpStatus.OK)
     }
 
     private fun existJWT(jwt: String?): Boolean {
-        return !jwt.isNullOrBlank()
-    }
-
-    private fun isTeacher(body: Claims): Boolean {
-        return body["role"] == "TEACHER"
+        return StringUtils.hasText(jwt) &&
+                jwt!!.startsWith("Bearer ")
+                && !jwt.substring(7, jwt.length).isNullOrEmpty()
     }
 
     private fun isStudent(body: Claims): Boolean {
-        return body["role"] == "STUDENT"
+        val role = body["role"] as List<String>
+        return role.contains("STUDENT")
+    }
+
+    private fun isTeacher(body: Claims): Boolean {
+        val role = body["role"] as List<String>
+        return role.contains("TEACHER")
     }
 }

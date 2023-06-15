@@ -414,12 +414,14 @@ class ProjectController(
             )]
     )
     fun addDeployInstance(
-        @CookieValue("jwt") jwt: String?,
         @NotBlank @PathVariable projectId: Long,
-        @NotBlank @PathVariable deployInstanceId: Long
+        @NotBlank @PathVariable deployInstanceId: Long,
+        request: HttpServletRequest
     ): ResponseEntity<Any> {
-        if (!existJWT(jwt)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
+        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        header = header.substring(7, header.length)
+        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
         if (isTeacher(body) ||
             (isStudent(body) && !groupService.thereIsAGroupWithThisProjectAndThisMember(
                 projectId,
