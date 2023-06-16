@@ -422,9 +422,9 @@ class ProjectController(
         )
         val body = bodyOfTheCurrentHeader()
         if (isTeacher(body) ||
-            (isStudent(body) && !groupService.thereIsAGroupWithThisProjectAndThisMember(
+            (isStudent(body) && !groupService.thereIsAGroupWithThisProjectAndThisMemberWithEmail(
                 projectId,
-                body["id"].toString().toLong()
+                body.subject
             ))
         ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(projectService.addDeployInstance(projectId, deployInstanceId), HttpStatus.OK)

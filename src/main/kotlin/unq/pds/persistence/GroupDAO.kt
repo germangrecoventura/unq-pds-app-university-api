@@ -22,10 +22,10 @@ interface GroupDAO : JpaRepository<Group, Long> {
              FROM Group g
              JOIN g.projects ps
              JOIN g.members m
-             WHERE ps.id = ?1 AND m.id = ?2
+             WHERE ps.id = ?1 AND m.email = ?2
          """
     )
-    fun thereIsAGroupWithThisProjectAndThisMember(projectId: Long, studentId: Long): Boolean
+    fun thereIsAGroupWithThisProjectAndThisMemberWithEmail(projectId: Long, studentEmail: String): Boolean
 
     @Query(
         """

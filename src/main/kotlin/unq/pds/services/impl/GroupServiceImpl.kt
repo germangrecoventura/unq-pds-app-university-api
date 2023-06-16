@@ -91,8 +91,8 @@ open class GroupServiceImpl : GroupService {
         return groupDAO.hasAMemberWithEmail(groupId, email)
     }
 
-    override fun thereIsAGroupWithThisProjectAndThisMember(projectId: Long, studentId: Long): Boolean {
-        return groupDAO.thereIsAGroupWithThisProjectAndThisMember(projectId, studentId)
+    override fun thereIsAGroupWithThisProjectAndThisMemberWithEmail(projectId: Long, studentEmail: String): Boolean {
+        return groupDAO.thereIsAGroupWithThisProjectAndThisMemberWithEmail(projectId, studentEmail)
     }
 
     override fun thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(

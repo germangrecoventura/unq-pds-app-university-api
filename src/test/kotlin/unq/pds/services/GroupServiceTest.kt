@@ -256,9 +256,9 @@ class GroupServiceTest {
         val project = projectService.save(aProject().build())
         groupService.addProject(group.getId()!!, project.getId()!!)
         Assertions.assertTrue(
-            groupService.thereIsAGroupWithThisProjectAndThisMember(
+            groupService.thereIsAGroupWithThisProjectAndThisMemberWithEmail(
                 project.getId()!!,
-                student.getId()!!
+                student.getEmail()!!
             )
         )
     }
@@ -267,7 +267,9 @@ class GroupServiceTest {
     fun `should be false to have a group with a student with id and a project with id when both were not added`() {
         studentService.save(aStudentDTO().build())
         groupService.save(aGroupDTO().build())
-        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMember(-1, -1))
+        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMemberWithEmail(
+            -1, "emailFalso")
+        )
     }
 
     @Test
@@ -275,9 +277,9 @@ class GroupServiceTest {
         val student = studentService.save(aStudentDTO().build())
         groupService.save(aGroupDTO().build())
         Assertions.assertFalse(
-            groupService.thereIsAGroupWithThisProjectAndThisMember(
+            groupService.thereIsAGroupWithThisProjectAndThisMemberWithEmail(
                 -1,
-                student.getId()!!
+                student.getEmail()!!
             )
         )
     }
@@ -288,7 +290,9 @@ class GroupServiceTest {
         val group = groupService.save(aGroupDTO().build())
         val project = projectService.save(aProject().build())
         groupService.addProject(group.getId()!!, project.getId()!!)
-        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMember(project.getId()!!, -1))
+        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMemberWithEmail(
+            project.getId()!!, "emailFalso")
+        )
     }
 
     @Test

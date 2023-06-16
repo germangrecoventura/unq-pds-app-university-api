@@ -78,8 +78,8 @@ class DeployInstanceController(
         )
         val body = bodyOfTheCurrentHeader()
         return if (isTeacher(body) || (isStudent(body) &&
-                    !groupService.thereIsAGroupWithThisProjectAndThisMember(
-                        deployInstance.projectId!!, body["id"].toString().toLong())))
+                    !groupService.thereIsAGroupWithThisProjectAndThisMemberWithEmail(
+                        deployInstance.projectId!!, body.subject)))
             ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(deployInstanceService.save(deployInstance.fromDTOToModel()), HttpStatus.OK)
     }
