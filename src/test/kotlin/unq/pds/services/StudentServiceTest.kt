@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
-import unq.pds.model.builder.DeployInstanceBuilder.Companion.aDeployInstance
-import unq.pds.services.builder.BuilderDeployInstanceCommentDTO.Companion.aDeployInstanceCommentDTO
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import javax.management.InvalidAttributeValueException
 
@@ -16,9 +14,6 @@ class StudentServiceTest {
 
     @Autowired
     lateinit var studentService: StudentService
-
-    @Autowired
-    lateinit var deployInstanceService: DeployInstanceService
 
     @Autowired
     lateinit var initializer: Initializer
@@ -313,27 +308,5 @@ class StudentServiceTest {
         Assertions.assertEquals(2, students.size)
         Assertions.assertTrue(students.any { it.getEmail() == "german@gmail.com" })
         Assertions.assertTrue(students.any { it.getEmail() == "germanF@gmail.com" })
-    }
-
-    @Test
-    fun `should add a comment to deploy instance if exists`() {
-        val deployInstance = deployInstanceService.save(aDeployInstance().build())
-        studentService.addCommentToDeployInstance(aDeployInstanceCommentDTO()
-            .withId(deployInstance.getId()).build())
-        val deployInstanceFind = deployInstanceService.read(deployInstance.getId()!!)
-        Assertions.assertTrue(deployInstanceFind.comments.size == 1)
-    }
-
-    @Test
-    fun `should throw an exception when the deploy instance to add the comment does not exist`() {
-        val thrown: NoSuchElementException =
-            Assertions.assertThrows(NoSuchElementException::class.java) {
-                studentService.addCommentToDeployInstance(aDeployInstanceCommentDTO().build())
-            }
-
-        Assertions.assertEquals(
-            "Not found the deploy instance",
-            thrown.message
-        )
     }
 }

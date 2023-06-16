@@ -206,7 +206,7 @@ class DeployInstanceController(
                     !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
                         body.subject, deployInstance.id!!)))
             ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
-        else ResponseEntity(deployInstanceService.update(deployInstance), HttpStatus.OK)
+        else ResponseEntity(deployInstanceService.update(deployInstance.fromDTOToModel()), HttpStatus.OK)
     }
 
     @DeleteMapping

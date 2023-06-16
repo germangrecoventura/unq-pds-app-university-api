@@ -7,7 +7,8 @@ import javax.persistence.*
 @Table(name = "deployInstance")
 class DeployInstance(
     name: String,
-    url: String
+    url: String,
+    comment: String
 ) {
 
     @Id
@@ -28,12 +29,12 @@ class DeployInstance(
             field = value
         }
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
-    var comments: MutableList<Comment> = mutableListOf()
-
-    fun addComment(comment: Comment) {
-        comments.add(comment)
-    }
+    @Column(nullable = false)
+    var comment = comment
+        set(value) {
+            this.validateComment(value)
+            field = value
+        }
 
     fun getId() = id
 
@@ -42,6 +43,7 @@ class DeployInstance(
     private fun validateCreation() {
         validateName(name)
         validateUrl(url)
+        validateComment(comment)
     }
 
     private fun validateName(name: String) {
@@ -51,5 +53,9 @@ class DeployInstance(
 
     private fun validateUrl(url: String) {
         if (url.isNullOrBlank()) throw InvalidAttributeValueException("Url cannot be empty")
+    }
+
+    private fun validateComment(comment: String) {
+        if (comment.isNullOrBlank()) throw InvalidAttributeValueException("The comment cannot be empty")
     }
 }

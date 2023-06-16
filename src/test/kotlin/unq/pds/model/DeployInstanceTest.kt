@@ -35,6 +35,15 @@ class DeployInstanceTest {
     }
 
     @Test
+    fun `should throw an exception when deploy instance comment is empty`() {
+        try {
+            aDeployInstance().withComment("").build()
+        } catch (e: InvalidAttributeValueException) {
+            Assertions.assertEquals("The comment cannot be empty", e.message)
+        }
+    }
+
+    @Test
     fun `should throw an exception when trying to set an empty deploy instance name`() {
         val deployInstance = aDeployInstance().build()
         try {
@@ -65,11 +74,13 @@ class DeployInstanceTest {
     }
 
     @Test
-    fun `should add a comment in a deploy instance correctly`() {
+    fun `should throw an exception when trying to set an empty deploy instance comment`() {
         val deployInstance = aDeployInstance().build()
-        Assertions.assertEquals(0, deployInstance.comments.size)
-        deployInstance.addComment(Comment("A deploy instance"))
-        Assertions.assertEquals(1, deployInstance.comments.size)
+        try {
+            deployInstance.comment = ""
+        } catch (e: InvalidAttributeValueException) {
+            Assertions.assertEquals("The comment cannot be empty", e.message)
+        }
     }
 
 }

@@ -4,13 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import unq.pds.api.dtos.DeployInstanceCommentDTO
 import unq.pds.api.dtos.StudentCreateRequestDTO
-import unq.pds.model.Comment
 import unq.pds.model.Student
 import unq.pds.model.exceptions.AlreadyRegisteredException
-import unq.pds.persistence.CommentDAO
-import unq.pds.persistence.DeployInstanceDAO
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.StudentService
 import unq.pds.services.UserService
@@ -24,12 +20,6 @@ open class StudentServiceImpl : StudentService {
 
     @Autowired
     lateinit var userService: UserService
-
-    @Autowired
-    lateinit var deployInstanceDAO: DeployInstanceDAO
-
-    @Autowired
-    lateinit var commentDAO: CommentDAO
 
     override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
         val encryptor = BCryptPasswordEncoder()
@@ -82,16 +72,6 @@ open class StudentServiceImpl : StudentService {
 
     override fun readAll(): List<Student> {
         return studentDAO.findAll().toList()
-    }
-
-    override fun addCommentToDeployInstance(commentDTO: DeployInstanceCommentDTO): Comment {
-        val deployInstanceRecovery = deployInstanceDAO.findById(commentDTO.deployInstanceId!!).orElseThrow {
-            NoSuchElementException("Not found the deploy instance")
-        }
-        val comment = commentDAO.save(Comment(commentDTO.comment!!))
-        deployInstanceRecovery.addComment(comment)
-        deployInstanceDAO.save(deployInstanceRecovery)
-        return comment
     }
 
     override fun clearStudents() {

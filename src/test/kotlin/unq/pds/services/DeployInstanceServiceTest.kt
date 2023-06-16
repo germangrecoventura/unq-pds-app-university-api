@@ -4,9 +4,7 @@ import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
-import unq.pds.api.dtos.DeployInstanceDTO
 import unq.pds.model.builder.DeployInstanceBuilder.Companion.aDeployInstance
-import unq.pds.services.builder.BuilderDeployInstanceDTO.Companion.aDeployInstanceDTO
 
 @SpringBootTest
 class DeployInstanceServiceTest {
@@ -45,18 +43,15 @@ class DeployInstanceServiceTest {
     @Test
     fun `should update a deploy instance when it exists`() {
         val deployInstance = deployInstanceService.save(aDeployInstance().build())
-        val deployInstanceDTO = DeployInstanceDTO()
-        deployInstanceDTO.id = deployInstance.getId()
-        deployInstanceDTO.name = "Heroku"
-        deployInstanceDTO.url = deployInstance.url
-        val updatedDeployInstance = deployInstanceService.update(deployInstanceDTO)
-        Assertions.assertEquals(deployInstanceDTO.name, updatedDeployInstance.name)
+        deployInstance.name = "Heroku"
+        val updatedDeployInstance = deployInstanceService.update(deployInstance)
+        Assertions.assertEquals(deployInstance.name, updatedDeployInstance.name)
     }
 
     @Test
     fun `should throw an exception when trying to update a deploy instance without persisting`() {
         try {
-            deployInstanceService.update(aDeployInstanceDTO().build())
+            deployInstanceService.update(aDeployInstance().build())
         } catch (e:NoSuchElementException) {
             Assertions.assertEquals("Deploy instance does not exist", e.message)
         }
