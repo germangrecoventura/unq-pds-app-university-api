@@ -1,17 +1,12 @@
 package unq.pds.api.dtos
 
 import io.swagger.v3.oas.annotations.media.Schema
-import org.hibernate.validator.constraints.ConstraintComposition
 import org.hibernate.validator.constraints.URL
-import unq.pds.model.Comment
 import unq.pds.model.DeployInstance
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Pattern
 
 class DeployInstanceDTO {
-
-    @Schema(example = "1")
-    var id: Long? = null
 
     @NotBlank(message = "Name cannot be empty")
     @Pattern(regexp = "[a-zA-Z ]+")

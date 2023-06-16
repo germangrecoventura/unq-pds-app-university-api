@@ -3,23 +3,18 @@ package unq.pds.services.builder
 import unq.pds.api.dtos.DeployInstanceDTO
 
 class BuilderDeployInstanceDTO {
-    private var id: Long? = null
     private var name: String? = "Railway"
     private var url: String? = "https://railway.app/project/unq-pds-app-university-api"
     private var comment: String? = "To start, go to..."
+    private var projectId: Long? = null
 
     fun build(): DeployInstanceDTO {
         val deployInstance = DeployInstanceDTO()
-        deployInstance.id = id
         deployInstance.name = name
         deployInstance.url = url
         deployInstance.comment = comment
+        deployInstance.projectId = projectId
         return deployInstance
-    }
-
-    fun withId(id: Long?): BuilderDeployInstanceDTO {
-        this.id = id
-        return this
     }
 
     fun withName(name: String?): BuilderDeployInstanceDTO {
@@ -34,6 +29,11 @@ class BuilderDeployInstanceDTO {
 
     fun withComment(comment: String?): BuilderDeployInstanceDTO {
         this.comment = comment
+        return this
+    }
+
+    fun withProjectId(projectId: Long?): BuilderDeployInstanceDTO {
+        this.projectId = projectId
         return this
     }
 

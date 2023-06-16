@@ -196,7 +196,7 @@ class DeployInstanceController(
                 )]
             )]
     )
-    fun updateDeployInstance(@RequestBody deployInstance: DeployInstanceDTO, request: HttpServletRequest): ResponseEntity<Any> {
+    fun updateDeployInstance(@RequestBody @Valid deployInstance: DeployInstance, request: HttpServletRequest): ResponseEntity<Any> {
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -204,9 +204,9 @@ class DeployInstanceController(
         val body = bodyOfTheCurrentHeader()
         return if (isTeacher(body) || (isStudent(body) &&
                     !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
-                        body.subject, deployInstance.id!!)))
+                        body.subject, deployInstance.getId()!!)))
             ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
-        else ResponseEntity(deployInstanceService.update(deployInstance.fromDTOToModel()), HttpStatus.OK)
+        else ResponseEntity(deployInstanceService.update(deployInstance), HttpStatus.OK)
     }
 
     @DeleteMapping

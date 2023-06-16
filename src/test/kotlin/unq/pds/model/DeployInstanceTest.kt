@@ -35,6 +35,15 @@ class DeployInstanceTest {
     }
 
     @Test
+    fun `should throw an exception when deploy instance url is not valid`() {
+        try {
+            aDeployInstance().withUrl("una url").build()
+        } catch (e: InvalidAttributeValueException) {
+            Assertions.assertEquals("The url is not valid", e.message)
+        }
+    }
+
+    @Test
     fun `should throw an exception when deploy instance comment is empty`() {
         try {
             aDeployInstance().withComment("").build()
@@ -70,6 +79,16 @@ class DeployInstanceTest {
             deployInstance.url = ""
         } catch (e: InvalidAttributeValueException) {
             Assertions.assertEquals("Url cannot be empty", e.message)
+        }
+    }
+
+    @Test
+    fun `should throw an exception when trying to set an invalid deploy instance url`() {
+        val deployInstance = aDeployInstance().build()
+        try {
+            deployInstance.url = "una url"
+        } catch (e: InvalidAttributeValueException) {
+            Assertions.assertEquals("The url is not valid", e.message)
         }
     }
 

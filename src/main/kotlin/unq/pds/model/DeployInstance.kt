@@ -1,5 +1,6 @@
 package unq.pds.model
 
+import org.springframework.security.web.util.UrlUtils
 import javax.management.InvalidAttributeValueException
 import javax.persistence.*
 
@@ -53,6 +54,7 @@ class DeployInstance(
 
     private fun validateUrl(url: String) {
         if (url.isNullOrBlank()) throw InvalidAttributeValueException("Url cannot be empty")
+        if (!UrlUtils.isAbsoluteUrl(url)) throw InvalidAttributeValueException("The url is not valid")
     }
 
     private fun validateComment(comment: String) {

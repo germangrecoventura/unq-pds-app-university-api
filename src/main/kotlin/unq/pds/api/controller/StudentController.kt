@@ -12,10 +12,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import unq.pds.api.dtos.DeployInstanceCommentDTO
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.StudentCreateRequestDTO
-import unq.pds.model.Comment
 import unq.pds.model.Student
 import unq.pds.services.GroupService
 import unq.pds.services.StudentService
