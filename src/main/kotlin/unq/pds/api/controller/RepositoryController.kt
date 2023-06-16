@@ -1,6 +1,5 @@
 package unq.pds.api.controller
 
-import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
@@ -8,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -17,15 +17,20 @@ import unq.pds.model.Commit
 import unq.pds.model.Issue
 import unq.pds.model.PullRequest
 import unq.pds.model.Repository
+import unq.pds.services.ProjectService
 import unq.pds.services.RepositoryService
+import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 
 @RestController
 @CrossOrigin
 @RequestMapping("repositories")
-class RepositoryController(private val repositoryService: RepositoryService) {
-    private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
+@SecurityRequirement(name = "bearerAuth")
+class RepositoryController(
+    private val repositoryService: RepositoryService,
+    private val projectService: ProjectService
+): ControllerHelper() {
 
     @PostMapping
     @Operation(
@@ -66,15 +71,36 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                     )]
                 )
                 ]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Not found",
+                content = [Content(
+                    mediaType = "application/json", examples = [ExampleObject(
+                        value = "{\n" +
+                                "  \"message\": \"There is no project with that id\"\n" +
+                                "}"
+                    )]
+                )]
             )]
     )
     fun createRepository(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @RequestBody @Valid repository: RepositoryDTO
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
+        if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
+                body.subject!!,
+                repository.projectId!!
+            )) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
+                body.subject!!,
+                repository.projectId!!
+            ))
+        ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.save(repository), HttpStatus.OK)
     }
 
@@ -130,10 +156,11 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 )]
             )]
     )
-    fun getRepository(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+    fun getRepository(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.findById(id), HttpStatus.OK)
     }
 
@@ -183,19 +210,31 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"Repository does not exist\"\n" +
+                                "  \"message\": \"string\"\n" +
                                 "}"
                     )]
                 )]
             )]
     )
     fun updateRepository(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @RequestBody @Valid repository: RepositoryDTO
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
+        if (!projectService.isFoundRepository(repository.projectId!!, repository.name!!))
+            return ResponseEntity(MessageDTO("Not found the repository"), HttpStatus.NOT_FOUND)
+        if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
+                body.subject!!,
+                repository.projectId!!
+            )) || (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheProjectExists(
+                body.subject!!,
+                repository.projectId!!
+            ))
+        ) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(repositoryService.update(repository), HttpStatus.OK)
     }
 
@@ -253,14 +292,14 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 )]
             )]
     )
-    fun deleteRepository(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        if (body["role"] != "ADMIN") return ResponseEntity(
-            MessageDTO("You do not have permissions to access this resource"),
+    fun deleteRepository(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
+        if (isNotAdmin(body)) return ResponseEntity(
+            MessageDTO("You do not have permissions to access this resource"), HttpStatus.UNAUTHORIZED
         )
         repositoryService.deleteById(id)
         return ResponseEntity(MessageDTO("Repository has been deleted successfully"), HttpStatus.OK)
@@ -308,10 +347,11 @@ class RepositoryController(private val repositoryService: RepositoryService) {
                 ]
             )]
     )
-    fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+    fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.findByAll(), HttpStatus.OK)
     }
 
@@ -368,13 +408,14 @@ class RepositoryController(private val repositoryService: RepositoryService) {
             )]
     )
     fun lengthPagesPaginatedCommit(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.lengthPagesPaginatedCommit(name, size), HttpStatus.OK)
     }
 
@@ -429,14 +470,15 @@ class RepositoryController(private val repositoryService: RepositoryService) {
             )]
     )
     fun getPaginatedCommit(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam page: Int,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.findPaginatedCommit(name, page, size), HttpStatus.OK)
     }
 
@@ -493,13 +535,14 @@ class RepositoryController(private val repositoryService: RepositoryService) {
             )]
     )
     fun lengthPagesPaginatedIssue(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.lengthPagesPaginatedIssue(name, size), HttpStatus.OK)
     }
 
@@ -554,14 +597,15 @@ class RepositoryController(private val repositoryService: RepositoryService) {
             )]
     )
     fun getPaginatedIssue(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam page: Int,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.findPaginatedIssue(name, page, size), HttpStatus.OK)
     }
 
@@ -618,13 +662,14 @@ class RepositoryController(private val repositoryService: RepositoryService) {
             )]
     )
     fun lengthPagesPaginatedPullRequest(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.lengthPagesPaginatedPullRequest(name, size), HttpStatus.OK)
     }
 
@@ -679,14 +724,15 @@ class RepositoryController(private val repositoryService: RepositoryService) {
             )]
     )
     fun getPaginatedPullRequest(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam page: Int,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.findPaginatedPullRequest(name, page, size), HttpStatus.OK)
     }
 }

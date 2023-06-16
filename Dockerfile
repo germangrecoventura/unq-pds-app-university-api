@@ -11,4 +11,6 @@ EXPOSE 8080
 ENV PORT 8080
 
 COPY build/libs/app-universidad-1.0-SNAPSHOT.war app-universidad.jar
-CMD ["java", "-jar", "/app/app-universidad.jar", "--server.port=${PORT}"]
+COPY waitingDatabase.sh waitingDatabase.sh
+RUN chmod +x /app/waitingDatabase.sh
+CMD ["sh", "-c", "/app/waitingDatabase.sh"]

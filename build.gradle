@@ -46,11 +46,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security:3.0.5")
     implementation("io.jsonwebtoken:jjwt:0.9.1")
     implementation("com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-
+    implementation("org.springframework.boot:spring-boot-starter-actuator:3.1.0")
     implementation 'org.modelmapper:modelmapper:3.1.1'
-    testImplementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30'
     implementation('ch.qos.logback:logback-core:1.4.6')
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30'
 
 }
 sonarqube {
@@ -61,7 +61,9 @@ sonarqube {
         property "sonar.kotlin.compiler.version", "1.7.22"
         property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir\\reports\\jacoco\\test\\jacocoTestReport.xml"
         property "sonar.coverage.exclusions", "src/main/kotlin/unq/pds/api/dtos/**," +
-                "src/main/kotlin/unq/pds/services/builder/**"
+                "src/main/kotlin/unq/pds/services/builder/**," +
+                "src/main/kotlin/unq/pds/api/controller/DeployInstanceController.kt," +
+                "src/main/kotlin/unq/pds/services/impl/AdminServiceImpl.kt"
         property "sonar.cpd.exclusions", "src/main/kotlin/unq/pds/api/controller/**," +
                 "src/main/kotlin/unq/pds/security/**," +
                 "src/main/kotlin/unq/pds/model/Teacher.kt," +

@@ -1,6 +1,5 @@
 package unq.pds.api.controller
 
-import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
@@ -8,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -17,15 +17,19 @@ import unq.pds.api.dtos.MessageDTO
 import unq.pds.model.Group
 import unq.pds.services.CommissionService
 import unq.pds.services.GroupService
+import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 
 @RestController
 @CrossOrigin
 @RequestMapping("groups")
-class GroupController(private val groupService: GroupService, private val commissionService: CommissionService) {
-    private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
-    private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
+@SecurityRequirement(name = "bearerAuth")
+class GroupController(
+    private val groupService: GroupService,
+    private val commissionService: CommissionService
+): ControllerHelper() {
+
     @PostMapping
     @Operation(
         summary = "Registers a group",
@@ -66,11 +70,18 @@ class GroupController(private val groupService: GroupService, private val commis
                 ]
             )]
     )
-    fun createGroup(@CookieValue("jwt") jwt: String?, @RequestBody @Valid group: GroupDTO): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
-        return ResponseEntity(groupService.save(group.fromDTOToModel()), HttpStatus.OK)
+    fun createGroup(request: HttpServletRequest, @RequestBody @Valid group: GroupDTO): ResponseEntity<Any> {
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
+        if (isStudent(body) && !group.members!!.contains(body.subject))
+            return ResponseEntity(
+                MessageDTO("The group to be created must have you as a member"),
+                HttpStatus.BAD_REQUEST
+            )
+        return ResponseEntity(groupService.save(group), HttpStatus.OK)
     }
 
     @GetMapping
@@ -125,10 +136,11 @@ class GroupController(private val groupService: GroupService, private val commis
                 )]
             )]
     )
-    fun getGroup(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+    fun getGroup(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(groupService.read(id), HttpStatus.OK)
     }
 
@@ -184,22 +196,24 @@ class GroupController(private val groupService: GroupService, private val commis
                 )]
             )]
     )
-    fun updateGroup(@CookieValue("jwt") jwt: String?, @RequestBody groupUpdateDTO: GroupUpdateDTO): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupUpdateDTO.id!!, body.issuer))
-            ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" &&
-                !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.issuer, groupUpdateDTO.id!!)) {
-            ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            )
-        } else ResponseEntity(groupService.update(groupUpdateDTO), HttpStatus.OK)
+    fun updateGroup(
+        request: HttpServletRequest,
+        @RequestBody groupUpdateDTO: GroupUpdateDTO
+    ): ResponseEntity<Any> {
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
+        return if ((isStudent(body) && !groupService.hasAMemberWithEmail(groupUpdateDTO.id!!, body.subject))
+            ||
+            (isTeacher(body) && !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(
+                body.subject,
+                groupUpdateDTO.id!!
+            ))
+        )
+            ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+        else ResponseEntity(groupService.update(groupUpdateDTO), HttpStatus.OK)
     }
 
 
@@ -257,15 +271,13 @@ class GroupController(private val groupService: GroupService, private val commis
                 )]
             )]
     )
-    fun deleteGroup(@CookieValue("jwt") jwt: String?, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        if (body["role"] != "ADMIN") return ResponseEntity(
-            messageNotAccess,
+    fun deleteGroup(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
         )
+        val body = bodyOfTheCurrentHeader()
+        if (isNotAdmin(body)) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         groupService.delete(id)
         return ResponseEntity(MessageDTO("Group has been deleted successfully"), HttpStatus.OK)
     }
@@ -323,26 +335,22 @@ class GroupController(private val groupService: GroupService, private val commis
             )]
     )
     fun addMember(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @PathVariable groupId: Long,
         @NotBlank @PathVariable studentId: Long
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupId, body.issuer)
-            && body["id"].toString().toLong() != studentId)
-            ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" &&
-                    !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.issuer, groupId)) {
-            ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            )
-        } else ResponseEntity(groupService.addMember(groupId, studentId), HttpStatus.OK)
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
+        return if ((isStudent(body) && !groupService.hasAMemberWithEmail(groupId, body.subject))
+            ||
+            (isTeacher(body) &&
+                    !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.subject, groupId))
+        )
+            ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+        else ResponseEntity(groupService.addMember(groupId, studentId), HttpStatus.OK)
     }
 
     @PutMapping("/removeMember/{groupId}/{studentId}")
@@ -398,25 +406,22 @@ class GroupController(private val groupService: GroupService, private val commis
             )]
     )
     fun removeMember(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @PathVariable groupId: Long,
         @NotBlank @PathVariable studentId: Long
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupId, body.issuer))
-            ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" &&
-                !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.issuer, groupId)) {
-            ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            )
-        } else ResponseEntity(groupService.removeMember(groupId, studentId), HttpStatus.OK)
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
+        return if ((isStudent(body) && !groupService.hasAMemberWithEmail(groupId, body.subject))
+            ||
+            (isTeacher(body) &&
+                    !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.subject, groupId))
+        )
+            ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+        else ResponseEntity(groupService.removeMember(groupId, studentId), HttpStatus.OK)
     }
 
     @PutMapping("/addProject/{groupId}/{projectId}")
@@ -472,25 +477,22 @@ class GroupController(private val groupService: GroupService, private val commis
             )]
     )
     fun addProject(
-        @CookieValue("jwt") jwt: String?,
+        request: HttpServletRequest,
         @NotBlank @PathVariable groupId: Long,
         @NotBlank @PathVariable projectId: Long
     ): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
-        val body = Jwts.parser().setSigningKey("secret".encodeToByteArray()).parseClaimsJws(jwt).body
-        return if (body["role"] == "STUDENT" && !groupService.hasAMemberWithEmail(groupId, body.issuer))
-            ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            ) else if (body["role"] == "TEACHER" &&
-                    !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.issuer, groupId)) {
-            ResponseEntity(
-                messageNotAccess,
-                HttpStatus.UNAUTHORIZED
-            )
-        } else ResponseEntity(groupService.addProject(groupId, projectId), HttpStatus.OK)
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
+        return if ((isStudent(body) && !groupService.hasAMemberWithEmail(groupId, body.subject))
+            ||
+            (isTeacher(body) &&
+                    !commissionService.thereIsACommissionWithATeacherWithEmailAndGroupWithId(body.subject, groupId))
+        )
+            ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+        else ResponseEntity(groupService.addProject(groupId, projectId), HttpStatus.OK)
     }
 
     @GetMapping("/getAll")
@@ -535,10 +537,11 @@ class GroupController(private val groupService: GroupService, private val commis
                 ]
             )]
     )
-    fun getAll(@CookieValue("jwt") jwt: String?): ResponseEntity<Any> {
-        if (jwt.isNullOrBlank()) {
-            return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        }
+    fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(groupService.readAll(), HttpStatus.OK)
     }
 }

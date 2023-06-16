@@ -6,5 +6,4 @@ import java.util.Optional
 
 interface TeacherDAO : JpaRepository<Teacher, Long> {
     fun findByEmail(email: String): Optional<Teacher>
-
 }

@@ -1,7 +1,9 @@
 package unq.pds.model
 
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import unq.pds.model.builder.BuilderRepository.Companion.aRepository
+import unq.pds.model.builder.DeployInstanceBuilder.Companion.aDeployInstance
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import javax.management.InvalidAttributeValueException
 
@@ -40,8 +42,27 @@ class ProjectTest {
         project.addRepository(aRepository().build())
         try {
             project.addRepository(aRepository().build())
-        }  catch (e: CloneNotSupportedException) {
+        } catch (e: CloneNotSupportedException) {
             Assertions.assertEquals("The repository is already in the project", e.message)
+        }
+    }
+
+    @Test
+    fun `should add a deploy instance when it has not been added previously`() {
+        val project = aProject().build()
+        Assertions.assertEquals(0, project.deployInstances.size)
+        project.addDeployInstance(aDeployInstance().build())
+        Assertions.assertEquals(1, project.deployInstances.size)
+    }
+
+    @Test
+    fun `should throw an exception when trying to add the same deploy instance to the project twice`() {
+        val project = aProject().build()
+        project.addDeployInstance(aDeployInstance().build())
+        try {
+            project.addDeployInstance(aDeployInstance().build())
+        } catch (e: CloneNotSupportedException) {
+            Assertions.assertEquals("The deploy instance is already in the project", e.message)
         }
     }
 }
