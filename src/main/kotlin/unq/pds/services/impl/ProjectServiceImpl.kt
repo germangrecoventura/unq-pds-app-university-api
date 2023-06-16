@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Project
 import unq.pds.model.exceptions.RepositoryHasAlreadyBeenAddedException
+import unq.pds.persistence.DeployInstanceDAO
 import unq.pds.persistence.ProjectDAO
 import unq.pds.persistence.RepositoryDAO
 import unq.pds.services.ProjectService
@@ -16,6 +17,7 @@ open class ProjectServiceImpl : ProjectService {
 
     @Autowired private lateinit var projectDAO: ProjectDAO
     @Autowired private lateinit var repositoryDAO: RepositoryDAO
+    @Autowired private lateinit var deployInstanceDAO: DeployInstanceDAO
 
     override fun save(project: Project): Project {
         project.setTokenGithub(project.getTokenGithub())
@@ -50,6 +52,15 @@ open class ProjectServiceImpl : ProjectService {
             throw RepositoryHasAlreadyBeenAddedException()
         }
         project.addRepository(repository)
+
+        return projectDAO.save(project)
+    }
+
+    override fun addDeployInstance(projectId: Long, deployInstanceId: Long): Project {
+        val project = this.read(projectId)
+        val deployInstance = deployInstanceDAO.findById(deployInstanceId)
+            .orElseThrow { NoSuchElementException("Not found the deploy instance with id $deployInstanceId") }
+        project.addDeployInstance(deployInstance)
 
         return projectDAO.save(project)
     }

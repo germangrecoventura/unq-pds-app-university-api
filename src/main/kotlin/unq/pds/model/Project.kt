@@ -34,9 +34,17 @@ class Project(
     @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     var repositories: MutableSet<Repository> = mutableSetOf()
 
+    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+    var deployInstances: MutableSet<DeployInstance> = mutableSetOf()
+
     fun addRepository(repository: Repository) {
         if (isMyRepository(repository)) throw CloneNotSupportedException("The repository is already in the project")
         repositories.add(repository)
+    }
+
+    fun addDeployInstance(deployInstance: DeployInstance) {
+        if (isMyDeployInstance(deployInstance)) throw CloneNotSupportedException("The deploy instance is already in the project")
+        deployInstances.add(deployInstance)
     }
 
     fun getId() = id
@@ -68,5 +76,9 @@ class Project(
 
     private fun isMyRepository(repository: Repository): Boolean {
         return repositories.any { it.name == repository.name }
+    }
+
+    private fun isMyDeployInstance(deployInstance: DeployInstance): Boolean {
+        return deployInstances.any { it.name == deployInstance.name && it.url == deployInstance.url }
     }
 }

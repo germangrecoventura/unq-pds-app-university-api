@@ -1,7 +1,6 @@
 package unq.pds.api.controller
 
 import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
@@ -10,17 +9,14 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.CommentCreateRequestDTO
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.TeacherCreateRequestDTO
 import unq.pds.model.Comment
 import unq.pds.model.Teacher
-import unq.pds.security.JwtUtilService
 import unq.pds.services.ProjectService
 import unq.pds.services.TeacherService
 import javax.servlet.http.HttpServletRequest
@@ -34,10 +30,7 @@ import javax.validation.constraints.NotBlank
 class TeacherController(
     private val teacherService: TeacherService,
     private val projectService: ProjectService
-) {
-    private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
-    private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
-    private val passwordEncrypt = JwtUtilService.JWT_SECRET_KEY
+): ControllerHelper() {
 
     @PostMapping
     @Operation(
@@ -85,10 +78,11 @@ class TeacherController(
         request: HttpServletRequest,
         @RequestBody @Valid teacher: TeacherCreateRequestDTO
     ): ResponseEntity<Any> {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        header = header.substring(7, header.length)
-        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
         if (isNotAdmin(body)) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(teacherService.save(teacher), HttpStatus.OK)
     }
@@ -147,8 +141,10 @@ class TeacherController(
             )]
     )
     fun getTeacher(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(teacherService.findById(id), HttpStatus.OK)
     }
 
@@ -205,10 +201,11 @@ class TeacherController(
             )]
     )
     fun updateTeacher(request: HttpServletRequest, @RequestBody teacher: Teacher): ResponseEntity<Any> {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        header = header.substring(7, header.length)
-        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
         return if (isStudent(body) || (isTeacher(body) && !isSameId(body, teacher)))
             ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(teacherService.update(teacher), HttpStatus.OK)
@@ -269,10 +266,11 @@ class TeacherController(
             )]
     )
     fun deleteTeacher(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        header = header.substring(7, header.length)
-        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
         if (isNotAdmin(body)) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         teacherService.deleteById(id)
         return ResponseEntity(MessageDTO("Teacher has been deleted successfully"), HttpStatus.OK)
@@ -321,8 +319,10 @@ class TeacherController(
             )]
     )
     fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
-        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(teacherService.readAll(), HttpStatus.OK)
     }
 
@@ -386,10 +386,11 @@ class TeacherController(
         @RequestBody @Valid comment:
         CommentCreateRequestDTO
     ): ResponseEntity<Any> {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        header = header.substring(7, header.length)
-        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
         return if (isStudent(body) ||
             (isTeacher(body) && !projectService.thereIsACommissionWhereIsteacherAndTheRepositoryExists(
                 body.subject!!,
@@ -397,27 +398,6 @@ class TeacherController(
             ))
         ) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
         else ResponseEntity(teacherService.addCommentToRepository(comment), HttpStatus.OK)
-    }
-
-    private fun existJWT(jwt: String?): Boolean {
-        return StringUtils.hasText(jwt) &&
-                jwt!!.startsWith("Bearer ")
-                && !jwt.substring(7, jwt.length).isNullOrEmpty()
-    }
-
-    private fun isNotAdmin(body: Claims): Boolean {
-        val role = body["role"] as List<String>
-        return !role.contains("ADMIN")
-    }
-
-    private fun isStudent(body: Claims): Boolean {
-        val role = body["role"] as List<String>
-        return role.contains("STUDENT")
-    }
-
-    private fun isTeacher(body: Claims): Boolean {
-        val role = body["role"] as List<String>
-        return role.contains("TEACHER")
     }
 
     private fun isSameId(body: Claims, teacher: Teacher): Boolean {

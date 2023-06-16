@@ -80,6 +80,7 @@ class CommissionControllerTest {
             MockMvcRequestBuilders.post("/commissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aCommissionDTO().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -170,6 +171,7 @@ class CommissionControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/commissions").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -196,6 +198,7 @@ class CommissionControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/commissions").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -274,6 +277,7 @@ class CommissionControllerTest {
     fun `should throw a 401 status when trying to get all commissions and is not authenticated`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/commissions/getAll").accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -285,6 +289,7 @@ class CommissionControllerTest {
                 1, 1
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -417,6 +422,7 @@ class CommissionControllerTest {
                 1, 1
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -552,6 +558,7 @@ class CommissionControllerTest {
                 1, 1
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -666,6 +673,7 @@ class CommissionControllerTest {
                 1, 1
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -781,6 +789,7 @@ class CommissionControllerTest {
                 1, 1
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -941,6 +950,7 @@ class CommissionControllerTest {
             )
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept("application/json")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 

@@ -1,7 +1,5 @@
 package unq.pds.api.controller
 
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
@@ -10,10 +8,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.RepositoryDTO
@@ -21,7 +17,6 @@ import unq.pds.model.Commit
 import unq.pds.model.Issue
 import unq.pds.model.PullRequest
 import unq.pds.model.Repository
-import unq.pds.security.JwtUtilService
 import unq.pds.services.ProjectService
 import unq.pds.services.RepositoryService
 import javax.servlet.http.HttpServletRequest
@@ -35,11 +30,7 @@ import javax.validation.constraints.NotBlank
 class RepositoryController(
     private val repositoryService: RepositoryService,
     private val projectService: ProjectService
-) {
-    private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
-    private val messageNotAccess = MessageDTO("You do not have permissions to access this resource")
-    private val passwordEncrypt = JwtUtilService.JWT_SECRET_KEY
-
+): ControllerHelper() {
 
     @PostMapping
     @Operation(
@@ -97,10 +88,11 @@ class RepositoryController(
         request: HttpServletRequest,
         @RequestBody @Valid repository: RepositoryDTO
     ): ResponseEntity<Any> {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        header = header.substring(7, header.length)
-        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
         if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
                 body.subject!!,
                 repository.projectId!!
@@ -165,8 +157,10 @@ class RepositoryController(
             )]
     )
     fun getRepository(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.findById(id), HttpStatus.OK)
     }
 
@@ -226,10 +220,11 @@ class RepositoryController(
         request: HttpServletRequest,
         @RequestBody @Valid repository: RepositoryDTO
     ): ResponseEntity<Any> {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        header = header.substring(7, header.length)
-        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
         if (!projectService.isFoundRepository(repository.projectId!!, repository.name!!))
             return ResponseEntity(MessageDTO("Not found the repository"), HttpStatus.NOT_FOUND)
         if ((isStudent(body) && !projectService.thereIsAGroupWhereIsStudentAndTheProjectExists(
@@ -298,10 +293,11 @@ class RepositoryController(
             )]
     )
     fun deleteRepository(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        header = header.substring(7, header.length)
-        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
         if (isNotAdmin(body)) return ResponseEntity(
             MessageDTO("You do not have permissions to access this resource"), HttpStatus.UNAUTHORIZED
         )
@@ -352,8 +348,10 @@ class RepositoryController(
             )]
     )
     fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
-        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.findByAll(), HttpStatus.OK)
     }
 
@@ -414,8 +412,10 @@ class RepositoryController(
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.lengthPagesPaginatedCommit(name, size), HttpStatus.OK)
     }
 
@@ -475,8 +475,10 @@ class RepositoryController(
         @NotBlank @RequestParam page: Int,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.findPaginatedCommit(name, page, size), HttpStatus.OK)
     }
 
@@ -537,8 +539,10 @@ class RepositoryController(
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.lengthPagesPaginatedIssue(name, size), HttpStatus.OK)
     }
 
@@ -598,8 +602,10 @@ class RepositoryController(
         @NotBlank @RequestParam page: Int,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.findPaginatedIssue(name, page, size), HttpStatus.OK)
     }
 
@@ -660,8 +666,10 @@ class RepositoryController(
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.lengthPagesPaginatedPullRequest(name, size), HttpStatus.OK)
     }
 
@@ -721,29 +729,10 @@ class RepositoryController(
         @NotBlank @RequestParam page: Int,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
-        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(repositoryService.findPaginatedPullRequest(name, page, size), HttpStatus.OK)
-    }
-
-    private fun existJWT(jwt: String?): Boolean {
-        return StringUtils.hasText(jwt) &&
-                jwt!!.startsWith("Bearer ")
-                && !jwt.substring(7, jwt.length).isNullOrEmpty()
-    }
-
-    private fun isNotAdmin(body: Claims): Boolean {
-        val role = body["role"] as List<String>
-        return !role.contains("ADMIN")
-    }
-
-    private fun isStudent(body: Claims): Boolean {
-        val role = body["role"] as List<String>
-        return role.contains("STUDENT")
-    }
-
-    private fun isTeacher(body: Claims): Boolean {
-        val role = body["role"] as List<String>
-        return role.contains("TEACHER")
     }
 }

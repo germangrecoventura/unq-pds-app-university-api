@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import unq.pds.Initializer
 import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
+import unq.pds.model.builder.DeployInstanceBuilder.Companion.aDeployInstance
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.services.*
@@ -58,6 +59,8 @@ class ProjectControllerTest {
     @Autowired
     lateinit var commissionService: CommissionService
 
+    @Autowired
+    lateinit var deployInstanceService: DeployInstanceService
 
     private val mapper = ObjectMapper()
 
@@ -77,6 +80,7 @@ class ProjectControllerTest {
             MockMvcRequestBuilders.post("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aProjectDTO().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -164,6 +168,7 @@ class ProjectControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/projects").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -221,6 +226,7 @@ class ProjectControllerTest {
             MockMvcRequestBuilders.put("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aProject().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -332,6 +338,7 @@ class ProjectControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/projects").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -410,6 +417,7 @@ class ProjectControllerTest {
     fun `should throw a 401 status when trying to get all projects and is not authenticated`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/projects/getAll").accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -422,6 +430,7 @@ class ProjectControllerTest {
                 "1"
             )
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -580,6 +589,134 @@ class ProjectControllerTest {
                 "/projects/addRepository/{projectId}/{repositoryId}",
                 project.getId().toString(),
                 repository.id.toString()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", headerAdmin())
+                .accept("application/json")
+        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+    }
+
+    @Test
+    fun `should throw a 401 status when trying to add a deploy instance to a project and is not authenticated`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/projects/addDeployInstance/{projectId}/{deployInstanceId}",
+                "1",
+                "1"
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
+                .accept("application/json")
+        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when a teacher does not have permissions to add a deploy instance to a project`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/projects/addDeployInstance/{projectId}/{deployInstanceId}",
+                "1",
+                "1"
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", headerTeacher())
+                .accept("application/json")
+        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 401 status when a student does not have permissions to add a deploy instance to a project`() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/projects/addDeployInstance/{projectId}/{deployInstanceId}",
+                "1",
+                "1"
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", headerStudent())
+                .accept("application/json")
+        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    fun `should throw a 200 status when a student does have permissions to add a deploy instance to a project`() {
+        val header = headerStudent()
+        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
+        val project = group.projects.elementAt(0)
+        val deployInstance = deployInstanceService.save(aDeployInstance().build())
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/projects/addDeployInstance/{projectId}/{deployInstanceId}",
+                project.getId().toString(),
+                deployInstance.getId().toString()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", header)
+                .accept("application/json")
+        ).andExpect(MockMvcResultMatchers.status().isOk)
+    }
+
+    @Test
+    fun `should throw a 200 status when a admin does have permissions to add a deploy instance to a project`() {
+        val project = projectService.save(aProject().build())
+        val deployInstance = deployInstanceService.save(aDeployInstance().build())
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/projects/addDeployInstance/{projectId}/{deployInstanceId}",
+                project.getId().toString(),
+                deployInstance.getId().toString()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", headerAdmin())
+                .accept("application/json")
+        ).andExpect(MockMvcResultMatchers.status().isOk)
+    }
+
+    @Test
+    fun `should throw a 404 status when trying to add a deploy instance to a non-existent project`() {
+        val deployInstance = deployInstanceService.save(aDeployInstance().build())
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/projects/addDeployInstance/{projectId}/{deployInstanceId}",
+                "-1",
+                deployInstance.getId().toString()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", headerAdmin())
+                .accept("application/json")
+        ).andExpect(MockMvcResultMatchers.status().isNotFound)
+    }
+
+    @Test
+    fun `should throw a 404 status when trying to add a non-existent deploy instance to a project`() {
+        val project = projectService.save(aProject().build())
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/projects/addDeployInstance/{projectId}/{deployInstanceId}",
+                project.getId().toString(),
+                "-1"
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", headerAdmin())
+                .accept("application/json")
+        ).andExpect(MockMvcResultMatchers.status().isNotFound)
+    }
+
+    @Test
+    fun `should throw a 400 status when add a deploy instance to a project and it has already been added`() {
+        val project = projectService.save(aProject().build())
+        val deployInstance = deployInstanceService.save(aDeployInstance().build())
+        projectService.addDeployInstance(project.getId()!!, deployInstance.getId()!!)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/projects/addDeployInstance/{projectId}/{deployInstanceId}",
+                project.getId().toString(),
+                deployInstance.getId().toString()
             )
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", headerAdmin())

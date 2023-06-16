@@ -217,6 +217,31 @@ LOCK TABLES `commit` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `deploy_instance`
+--
+
+DROP TABLE IF EXISTS `deploy_instance`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `deploy_instance` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `comment` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `url` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `deploy_instance`
+--
+
+LOCK TABLES `deploy_instance` WRITE;
+/*!40000 ALTER TABLE `deploy_instance` DISABLE KEYS */;
+/*!40000 ALTER TABLE `deploy_instance` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `group_app`
 --
 
@@ -385,6 +410,32 @@ CREATE TABLE `project` (
 LOCK TABLES `project` WRITE;
 /*!40000 ALTER TABLE `project` DISABLE KEYS */;
 /*!40000 ALTER TABLE `project` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `project_deploy_instances`
+--
+
+DROP TABLE IF EXISTS `project_deploy_instances`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `project_deploy_instances` (
+  `project_id` bigint NOT NULL,
+  `deploy_instances_id` bigint NOT NULL,
+  PRIMARY KEY (`project_id`,`deploy_instances_id`),
+  UNIQUE KEY `UK_chpiex0kqov9ey31jadxsw6k0` (`deploy_instances_id`),
+  CONSTRAINT `FK8u5trfen5s771mvranlriudhs` FOREIGN KEY (`deploy_instances_id`) REFERENCES `deploy_instance` (`id`),
+  CONSTRAINT `FKaj2x97cxh6ehdt6tqoonikf3b` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `project_deploy_instances`
+--
+
+LOCK TABLES `project_deploy_instances` WRITE;
+/*!40000 ALTER TABLE `project_deploy_instances` DISABLE KEYS */;
+/*!40000 ALTER TABLE `project_deploy_instances` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -707,4 +758,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-05-24 21:16:49
+-- Dump completed on 2023-06-16  6:53:20

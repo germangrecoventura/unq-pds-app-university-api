@@ -63,6 +63,7 @@ class MatterControllerTest {
             MockMvcRequestBuilders.post("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aMatterDTO().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -127,6 +128,7 @@ class MatterControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -220,6 +222,7 @@ class MatterControllerTest {
             MockMvcRequestBuilders.put("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aMatter().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -374,6 +377,7 @@ class MatterControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/matters").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -462,6 +466,7 @@ class MatterControllerTest {
     fun `should throw a 401 status when trying to get all matters and is not authenticated`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters/getAll").accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -471,37 +476,37 @@ class MatterControllerTest {
             MockMvcRequestBuilders.post("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aMatterDTO().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when get matter with header empty`() {
-        val matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", matter.getId().toString())
+                .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when update matter with header empty`() {
-        val matter = matterService.save(aMatter().build())
-        matter.name = "Lengua"
         mockMvc.perform(
             MockMvcRequestBuilders.put("/matters")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(matter))
+                .content(mapper.writeValueAsString(aMatter().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when delete matter with header empty`() {
-        val matter = matterService.save(aMatter().build())
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/matters").accept(MediaType.APPLICATION_JSON)
-                .param("id", matter.getId().toString())
+                .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -509,6 +514,7 @@ class MatterControllerTest {
     fun `should throw a 401 status when get all matters with header empty`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/matters/getAll").accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 

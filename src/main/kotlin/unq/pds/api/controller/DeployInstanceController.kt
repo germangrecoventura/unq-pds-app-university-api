@@ -1,6 +1,5 @@
 package unq.pds.api.controller
 
-import io.jsonwebtoken.Claims
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
@@ -12,28 +11,28 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import unq.pds.api.dtos.DeployInstanceDTO
 import unq.pds.api.dtos.MessageDTO
-import unq.pds.api.dtos.StudentCreateRequestDTO
-import unq.pds.model.Student
+import unq.pds.model.DeployInstance
+import unq.pds.services.DeployInstanceService
 import unq.pds.services.GroupService
-import unq.pds.services.StudentService
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 
 @RestController
 @CrossOrigin
-@RequestMapping("students")
+@RequestMapping("deployInstances")
 @SecurityRequirement(name = "bearerAuth")
-class StudentController(
-    private val studentService: StudentService,
+class DeployInstanceController(
+    private val deployInstanceService: DeployInstanceService,
     private val groupService: GroupService
 ): ControllerHelper() {
 
     @PostMapping
     @Operation(
-        summary = "Registers a student",
-        description = "Registers a student using the email address as the unique identifier",
+        summary = "Registers a deploy instance",
+        description = "Registers a deploy instance",
     )
     @ApiResponses(
         value = [
@@ -43,7 +42,7 @@ class StudentController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Student::class),
+                        schema = Schema(implementation = DeployInstance::class),
                     )
                 ]
             ),
@@ -53,9 +52,7 @@ class StudentController(
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"additionalProp1\": \"string\",\n" +
-                                "  \"additionalProp2\": \"string\",\n" +
-                                "  \"additionalProp3\": \"string\"\n" +
+                                "  \"message\": \"string\"\n" +
                                 "}"
                     )]
                 )]
@@ -73,23 +70,24 @@ class StudentController(
                 ]
             )]
     )
-    fun createStudent(
-        @RequestBody @Valid student: StudentCreateRequestDTO,
-        request: HttpServletRequest
-    ): ResponseEntity<Any> {
+    fun createDeployInstance(@RequestBody @Valid deployInstance: DeployInstanceDTO,
+                             request: HttpServletRequest): ResponseEntity<Any> {
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
         )
         val body = bodyOfTheCurrentHeader()
-        return if (isNotAdmin(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
-        else ResponseEntity(studentService.save(student), HttpStatus.OK)
+        return if (isTeacher(body) || (isStudent(body) &&
+                    !groupService.thereIsAGroupWithThisProjectAndThisMemberWithEmail(
+                        deployInstance.projectId!!, body.subject)))
+            ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+        else ResponseEntity(deployInstanceService.save(deployInstance.fromDTOToModel()), HttpStatus.OK)
     }
 
     @GetMapping
     @Operation(
-        summary = "Get a student",
-        description = "Get a student using the id as the unique identifier",
+        summary = "Get a deploy instance",
+        description = "Get a deploy instance using the id as the unique identifier",
     )
     @ApiResponses(
         value = [
@@ -99,7 +97,7 @@ class StudentController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Student::class),
+                        schema = Schema(implementation = DeployInstance::class),
                     )
                 ]
             ),
@@ -132,24 +130,24 @@ class StudentController(
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"Not found the student with id\"\n" +
+                                "  \"message\": \"There is no deploy instance with that id\"\n" +
                                 "}"
                     )]
                 )]
             )]
     )
-    fun getStudent(@NotBlank @RequestParam id: Long, request: HttpServletRequest): ResponseEntity<Any> {
+    fun getDeployInstance(@NotBlank @RequestParam id: Long, request: HttpServletRequest): ResponseEntity<Any> {
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
         )
-        return ResponseEntity(studentService.findById(id), HttpStatus.OK)
+        return ResponseEntity(deployInstanceService.read(id), HttpStatus.OK)
     }
 
     @PutMapping
     @Operation(
-        summary = "Update a student",
-        description = "Update a student",
+        summary = "Update a deploy instance",
+        description = "Update a deploy instance",
     )
     @ApiResponses(
         value = [
@@ -159,7 +157,7 @@ class StudentController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Student::class)
+                        schema = Schema(implementation = DeployInstance::class)
                     )
                 ]
             ),
@@ -192,45 +190,40 @@ class StudentController(
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"Student does not exist\"\n" +
+                                "  \"message\": \"Deploy instance does not exist\"\n" +
                                 "}"
                     )]
                 )]
             )]
     )
-    fun updateStudent(
-        @RequestBody @Valid student: StudentCreateRequestDTO,
-        request: HttpServletRequest
-    ): ResponseEntity<Any> {
+    fun updateDeployInstance(@RequestBody @Valid deployInstance: DeployInstance, request: HttpServletRequest): ResponseEntity<Any> {
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
         )
         val body = bodyOfTheCurrentHeader()
-        return if (isTeacher(body)) ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
-        else if (isStudent(body) && !isSameId(body, student)) {
-            ResponseEntity(
-                MessageDTO("You do not have permissions to update students except yourself"),
-                HttpStatus.UNAUTHORIZED
-            )
-        } else ResponseEntity(studentService.update(student), HttpStatus.OK)
+        return if (isTeacher(body) || (isStudent(body) &&
+                    !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
+                        body.subject, deployInstance.getId()!!)))
+            ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+        else ResponseEntity(deployInstanceService.update(deployInstance), HttpStatus.OK)
     }
 
     @DeleteMapping
     @Operation(
-        summary = "Delete a student",
-        description = "Delete a student using the id as the unique identifier",
+        summary = "Delete a deploy instance",
+        description = "Delete a deploy instance using the id as the unique identifier",
     )
     @ApiResponses(
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "success",
+                description = "Success",
                 content = [
                     Content(
                         mediaType = "application/json", examples = [ExampleObject(
                             value = "{\n" +
-                                    "  \"message\": \"Student has been deleted successfully\"\n" +
+                                    "  \"message\": \"Deploy instance has been deleted successfully\"\n" +
                                     "}"
                         )]
                     )]
@@ -264,27 +257,30 @@ class StudentController(
                 content = [Content(
                     mediaType = "application/json", examples = [ExampleObject(
                         value = "{\n" +
-                                "  \"message\": \"The student with id is not registered\"\n" +
+                                "  \"message\": \"There is no deploy instance with that id\"\n" +
                                 "}"
                     )]
                 )]
             )]
     )
-    fun deleteStudent(@NotBlank @RequestParam id: Long, request: HttpServletRequest): ResponseEntity<Any> {
+    fun deleteDeployInstance(@NotBlank @RequestParam id: Long, request: HttpServletRequest): ResponseEntity<Any> {
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
         )
         val body = bodyOfTheCurrentHeader()
-        if (isNotAdmin(body)) return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
-        studentService.deleteById(id)
-        return ResponseEntity(MessageDTO("Student has been deleted successfully"), HttpStatus.OK)
+        if (isTeacher(body) || (isStudent(body) &&
+                    !groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
+                        body.subject, id)))
+            return ResponseEntity(messageNotAccess, HttpStatus.UNAUTHORIZED)
+        deployInstanceService.delete(id)
+        return ResponseEntity(MessageDTO("Deploy instance has been deleted successfully"), HttpStatus.OK)
     }
 
     @GetMapping("/getAll")
     @Operation(
-        summary = "Get all students",
-        description = "Get all students",
+        summary = "Get all deploy instances",
+        description = "Get all deploy instances",
     )
     @ApiResponses(
         value = [
@@ -294,7 +290,7 @@ class StudentController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        array = ArraySchema(schema = Schema(implementation = Student::class)),
+                        array = ArraySchema(schema = Schema(implementation = DeployInstance::class)),
                     )
                 ]
             ),
@@ -328,10 +324,6 @@ class StudentController(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
         )
-        return ResponseEntity(studentService.readAll(), HttpStatus.OK)
-    }
-
-    private fun isSameId(body: Claims, student: StudentCreateRequestDTO): Boolean {
-        return studentService.findByEmail(body.subject).getId() == student.id
+        return ResponseEntity(deployInstanceService.readAll(), HttpStatus.OK)
     }
 }

@@ -75,6 +75,7 @@ class RepositoryControllerTest {
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -221,6 +222,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -281,6 +283,7 @@ class RepositoryControllerTest {
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
@@ -454,6 +457,7 @@ class RepositoryControllerTest {
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -532,6 +536,7 @@ class RepositoryControllerTest {
     fun `should throw a 401 status when trying to get all repositories and is not authenticated`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/getAll").accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -622,40 +627,37 @@ class RepositoryControllerTest {
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when trying to get a repository with null header`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
-                .param("id", repository.id.toString())
+                .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when trying to update a repository with null header`() {
-        val project = projectService.save(aProject().build())
-        repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
+                .content(mapper.writeValueAsString(aRepositoryDTO().build()))
+                .header("Authorization", "")
                 .accept("application/json")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when trying to delete a repository with null header`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/repositories").accept(MediaType.APPLICATION_JSON)
-                .param("id", repository.id.toString())
+                .param("id", "1")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
@@ -663,69 +665,73 @@ class RepositoryControllerTest {
     fun `should throw a 401 status when trying to getAll repository with null header`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/getAll").accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when trying to querying the page count of commits with null header`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedCommit")
                 .accept(MediaType.APPLICATION_JSON)
-                .param("name", repository.name).param("size", "0")
+                .param("name", "unq-pds-app-university-api")
+                .param("size", "0")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when trying to querying the page count of issues with null header`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedIssue")
                 .accept(MediaType.APPLICATION_JSON)
-                .param("name", repository.name).param("size", "0")
+                .param("name", "unq-pds-app-university-api")
+                .param("size", "0")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when trying to querying the page count of pull request with null header`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedPullRequest")
                 .accept(MediaType.APPLICATION_JSON)
-                .param("name", repository.name).param("size", "0")
+                .param("name", "unq-pds-app-university-api")
+                .param("size", "0")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when trying page commit with null header`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pageCommit").accept(MediaType.APPLICATION_JSON)
-                .param("name", repository.name).param("page", "0").param("size", "5")
+                .param("name", "unq-pds-app-university-api")
+                .param("page", "0")
+                .param("size", "5")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when trying page issue with null header`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pageIssue").accept(MediaType.APPLICATION_JSON)
-                .param("name", repository.name).param("page", "0").param("size", "5")
+                .param("name", "unq-pds-app-university-api")
+                .param("page", "0")
+                .param("size", "5")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 
     @Test
     fun `should throw a 401 status when trying page pull request with null header`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pagePullRequest").accept(MediaType.APPLICATION_JSON)
-                .param("name", repository.name).param("page", "0").param("size", "5")
+                .param("name", "unq-pds-app-university-api")
+                .param("page", "0")
+                .param("size", "5")
+                .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
     }
 

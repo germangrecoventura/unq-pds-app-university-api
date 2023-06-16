@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
-import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import javax.management.InvalidAttributeValueException
 

@@ -9,6 +9,7 @@ import unq.pds.model.Student
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.persistence.StudentDAO
 import unq.pds.services.StudentService
+import unq.pds.services.UserService
 
 @Service
 @Transactional
@@ -16,6 +17,9 @@ open class StudentServiceImpl : StudentService {
 
     @Autowired
     lateinit var studentDAO: StudentDAO
+
+    @Autowired
+    lateinit var userService: UserService
 
     override fun save(studentCreateRequestDTO: StudentCreateRequestDTO): Student {
         val encryptor = BCryptPasswordEncoder()
@@ -32,7 +36,9 @@ open class StudentServiceImpl : StudentService {
 
     override fun update(studentDTO: StudentCreateRequestDTO): Student {
         val studentWithEmail = studentDAO.findByEmail(studentDTO.email!!)
-        if (studentWithEmail.isPresent && studentDTO.id != studentWithEmail.get().getId()) {
+        if ((userService.theEmailIsRegistered(studentDTO.email!!) && !studentWithEmail.isPresent)
+            ||
+            (studentWithEmail.isPresent && studentDTO.id != studentWithEmail.get().getId())) {
             throw AlreadyRegisteredException("email")
         }
         val studentFind = findById(studentDTO.id!!)

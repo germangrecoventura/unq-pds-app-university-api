@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
 import unq.pds.api.dtos.GroupUpdateDTO
+import unq.pds.model.builder.DeployInstanceBuilder.Companion.aDeployInstance
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.model.exceptions.ProjectAlreadyHasAnOwnerException
 import unq.pds.services.builder.BuilderGroupDTO.Companion.aGroupDTO
@@ -23,6 +24,9 @@ class GroupServiceTest {
 
     @Autowired
     lateinit var projectService: ProjectService
+
+    @Autowired
+    lateinit var deployInstanceService: DeployInstanceService
 
     @Autowired
     lateinit var initializer: Initializer
@@ -252,9 +256,9 @@ class GroupServiceTest {
         val project = projectService.save(aProject().build())
         groupService.addProject(group.getId()!!, project.getId()!!)
         Assertions.assertTrue(
-            groupService.thereIsAGroupWithThisProjectAndThisMember(
+            groupService.thereIsAGroupWithThisProjectAndThisMemberWithEmail(
                 project.getId()!!,
-                student.getId()!!
+                student.getEmail()!!
             )
         )
     }
@@ -263,7 +267,9 @@ class GroupServiceTest {
     fun `should be false to have a group with a student with id and a project with id when both were not added`() {
         studentService.save(aStudentDTO().build())
         groupService.save(aGroupDTO().build())
-        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMember(-1, -1))
+        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMemberWithEmail(
+            -1, "emailFalso")
+        )
     }
 
     @Test
@@ -271,9 +277,9 @@ class GroupServiceTest {
         val student = studentService.save(aStudentDTO().build())
         groupService.save(aGroupDTO().build())
         Assertions.assertFalse(
-            groupService.thereIsAGroupWithThisProjectAndThisMember(
+            groupService.thereIsAGroupWithThisProjectAndThisMemberWithEmail(
                 -1,
-                student.getId()!!
+                student.getEmail()!!
             )
         )
     }
@@ -284,7 +290,54 @@ class GroupServiceTest {
         val group = groupService.save(aGroupDTO().build())
         val project = projectService.save(aProject().build())
         groupService.addProject(group.getId()!!, project.getId()!!)
-        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMember(project.getId()!!, -1))
+        Assertions.assertFalse(groupService.thereIsAGroupWithThisProjectAndThisMemberWithEmail(
+            project.getId()!!, "emailFalso")
+        )
+    }
+
+    @Test
+    fun `should be true to have a group with a student with email and a deploy instance with id when both were added previously`() {
+        val student = studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
+        val project = projectService.save(aProject().build())
+        val deployInstance = deployInstanceService.save(aDeployInstance().build())
+        groupService.addProject(group.getId()!!, project.getId()!!)
+        projectService.addDeployInstance(project.getId()!!, deployInstance.getId()!!)
+        Assertions.assertTrue(
+            groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
+                student.getEmail()!!,
+                deployInstance.getId()!!
+            )
+        )
+    }
+
+    @Test
+    fun `should be false to have a group with a student with email and a deploy instance with id when both were not added`() {
+        studentService.save(aStudentDTO().build())
+        groupService.save(aGroupDTO().build())
+        Assertions.assertFalse(groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists("emailFalso@gmail.com", -1))
+    }
+
+    @Test
+    fun `should be false to have a group with a student with email and a deploy instance with id when the deploy instance was not been added`() {
+        val student = studentService.save(aStudentDTO().build())
+        groupService.save(aGroupDTO().build())
+        Assertions.assertFalse(
+            groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
+                student.getEmail()!!, -1)
+        )
+    }
+
+    @Test
+    fun `should be false to have a group with a student with email and a deploy instance with id when the student was not been added`() {
+        studentService.save(aStudentDTO().build())
+        val group = groupService.save(aGroupDTO().build())
+        val project = projectService.save(aProject().build())
+        groupService.addProject(group.getId()!!, project.getId()!!)
+        val deployInstance = deployInstanceService.save(aDeployInstance().build())
+        projectService.addDeployInstance(project.getId()!!, deployInstance.getId()!!)
+        Assertions.assertFalse(groupService.thereIsAGroupWhereIsStudentAndTheDeployInstanceExists(
+            "emailFalso@gmail.com", deployInstance.getId()!!))
     }
 
     @Test

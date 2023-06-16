@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import unq.pds.Initializer
 import unq.pds.api.dtos.ProjectDTO
+import unq.pds.model.builder.DeployInstanceBuilder.Companion.aDeployInstance
 import unq.pds.model.builder.CommissionBuilder
 import unq.pds.model.builder.MatterBuilder
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
@@ -31,6 +32,9 @@ class ProjectServiceTest {
 
     @Autowired
     lateinit var studentService: StudentService
+
+    @Autowired
+    lateinit var deployInstanceService: DeployInstanceService
 
     @Autowired
     lateinit var commissionService: CommissionService
@@ -158,6 +162,35 @@ class ProjectServiceTest {
     }
 
     @Test
+    fun `should add a deploy instance to a project when it was not previously added and both exist`() {
+        val project = projectService.save(aProject().build())
+        val deployInstance = deployInstanceService.save(aDeployInstance().build())
+        Assertions.assertEquals(0, project.deployInstances.size)
+        val projectWithADeployInstance = projectService.addDeployInstance(project.getId()!!, deployInstance.getId()!!)
+        Assertions.assertEquals(1, projectWithADeployInstance.deployInstances.size)
+    }
+
+    @Test
+    fun `should throw an exception when trying to add the same deploy instance to a project twice and both exist`() {
+        val project = projectService.save(aProject().build())
+        val deployInstance = deployInstanceService.save(aDeployInstance().build())
+        projectService.addDeployInstance(project.getId()!!, deployInstance.getId()!!)
+
+        val thrown: CloneNotSupportedException? =
+            Assertions.assertThrows(CloneNotSupportedException::class.java) {
+                projectService.addDeployInstance(
+                    project.getId()!!,
+                    deployInstance.getId()!!
+                )
+            }
+
+        Assertions.assertEquals(
+            "The deploy instance is already in the project",
+            thrown!!.message
+        )
+    }
+
+    @Test
     fun `should be true to have a commission with a teacher with email and a repository with id when both were added previously`() {
         matterService.save(MatterBuilder.aMatter().build())
         val commission = commissionService.save(CommissionBuilder.aCommission().build())
@@ -185,6 +218,26 @@ class ProjectServiceTest {
                 -1
             )
         )
+    }
+
+    @Test
+    fun `should throw an exception when trying to add a deploy instance to a project and the deploy instance does not exist`() {
+        val project = projectService.save(aProject().build())
+        try {
+            projectService.addDeployInstance(project.getId()!!, -1)
+        } catch (e: NoSuchElementException) {
+            Assertions.assertEquals("Not found the deploy instance with id -1", e.message)
+        }
+    }
+
+    @Test
+    fun `should throw an exception when trying to add a deploy instance to a project and the project does not exist`() {
+        val deployInstance = deployInstanceService.save(aDeployInstance().build())
+        try {
+            projectService.addDeployInstance(-1, deployInstance.getId()!!)
+        } catch (e: NoSuchElementException) {
+            Assertions.assertEquals("There is no project with that id", e.message)
+        }
     }
 
     @Test
