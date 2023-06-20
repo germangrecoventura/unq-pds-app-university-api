@@ -1,6 +1,7 @@
 package unq.pds.webservice
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -13,7 +14,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import unq.pds.Initializer
 import unq.pds.model.builder.BuilderStudent.Companion.aStudent
 import unq.pds.services.AdminService
 import unq.pds.services.StudentService
@@ -43,12 +43,8 @@ class StudentControllerTest {
 
     private val mapper = ObjectMapper()
 
-    @Autowired
-    lateinit var initializer: Initializer
-
     @BeforeEach
     fun setUp() {
-        initializer.cleanDataBase()
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
     }
 
@@ -784,5 +780,12 @@ class StudentControllerTest {
 
         val stringToken = response.andReturn().response.contentAsString
         return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
+    }
+
+    @AfterEach
+    fun tearDown() {
+        studentService.clearStudents()
+        teacherService.clearTeachers()
+        adminService.clearAdmins()
     }
 }

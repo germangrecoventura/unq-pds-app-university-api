@@ -1,11 +1,10 @@
 package unq.pds.services
 
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import unq.pds.Initializer
 import unq.pds.api.dtos.GroupUpdateDTO
 import unq.pds.model.builder.DeployInstanceBuilder.Companion.aDeployInstance
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
@@ -27,14 +26,6 @@ class GroupServiceTest {
 
     @Autowired
     lateinit var deployInstanceService: DeployInstanceService
-
-    @Autowired
-    lateinit var initializer: Initializer
-
-    @BeforeEach
-    fun tearDown() {
-        initializer.cleanDataBase()
-    }
 
     @Test
     fun `should be create a group when it has valid credentials`() {
@@ -356,5 +347,13 @@ class GroupServiceTest {
         Assertions.assertEquals(2, groups.size)
         Assertions.assertTrue(groups.any { it.name == "The programmers" })
         Assertions.assertTrue(groups.any { it.name == "The group" })
+    }
+
+    @AfterEach
+    fun tearDown() {
+        groupService.clearGroups()
+        studentService.clearStudents()
+        projectService.clearProjects()
+        deployInstanceService.clearDeployInstances()
     }
 }

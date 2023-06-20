@@ -1,6 +1,7 @@
 package unq.pds.webservice
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -13,7 +14,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import unq.pds.Initializer
 import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
@@ -59,12 +59,8 @@ class RepositoryControllerTest {
 
     private val mapper = ObjectMapper()
 
-    @Autowired
-    lateinit var initializer: Initializer
-
     @BeforeEach
     fun setUp() {
-        initializer.cleanDataBase()
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
     }
 
@@ -92,8 +88,9 @@ class RepositoryControllerTest {
     }
 
     @Test
-    fun `should throw a 200 status when a student does have permissions to create repositories`() {
+    fun `should throw a 200 status when a student does have permissions to create repositories, recover it, and update`() {
         val header = headerStudent()
+        // CREATE
         matterService.save(aMatter().build())
         val student = studentService.findByEmail("german@gmail.com")
         val commission = commissionService.save(aCommission().build())
@@ -110,11 +107,31 @@ class RepositoryControllerTest {
                 .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(status().isOk)
+
+        // RECOVER
+        val repository = repositoryService.findByAll().first()
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
+                .param("id", repository.id.toString())
+                .header("Authorization", header)
+        ).andExpect(status().isOk)
+
+        // UPDATE
+        projectService.addRepository(project.getId()!!, repository.id)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("/repositories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
+                .header("Authorization", header)
+                .accept("application/json")
+        ).andExpect(status().isOk)
     }
 
     @Test
-    fun `should throw a 200 status when a teacher does have permissions to create repositories`() {
+    fun `should throw a 200 status when a teacher does have permissions to create repositories, recover it, and update`() {
         val header = headerTeacher()
+        // CREATE
         matterService.save(aMatter().build())
         val teacher = teacherService.findByEmail("german@gmail.com")
         val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
@@ -133,16 +150,65 @@ class RepositoryControllerTest {
                 .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(status().isOk)
+
+        // RECOVER
+        val repository = repositoryService.findByAll().first()
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
+                .param("id", repository.id.toString())
+                .header("Authorization", header)
+        ).andExpect(status().isOk)
+
+        // UPDATE
+        projectService.addRepository(project.getId()!!, repository.id)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("/repositories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
+                .header("Authorization", header)
+                .accept("application/json")
+        ).andExpect(status().isOk)
     }
 
     @Test
-    fun `should throw a 200 status when a admin does have permissions to create repositories`() {
+    fun `should throw a 200 status when a admin does have permissions to create repositories, 400 status when it has already exist, 200 status when recover it, and update`() {
+        val header = headerAdmin()
+        // CREATE
         val project = projectService.save(aProject().build())
         mockMvc.perform(
             MockMvcRequestBuilders.post("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
-                .header("Authorization", headerAdmin())
+                .header("Authorization", header)
+                .accept("application/json")
+        ).andExpect(status().isOk)
+
+        // HAS ALREADY EXIST
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/repositories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
+                .header("Authorization", header)
+                .accept("application/json")
+        ).andExpect(status().isBadRequest)
+
+        // RECOVER
+        val repository = repositoryService.findByAll().first()
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
+                .param("id", repository.id.toString())
+                .header("Authorization", header)
+        ).andExpect(status().isOk)
+
+        // UPDATE
+        projectService.addRepository(project.getId()!!, repository.id)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("/repositories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(status().isOk)
     }
@@ -205,58 +271,12 @@ class RepositoryControllerTest {
     }
 
     @Test
-    fun `should throw a 400 status when a admin create a repository and it has already exist`() {
-        val project = projectService.save(aProject().build())
-        repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        mockMvc.perform(
-            MockMvcRequestBuilders.post("/repositories")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
-                .header("Authorization", headerAdmin())
-                .accept("application/json")
-        ).andExpect(status().isBadRequest)
-    }
-
-    @Test
     fun `should throw a 401 status when trying to get a repository and is not authenticated`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
                 .param("id", "1")
                 .header("Authorization", "")
         ).andExpect(status().isUnauthorized)
-    }
-
-    @Test
-    fun `should throw a 200 status when a student does have permissions to get repository if exist`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
-                .param("id", repository.id.toString())
-                .header("Authorization", headerStudent())
-        ).andExpect(status().isOk)
-    }
-
-    @Test
-    fun `should throw a 200 status when a teacher does have permissions to get repository if exist`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
-                .param("id", repository.id.toString())
-                .header("Authorization", headerTeacher())
-        ).andExpect(status().isOk)
-    }
-
-    @Test
-    fun `should throw a 200 status when a admin does have permissions to get repository if exist`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/repositories").accept(MediaType.APPLICATION_JSON)
-                .param("id", repository.id.toString())
-                .header("Authorization", headerAdmin())
-        ).andExpect(status().isOk)
     }
 
     @Test
@@ -289,86 +309,9 @@ class RepositoryControllerTest {
     }
 
     @Test
-    fun `should throw a 401 status when a student does not have permissions to update repositories`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        projectService.addRepository(project.getId()!!, repository.id)
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.put("/repositories")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
-                .header("Authorization", headerStudent())
-                .accept("application/json")
-        ).andExpect(status().isUnauthorized)
-    }
-
-    @Test
-    fun `should throw a 200 status when a student does have permissions to update repositories`() {
-        val header = headerStudent()
-        matterService.save(aMatter().build())
-        val student = studentService.findByEmail("german@gmail.com")
-        val commission = commissionService.save(aCommission().build())
-        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com")).build())
-
-        commissionService.addStudent(commission.getId()!!, student.getId()!!)
-        commissionService.addGroup(commission.getId()!!, group.getId()!!)
-
-        val project = group.projects.elementAt(0)
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        projectService.addRepository(project.getId()!!, repository.id)
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.put("/repositories")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
-                .header("Authorization", header)
-                .accept("application/json")
-        ).andExpect(status().isOk)
-    }
-
-    @Test
-    fun `should throw a 200 status when a teacher does have permissions to update repositories`() {
-        val header = headerTeacher()
-        matterService.save(aMatter().build())
-        val teacher = teacherService.findByEmail("german@gmail.com")
-        val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
-        val commission = commissionService.save(aCommission().build())
-        val group = groupService.save(aGroupDTO().withMembers(listOf("test@gmail.com")).build())
-
-        commissionService.addStudent(commission.getId()!!, student2.getId()!!)
-        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
-        commissionService.addGroup(commission.getId()!!, group.getId()!!)
-
-        val project = group.projects.elementAt(0)
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        projectService.addRepository(project.getId()!!, repository.id)
-        mockMvc.perform(
-            MockMvcRequestBuilders.put("/repositories")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
-                .header("Authorization", header)
-                .accept("application/json")
-        ).andExpect(status().isOk)
-    }
-
-    @Test
-    fun `should throw a 200 status when a admin does have permissions to update repositories`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        projectService.addRepository(project.getId()!!, repository.id)
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.put("/repositories")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(aRepositoryDTO().withProjectId(project.getId()!!).build()))
-                .header("Authorization", headerAdmin())
-                .accept("application/json")
-        ).andExpect(status().isOk)
-    }
-
-    @Test
-    fun `should throw a 400 status when update a repository and it has a null name`() {
+    fun `should throw a 400 status when update a repository and it has a null name, empty name, special character`() {
+        val header = headerAdmin()
+        // UPDATE WITH NULL NAME
         val project = projectService.save(aProject().build())
         repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
 
@@ -381,16 +324,11 @@ class RepositoryControllerTest {
                             .withProjectId(project.getId()!!).build()
                     )
                 )
-                .header("Authorization", headerAdmin())
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
-    }
 
-    @Test
-    fun `should throw a 400 status when update a repository and it has a empty name`() {
-        val project = projectService.save(aProject().build())
-        repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-
+        // UPDATE WITH EMPTY NAME
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -400,16 +338,11 @@ class RepositoryControllerTest {
                             .withProjectId(project.getId()!!).build()
                     )
                 )
-                .header("Authorization", headerAdmin())
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
-    }
 
-    @Test
-    fun `should throw a 400 status when update a repository and it has a name with special character not valid`() {
-        val project = projectService.save(aProject().build())
-        repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-
+        // UPDATE WITH SPECIAL CHARACTER
         mockMvc.perform(
             MockMvcRequestBuilders.put("/repositories")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -419,7 +352,7 @@ class RepositoryControllerTest {
                             .withProjectId(project.getId()!!).build()
                     )
                 )
-                .header("Authorization", headerAdmin())
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(status().isBadRequest)
     }
@@ -541,7 +474,9 @@ class RepositoryControllerTest {
     }
 
     @Test
-    fun `should throw a 200 status when querying the page count of commits`() {
+    fun `should throw a 200 status when querying the page count of commits, issues and pull requests, when querying the page commits, issues, and pull requests`() {
+        val header = headerAdmin()
+        // PAGE COUNT COMMITS
         val project = projectService.save(aProject().build())
         val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         mockMvc.perform(
@@ -549,75 +484,55 @@ class RepositoryControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name)
                 .param("size", "0")
-                .header("Authorization", headerAdmin())
+                .header("Authorization", header)
         ).andExpect(status().isOk)
-    }
 
-    @Test
-    fun `should throw a 200 status when querying the page count of issues`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
+        // PAGE COUNT ISSUES
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedIssue")
                 .accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name)
                 .param("size", "0")
-                .header("Authorization", headerAdmin())
+                .header("Authorization", header)
         ).andExpect(status().isOk)
-    }
 
-    @Test
-    fun `should throw a 200 status when querying the page count of pull request`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
+        // PAGE COUNT PULL REQUESTS
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/lengthPagesPaginatedPullRequest")
                 .accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name)
                 .param("size", "0")
-                .header("Authorization", headerAdmin())
+                .header("Authorization", header)
         ).andExpect(status().isOk)
-    }
 
-    @Test
-    fun `should throw a 200 status when querying the page commits`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
+        // PAGE COMMITS
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pageCommit")
                 .accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name)
                 .param("page", "0")
                 .param("size", "5")
-                .header("Authorization", headerAdmin())
+                .header("Authorization", header)
         ).andExpect(status().isOk)
-    }
 
-    @Test
-    fun `should throw a 200 status when querying the page issue`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
+        // PAGE ISSUES
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pageIssue")
                 .accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name)
                 .param("page", "0")
                 .param("size", "5")
-                .header("Authorization", headerAdmin())
+                .header("Authorization", header)
         ).andExpect(status().isOk)
-    }
 
-    @Test
-    fun `should throw a 200 status when querying the page pull request`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
+        // PAGE PULL REQUESTS
         mockMvc.perform(
             MockMvcRequestBuilders.get("/repositories/pagePullRequest")
                 .accept(MediaType.APPLICATION_JSON)
                 .param("name", repository.name)
                 .param("page", "0")
                 .param("size", "5")
-                .header("Authorization", headerAdmin())
+                .header("Authorization", header)
         ).andExpect(status().isOk)
     }
 
@@ -776,5 +691,17 @@ class RepositoryControllerTest {
 
         val stringToken = response.andReturn().response.contentAsString
         return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
+    }
+
+    @AfterEach
+    fun tearDown() {
+        commissionService.clearCommissions()
+        groupService.clearGroups()
+        studentService.clearStudents()
+        teacherService.clearTeachers()
+        matterService.clearMatters()
+        projectService.clearProjects()
+        repositoryService.clearRepositories()
+        adminService.clearAdmins()
     }
 }

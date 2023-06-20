@@ -1,6 +1,7 @@
 package unq.pds.webservice
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -13,7 +14,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import unq.pds.Initializer
 import unq.pds.model.builder.BuilderTeacher.Companion.aTeacher
 import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
@@ -61,12 +61,8 @@ class TeacherControllerTest {
 
       private val mapper = ObjectMapper()
 
-      @Autowired
-      lateinit var initializer: Initializer
-
       @BeforeEach
       fun setUp() {
-          initializer.cleanDataBase()
           mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
       }
 
@@ -861,7 +857,7 @@ class TeacherControllerTest {
       }
 
       @Test
-      fun `should throw a 200 status when teacher does have permissions to add a comment to a repository`() {
+      fun `should throw a 200 status when teacher and admin does have permissions to add a comment to a repository`() {
           val header = headerTeacher()
           matterService.save(aMatter().build())
           val teacher = teacherService.findByEmail("german@gmail.com")
@@ -883,13 +879,6 @@ class TeacherControllerTest {
                   .header("Authorization", header)
                   .accept("application/json")
           ).andExpect(status().isOk)
-      }
-
-      @Test
-      fun `should throw a 200 status when admin does have permissions to add a comment to a repository`() {
-          val project = projectService.save(aProject().build())
-          val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-          projectService.addRepository(project.getId()!!, repository.id)
 
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers/addComment")
@@ -942,4 +931,16 @@ class TeacherControllerTest {
           val stringToken = response.andReturn().response.contentAsString
           return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
       }
+
+    @AfterEach
+    fun tearDown() {
+        commissionService.clearCommissions()
+        groupService.clearGroups()
+        studentService.clearStudents()
+        teacherService.clearTeachers()
+        matterService.clearMatters()
+        projectService.clearProjects()
+        repositoryService.clearRepositories()
+        adminService.clearAdmins()
+    }
 }

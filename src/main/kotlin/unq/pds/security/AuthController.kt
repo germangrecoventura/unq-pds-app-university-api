@@ -212,6 +212,7 @@ class AuthController(
             )
         ]
     )
+    @Suppress("UNCHECKED_CAST")
     fun user(request: HttpServletRequest): ResponseEntity<Any> {
         var header = request.getHeader(HttpHeaders.AUTHORIZATION)
         if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)

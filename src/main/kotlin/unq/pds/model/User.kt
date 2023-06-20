@@ -37,11 +37,11 @@ abstract class User(
         id = idNew
     }
 
-    protected fun validateEmail(email_address: String?) {
-        if (email_address.isNullOrBlank()) {
+    protected fun validateEmail(emailAddress: String?) {
+        if (emailAddress.isNullOrBlank()) {
             throw InvalidAttributeValueException("The email cannot be empty")
         }
-        if (!Validator.isValidEMail(email_address)) {
+        if (!Validator.isValidEMail(emailAddress)) {
             throw InvalidAttributeValueException("The email is not valid")
         }
     }

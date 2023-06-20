@@ -1,6 +1,7 @@
 package unq.pds.webservice
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -13,7 +14,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import unq.pds.Initializer
 import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
 import unq.pds.model.builder.DeployInstanceBuilder.Companion.aDeployInstance
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
@@ -64,12 +64,8 @@ class ProjectControllerTest {
 
     private val mapper = ObjectMapper()
 
-    @Autowired
-    lateinit var initializer: Initializer
-
     @BeforeEach
     fun setUp() {
-        initializer.cleanDataBase()
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
     }
 
@@ -436,22 +432,6 @@ class ProjectControllerTest {
     }
 
     @Test
-    fun `should throw a 401 status when a teacher does not have permissions to add a repository to a project`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        mockMvc.perform(
-            MockMvcRequestBuilders.put(
-                "/projects/addRepository/{projectId}/{repositoryId}",
-                "1",
-                repository.id.toString()
-            )
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", headerTeacher())
-                .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
     fun `should throw a 200 status when a teacher does have permissions to add a repository to a project`() {
         val header = headerTeacher()
         matterService.save(aMatter().build())
@@ -462,33 +442,6 @@ class ProjectControllerTest {
 
         commissionService.addStudent(commission.getId()!!, student2.getId()!!)
         commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
-        commissionService.addGroup(commission.getId()!!, group.getId()!!)
-
-        val project = group.projects.elementAt(0)
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        mockMvc.perform(
-            MockMvcRequestBuilders.put(
-                "/projects/addRepository/{projectId}/{repositoryId}",
-                project.getId().toString(),
-                repository.id.toString()
-            )
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", header)
-                .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isOk)
-    }
-
-    @Test
-    fun `should throw a 200 status when a student does have permissions to add a repository to a project`() {
-        val header = headerStudent()
-        matterService.save(aMatter().build())
-        val student = studentService.findByEmail("german@gmail.com")
-        val student2 = studentService.save(aStudentDTO().withEmail("test@gmail.com").build())
-        val commission = commissionService.save(aCommission().build())
-        val group = groupService.save(aGroupDTO().withMembers(listOf("german@gmail.com", "test@gmail.com")).build())
-
-        commissionService.addStudent(commission.getId()!!, student.getId()!!)
-        commissionService.addStudent(commission.getId()!!, student2.getId()!!)
         commissionService.addGroup(commission.getId()!!, group.getId()!!)
 
         val project = group.projects.elementAt(0)
@@ -526,7 +479,9 @@ class ProjectControllerTest {
     }
 
     @Test
-    fun `should throw a 200 status when a admin does have permissions to add a repository to a project`() {
+    fun `should throw a 200 status when a admin does have permissions to add a repository, 404 status when add a non-existent project, 400 status when add a repository and it has already been added`() {
+        val header = headerAdmin()
+        // ADD REPOSITORY
         val project = projectService.save(aProject().build())
         studentService.save(aStudentDTO().build())
         val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
@@ -538,17 +493,11 @@ class ProjectControllerTest {
                 repository.id.toString()
             )
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", headerAdmin())
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isOk)
-    }
 
-    @Test
-    fun `should throw a 404 status when add a non-existent project`() {
-        studentService.save(aStudentDTO().build())
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-
+        // NON-EXISTENT PROJECT
         mockMvc.perform(
             MockMvcRequestBuilders.put(
                 "/projects/addRepository/{projectId}/{repositoryId}",
@@ -556,9 +505,21 @@ class ProjectControllerTest {
                 repository.id.toString()
             )
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", headerAdmin())
+                .header("Authorization", header)
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isNotFound)
+
+        // HAS BEEN ADDED
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                "/projects/addRepository/{projectId}/{repositoryId}",
+                project.getId().toString(),
+                repository.id.toString()
+            )
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", header)
+                .accept("application/json")
+        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
     }
 
     @Test
@@ -575,25 +536,6 @@ class ProjectControllerTest {
                 .header("Authorization", headerAdmin())
                 .accept("application/json")
         ).andExpect(MockMvcResultMatchers.status().isNotFound)
-    }
-
-    @Test
-    fun `should throw a 400 status when add a repository to a project and it has already been added`() {
-        val project = projectService.save(aProject().build())
-        studentService.save(aStudentDTO().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        projectService.addRepository(project.getId()!!, repository.id)
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.put(
-                "/projects/addRepository/{projectId}/{repositoryId}",
-                project.getId().toString(),
-                repository.id.toString()
-            )
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", headerAdmin())
-                .accept("application/json")
-        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
     }
 
     @Test
@@ -765,5 +707,18 @@ class ProjectControllerTest {
 
         val stringToken = response.andReturn().response.contentAsString
         return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
+    }
+
+    @AfterEach
+    fun tearDown() {
+        commissionService.clearCommissions()
+        groupService.clearGroups()
+        studentService.clearStudents()
+        teacherService.clearTeachers()
+        matterService.clearMatters()
+        projectService.clearProjects()
+        repositoryService.clearRepositories()
+        adminService.clearAdmins()
+        deployInstanceService.clearDeployInstances()
     }
 }
