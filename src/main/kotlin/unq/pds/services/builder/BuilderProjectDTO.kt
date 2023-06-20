@@ -5,11 +5,17 @@ import unq.pds.api.dtos.ProjectDTO
 class BuilderProjectDTO {
     private var id: Long? = null
     private var name: String? = "unq-pds-app-university-api"
+    private var ownerGithub: String? = "germangrecoventura"
+    private var tokenGithub: String? = System.getenv("TOKEN_GITHUB")
+    private var groupId: Long? = null
 
     fun build(): ProjectDTO {
         val project = ProjectDTO()
         project.id = id
         project.name = name
+        project.ownerGithub = ownerGithub
+        project.tokenGithub = tokenGithub
+        project.groupId = groupId
         return project
     }
 
@@ -20,6 +26,21 @@ class BuilderProjectDTO {
 
     fun withName(name: String?): BuilderProjectDTO {
         this.name = name
+        return this
+    }
+
+    fun withOwner(owner: String?): BuilderProjectDTO {
+        this.ownerGithub = owner
+        return this
+    }
+
+    fun withToken(token: String?): BuilderProjectDTO {
+        this.tokenGithub = token
+        return this
+    }
+
+    fun withGroupId(groupId: Long?): BuilderProjectDTO {
+        this.groupId = groupId
         return this
     }
 

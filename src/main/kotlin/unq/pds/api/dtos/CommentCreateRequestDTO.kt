@@ -5,13 +5,9 @@ import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
 class CommentCreateRequestDTO {
-    @NotNull(message = "The id cannot be blank")
+    @NotNull(message = "The repository id cannot be blank")
     @Schema(example = "1")
-    var idToComment: Long? = null
-
-    @NotBlank(message = "The name repository cannot be blank")
-    @Schema(example = "unq-pds-app-university-api")
-    var nameRepository: String? = null
+    var repositoryId: Long? = null
 
     @NotBlank(message = "The comment cannot be blank")
     @Schema(example = "Exercise done correctly")

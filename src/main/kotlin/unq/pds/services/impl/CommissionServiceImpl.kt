@@ -11,11 +11,16 @@ import unq.pds.services.*
 @Transactional
 open class CommissionServiceImpl : CommissionService {
 
-    @Autowired private lateinit var commissionDAO: CommissionDAO
-    @Autowired private lateinit var matterService: MatterService
-    @Autowired private lateinit var studentService: StudentService
-    @Autowired private lateinit var teacherService: TeacherService
-    @Autowired private lateinit var groupService: GroupService
+    @Autowired
+    private lateinit var commissionDAO: CommissionDAO
+    @Autowired
+    private lateinit var matterService: MatterService
+    @Autowired
+    private lateinit var studentService: StudentService
+    @Autowired
+    private lateinit var teacherService: TeacherService
+    @Autowired
+    private lateinit var groupService: GroupService
 
     override fun save(commission: Commission): Commission {
         commission.setMatter(matterService.findByName(commission.getMatter().name))
@@ -23,12 +28,13 @@ open class CommissionServiceImpl : CommissionService {
     }
 
     override fun read(commissionId: Long): Commission {
-        return commissionDAO.findById(commissionId).orElseThrow { NoSuchElementException("There is no commission with that id") }
+        return commissionDAO.findById(commissionId)
+            .orElseThrow { NoSuchElementException("There is no commission with that id") }
     }
 
     override fun delete(commissionId: Long) {
         if (commissionDAO.existsById(commissionId)) commissionDAO.deleteById(commissionId)
-         else throw NoSuchElementException("There is no commission with that id")
+        else throw NoSuchElementException("There is no commission with that id")
     }
 
     override fun addStudent(commissionId: Long, studentId: Long): Commission {

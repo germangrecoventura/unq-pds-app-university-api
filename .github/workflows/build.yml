@@ -1,7 +1,7 @@
 name: SonarCloud
 on:
   push:
-    branches: [ "main","dev" ]
+    branches: [ "dev" ]
   pull_request:
     branches: [ "main","dev" ]
     types: [ opened, synchronize, reopened ]
@@ -49,4 +49,5 @@ jobs:
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           ENCRYPT_PASSWORD: ${{ secrets.ENCRYPT_PASSWORD }}
+          DISABLED_TEST: false
         run: ./gradlew build jacocoTestReport sonarqube --info

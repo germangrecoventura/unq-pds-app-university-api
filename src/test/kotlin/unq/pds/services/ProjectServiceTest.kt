@@ -1,17 +1,21 @@
 package unq.pds.services
 
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import unq.pds.Initializer
 import unq.pds.api.dtos.ProjectDTO
+import unq.pds.model.builder.DeployInstanceBuilder.Companion.aDeployInstance
+import unq.pds.model.builder.CommissionBuilder
+import unq.pds.model.builder.MatterBuilder
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.model.exceptions.RepositoryHasAlreadyBeenAddedException
+import unq.pds.services.builder.BuilderGroupDTO
 import unq.pds.services.builder.BuilderProjectDTO.Companion.aProjectDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
 import unq.pds.services.builder.BuilderStudentDTO
+import unq.pds.services.builder.BuilderTeacherDTO
 
 @SpringBootTest
 class ProjectServiceTest {
@@ -23,17 +27,22 @@ class ProjectServiceTest {
     lateinit var repositoryService: RepositoryService
 
     @Autowired
-    lateinit var initializer: Initializer
-
-    private var token: String = System.getenv("TOKEN_GITHUB")
-
-    @Autowired
     lateinit var studentService: StudentService
 
-    @BeforeEach
-    fun tearDown() {
-        initializer.cleanDataBase()
-    }
+    @Autowired
+    lateinit var deployInstanceService: DeployInstanceService
+
+    @Autowired
+    lateinit var commissionService: CommissionService
+
+    @Autowired
+    lateinit var matterService: MatterService
+
+    @Autowired
+    lateinit var teacherService: TeacherService
+
+    @Autowired
+    lateinit var groupService: GroupService
 
     @Test
     fun `should be create a project when it has valid credentials`() {
@@ -94,22 +103,15 @@ class ProjectServiceTest {
     }
 
     @Test
-    fun `should add a repository to a project when it was not previously added and both exist`() {
+    fun `should add a repository, exception when trying to add the same repository, exception when add a repository to a non-existent project, should be true to have a commission with a teacher with email and a repository with id when both were added previously`() {
+        // ADD REPOSITORY
         val project = projectService.save(aProject().build())
-        studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
-        val repository = repositoryService.save(aRepositoryDTO().build())
+        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         Assertions.assertEquals(0, project.repositories.size)
         val projectWithARepository = projectService.addRepository(project.getId()!!, repository.id)
         Assertions.assertEquals(1, projectWithARepository.repositories.size)
-    }
 
-    @Test
-    fun `should throw an exception when trying to add the same repository to a project twice and both exist`() {
-        val project = projectService.save(aProject().build())
-        studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
-        val repository = repositoryService.save(aRepositoryDTO().build())
-        projectService.addRepository(project.getId()!!, repository.id)
-
+        // HAS BEEN ADDED
         val thrown: RepositoryHasAlreadyBeenAddedException? =
             Assertions.assertThrows(RepositoryHasAlreadyBeenAddedException::class.java) {
                 projectService.addRepository(
@@ -122,6 +124,26 @@ class ProjectServiceTest {
             "The repository has already been added to a project",
             thrown!!.message
         )
+
+        // NON-EXISTENT PROJECT
+        try {
+            projectService.addRepository(-1, repository.id)
+        } catch (e: NoSuchElementException) {
+            Assertions.assertEquals("There is no project with that id", e.message)
+        }
+
+        // EXIST A COMMISSION WITH A TEACHER WITH EMAIL AND A REPOSITORY WITH ID
+        matterService.save(MatterBuilder.aMatter().build())
+        val commission = commissionService.save(CommissionBuilder.aCommission().build())
+        val teacher = teacherService.save(BuilderTeacherDTO.aTeacherDTO().build())
+        val student = studentService.save(BuilderStudentDTO.aStudentDTO().withEmail("test@gmail.com").build())
+        val group = groupService.save(BuilderGroupDTO.aGroupDTO().withMembers(listOf("test@gmail.com")).build())
+        groupService.addProject(group.getId()!!, project.getId()!!)
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        Assertions.assertTrue(projectService.thereIsACommissionWhereIsteacherAndTheRepositoryExists(
+            teacher.getEmail()!!, repository.id))
     }
 
     @Test
@@ -135,14 +157,74 @@ class ProjectServiceTest {
     }
 
     @Test
-    fun `should throw an exception when trying to add a repository to a project and the project does not exist`() {
-        studentService.save(BuilderStudentDTO.aStudentDTO().withTokenGithub(token).build())
-        val repository = repositoryService.save(aRepositoryDTO().build())
+    fun `should add a deploy instance to a project when it was not previously added and both exist`() {
+        val project = projectService.save(aProject().build())
+        val deployInstance = deployInstanceService.save(aDeployInstance().build())
+        Assertions.assertEquals(0, project.deployInstances.size)
+        val projectWithADeployInstance = projectService.addDeployInstance(project.getId()!!, deployInstance.getId()!!)
+        Assertions.assertEquals(1, projectWithADeployInstance.deployInstances.size)
+    }
+
+    @Test
+    fun `should throw an exception when trying to add the same deploy instance to a project twice and both exist`() {
+        val project = projectService.save(aProject().build())
+        val deployInstance = deployInstanceService.save(aDeployInstance().build())
+        projectService.addDeployInstance(project.getId()!!, deployInstance.getId()!!)
+
+        val thrown: CloneNotSupportedException? =
+            Assertions.assertThrows(CloneNotSupportedException::class.java) {
+                projectService.addDeployInstance(
+                    project.getId()!!,
+                    deployInstance.getId()!!
+                )
+            }
+
+        Assertions.assertEquals(
+            "The deploy instance is already in the project",
+            thrown!!.message
+        )
+    }
+
+    @Test
+    fun `should be false to have a commission with a teacher with email and a repository with id when both were not added`() {
+        matterService.save(MatterBuilder.aMatter().build())
+        commissionService.save(CommissionBuilder.aCommission().build())
+        Assertions.assertFalse(
+            projectService.thereIsACommissionWhereIsteacherAndTheRepositoryExists(
+                "emailFalso",
+                -1
+            )
+        )
+    }
+
+    @Test
+    fun `should throw an exception when trying to add a deploy instance to a project and the deploy instance does not exist`() {
+        val project = projectService.save(aProject().build())
         try {
-            projectService.addRepository(-1, repository.id)
+            projectService.addDeployInstance(project.getId()!!, -1)
+        } catch (e: NoSuchElementException) {
+            Assertions.assertEquals("Not found the deploy instance with id -1", e.message)
+        }
+    }
+
+    @Test
+    fun `should throw an exception when trying to add a deploy instance to a project and the project does not exist`() {
+        val deployInstance = deployInstanceService.save(aDeployInstance().build())
+        try {
+            projectService.addDeployInstance(-1, deployInstance.getId()!!)
         } catch (e: NoSuchElementException) {
             Assertions.assertEquals("There is no project with that id", e.message)
         }
+    }
+
+    @Test
+    fun `should be false to have a commission with a teacher with email and a repository with id when there is no commissions`() {
+        Assertions.assertFalse(
+            projectService.thereIsACommissionWhereIsteacherAndTheRepositoryExists(
+                "emailFalso",
+                -1
+            )
+        )
     }
 
     @Test
@@ -159,5 +241,17 @@ class ProjectServiceTest {
         Assertions.assertEquals(2, projects.size)
         Assertions.assertTrue(projects.any { it.name == "unq-pds-app-university-api" })
         Assertions.assertTrue(projects.any { it.name == "unq-pdes-app" })
+    }
+
+    @AfterEach
+    fun tearDown() {
+        commissionService.clearCommissions()
+        groupService.clearGroups()
+        studentService.clearStudents()
+        teacherService.clearTeachers()
+        matterService.clearMatters()
+        projectService.clearProjects()
+        repositoryService.clearRepositories()
+        deployInstanceService.clearDeployInstances()
     }
 }

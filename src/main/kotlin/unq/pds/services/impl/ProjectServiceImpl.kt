@@ -6,18 +6,21 @@ import org.springframework.transaction.annotation.Transactional
 import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.Project
 import unq.pds.model.exceptions.RepositoryHasAlreadyBeenAddedException
+import unq.pds.persistence.DeployInstanceDAO
 import unq.pds.persistence.ProjectDAO
+import unq.pds.persistence.RepositoryDAO
 import unq.pds.services.ProjectService
-import unq.pds.services.RepositoryService
 
 @Service
 @Transactional
 open class ProjectServiceImpl : ProjectService {
 
     @Autowired private lateinit var projectDAO: ProjectDAO
-    @Autowired private lateinit var repositoryService: RepositoryService
+    @Autowired private lateinit var repositoryDAO: RepositoryDAO
+    @Autowired private lateinit var deployInstanceDAO: DeployInstanceDAO
 
     override fun save(project: Project): Project {
+        project.setTokenGithub(project.getTokenGithub())
         return projectDAO.save(project)
     }
 
@@ -25,6 +28,8 @@ open class ProjectServiceImpl : ProjectService {
         if (project.id != null && projectDAO.existsById(project.id!!)) {
             val projectFind = projectDAO.findById(project.id!!).get()
             projectFind.name = project.name!!
+            projectFind.setOwnerGithub(project.ownerGithub)
+            projectFind.setTokenGithub(project.tokenGithub)
             return projectDAO.save(projectFind)
         }
          else throw NoSuchElementException("Project does not exist")
@@ -41,13 +46,42 @@ open class ProjectServiceImpl : ProjectService {
 
     override fun addRepository(projectId: Long, repositoryId: Long): Project {
         val project = this.read(projectId)
-        val repository = repositoryService.findById(repositoryId)
+        val repository = repositoryDAO.findById(repositoryId)
+            .orElseThrow { NoSuchElementException("Not found the repository with id $repositoryId") }
         if (projectDAO.projectWithRepository(repository).isPresent) {
             throw RepositoryHasAlreadyBeenAddedException()
         }
         project.addRepository(repository)
 
         return projectDAO.save(project)
+    }
+
+    override fun addDeployInstance(projectId: Long, deployInstanceId: Long): Project {
+        val project = this.read(projectId)
+        val deployInstance = deployInstanceDAO.findById(deployInstanceId)
+            .orElseThrow { NoSuchElementException("Not found the deploy instance with id $deployInstanceId") }
+        project.addDeployInstance(deployInstance)
+
+        return projectDAO.save(project)
+    }
+
+    override fun thereIsACommissionWhereIsteacherAndTheProjectExists(teacherEmail: String, projectId: Long): Boolean {
+        return projectDAO.thereIsACommissionWhereIsTeacherAndTheProjectExists(teacherEmail, projectId)
+    }
+
+    override fun thereIsACommissionWhereIsteacherAndTheRepositoryExists(
+        teacherEmail: String,
+        repositoryId: Long
+    ): Boolean {
+        return projectDAO.thereIsACommissionWhereIsTeacherAndTheRepositoryExists(teacherEmail, repositoryId)
+    }
+
+    override fun thereIsAGroupWhereIsStudentAndTheProjectExists(studentEmail: String, projectId: Long): Boolean {
+        return projectDAO.thereIsAGroupWhereIsStudentAndTheProjectExists(studentEmail, projectId)
+    }
+
+    override fun isFoundRepository(projectId: Long,name: String): Boolean {
+        return projectDAO.isFoundRepository(projectId, name)
     }
 
     override fun readAll(): List<Project> {
