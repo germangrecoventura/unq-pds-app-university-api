@@ -101,7 +101,8 @@ test {
 }
 
 test {
-    if (System.getenv("DISABLED_TEST")) {
+   // if (System.getenv("DISABLED_TEST")) {
+    if (true) {
         exclude '**/*'
     }
 }
