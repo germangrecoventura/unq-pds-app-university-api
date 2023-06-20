@@ -857,7 +857,7 @@ class TeacherControllerTest {
       }
 
       @Test
-      fun `should throw a 200 status when teacher does have permissions to add a comment to a repository`() {
+      fun `should throw a 200 status when teacher and admin does have permissions to add a comment to a repository`() {
           val header = headerTeacher()
           matterService.save(aMatter().build())
           val teacher = teacherService.findByEmail("german@gmail.com")
@@ -879,13 +879,6 @@ class TeacherControllerTest {
                   .header("Authorization", header)
                   .accept("application/json")
           ).andExpect(status().isOk)
-      }
-
-      @Test
-      fun `should throw a 200 status when admin does have permissions to add a comment to a repository`() {
-          val project = projectService.save(aProject().build())
-          val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-          projectService.addRepository(project.getId()!!, repository.id)
 
           mockMvc.perform(
               MockMvcRequestBuilders.post("/teachers/addComment")

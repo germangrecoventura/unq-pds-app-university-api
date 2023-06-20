@@ -103,20 +103,15 @@ class ProjectServiceTest {
     }
 
     @Test
-    fun `should add a repository to a project when it was not previously added and both exist`() {
+    fun `should add a repository, exception when trying to add the same repository, exception when add a repository to a non-existent project, should be true to have a commission with a teacher with email and a repository with id when both were added previously`() {
+        // ADD REPOSITORY
         val project = projectService.save(aProject().build())
         val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
         Assertions.assertEquals(0, project.repositories.size)
         val projectWithARepository = projectService.addRepository(project.getId()!!, repository.id)
         Assertions.assertEquals(1, projectWithARepository.repositories.size)
-    }
 
-    @Test
-    fun `should throw an exception when trying to add the same repository to a project twice and both exist`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        projectService.addRepository(project.getId()!!, repository.id)
-
+        // HAS BEEN ADDED
         val thrown: RepositoryHasAlreadyBeenAddedException? =
             Assertions.assertThrows(RepositoryHasAlreadyBeenAddedException::class.java) {
                 projectService.addRepository(
@@ -129,6 +124,26 @@ class ProjectServiceTest {
             "The repository has already been added to a project",
             thrown!!.message
         )
+
+        // NON-EXISTENT PROJECT
+        try {
+            projectService.addRepository(-1, repository.id)
+        } catch (e: NoSuchElementException) {
+            Assertions.assertEquals("There is no project with that id", e.message)
+        }
+
+        // EXIST A COMMISSION WITH A TEACHER WITH EMAIL AND A REPOSITORY WITH ID
+        matterService.save(MatterBuilder.aMatter().build())
+        val commission = commissionService.save(CommissionBuilder.aCommission().build())
+        val teacher = teacherService.save(BuilderTeacherDTO.aTeacherDTO().build())
+        val student = studentService.save(BuilderStudentDTO.aStudentDTO().withEmail("test@gmail.com").build())
+        val group = groupService.save(BuilderGroupDTO.aGroupDTO().withMembers(listOf("test@gmail.com")).build())
+        groupService.addProject(group.getId()!!, project.getId()!!)
+        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
+        commissionService.addStudent(commission.getId()!!, student.getId()!!)
+        commissionService.addGroup(commission.getId()!!, group.getId()!!)
+        Assertions.assertTrue(projectService.thereIsACommissionWhereIsteacherAndTheRepositoryExists(
+            teacher.getEmail()!!, repository.id))
     }
 
     @Test
@@ -138,17 +153,6 @@ class ProjectServiceTest {
             projectService.addRepository(project.getId()!!, -1)
         } catch (e: NoSuchElementException) {
             Assertions.assertEquals("Not found the repository with id -1", e.message)
-        }
-    }
-
-    @Test
-    fun `should throw an exception when trying to add a repository to a project and the project does not exist`() {
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        try {
-            projectService.addRepository(-1, repository.id)
-        } catch (e: NoSuchElementException) {
-            Assertions.assertEquals("There is no project with that id", e.message)
         }
     }
 
@@ -179,24 +183,6 @@ class ProjectServiceTest {
             "The deploy instance is already in the project",
             thrown!!.message
         )
-    }
-
-    @Test
-    fun `should be true to have a commission with a teacher with email and a repository with id when both were added previously`() {
-        matterService.save(MatterBuilder.aMatter().build())
-        val commission = commissionService.save(CommissionBuilder.aCommission().build())
-        val teacher = teacherService.save(BuilderTeacherDTO.aTeacherDTO().build())
-        val student = studentService.save(BuilderStudentDTO.aStudentDTO().withEmail("test@gmail.com").build())
-        val project = projectService.save(aProject().build())
-        val repository = repositoryService.save(aRepositoryDTO().withProjectId(project.getId()!!).build())
-        projectService.addRepository(project.getId()!!, repository.id)
-        val group = groupService.save(BuilderGroupDTO.aGroupDTO().withMembers(listOf("test@gmail.com")).build())
-        groupService.addProject(group.getId()!!, project.getId()!!)
-        commissionService.addTeacher(commission.getId()!!, teacher.getId()!!)
-        commissionService.addStudent(commission.getId()!!, student.getId()!!)
-        commissionService.addGroup(commission.getId()!!, group.getId()!!)
-        Assertions.assertTrue(projectService.thereIsACommissionWhereIsteacherAndTheRepositoryExists(
-            teacher.getEmail()!!, repository.id))
     }
 
     @Test
