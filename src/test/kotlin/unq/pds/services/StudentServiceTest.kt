@@ -1,11 +1,10 @@
 package unq.pds.services
 
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import unq.pds.Initializer
 import unq.pds.services.builder.BuilderStudentDTO.Companion.aStudentDTO
 import javax.management.InvalidAttributeValueException
 
@@ -14,14 +13,6 @@ class StudentServiceTest {
 
     @Autowired
     lateinit var studentService: StudentService
-
-    @Autowired
-    lateinit var initializer: Initializer
-
-    @BeforeEach
-    fun tearDown() {
-        initializer.cleanDataBase()
-    }
 
     @Test
     fun `should be create a student when when it has valid credentials`() {
@@ -308,5 +299,10 @@ class StudentServiceTest {
         Assertions.assertEquals(2, students.size)
         Assertions.assertTrue(students.any { it.getEmail() == "german@gmail.com" })
         Assertions.assertTrue(students.any { it.getEmail() == "germanF@gmail.com" })
+    }
+
+    @AfterEach
+    fun tearDown() {
+        studentService.clearStudents()
     }
 }

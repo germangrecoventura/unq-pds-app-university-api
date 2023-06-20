@@ -1,11 +1,10 @@
 package unq.pds.services
 
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import unq.pds.Initializer
 import unq.pds.model.builder.ProjectBuilder
 import unq.pds.services.builder.BuilderCommentCreateDTO.Companion.aCommentDTO
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
@@ -23,18 +22,10 @@ class TeacherServiceTest {
     lateinit var studentService: StudentService
 
     @Autowired
-    lateinit var initializer: Initializer
-
-    @Autowired
     lateinit var repositoryService: RepositoryService
 
     @Autowired
     lateinit var projectService: ProjectService
-
-    @BeforeEach
-    fun tearDown() {
-        initializer.cleanDataBase()
-    }
 
     @Test
     fun `should be create a teacher when when it has valid credentials`() {
@@ -333,5 +324,13 @@ class TeacherServiceTest {
         teacherService.addCommentToRepository(aCommentDTO().withId(repository.id).build())
         val repositoryFind = repositoryService.findById(repository.id)
         Assertions.assertTrue(repositoryFind.commentsTeacher.size == 1)
+    }
+
+    @AfterEach
+    fun tearDown() {
+        studentService.clearStudents()
+        teacherService.clearTeachers()
+        projectService.clearProjects()
+        repositoryService.clearRepositories()
     }
 }

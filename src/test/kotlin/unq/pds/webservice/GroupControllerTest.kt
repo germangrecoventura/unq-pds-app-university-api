@@ -1,6 +1,7 @@
 package unq.pds.webservice
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -13,7 +14,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import unq.pds.Initializer
 import unq.pds.api.dtos.GroupUpdateDTO
 import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
@@ -54,14 +54,10 @@ class GroupControllerTest {
     @Autowired
     lateinit var commissionService: CommissionService
 
-    @Autowired
-    lateinit var initializer: Initializer
-
     private val mapper = ObjectMapper()
 
     @BeforeEach
     fun setUp() {
-        initializer.cleanDataBase()
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
     }
 
@@ -1014,5 +1010,16 @@ class GroupControllerTest {
 
         val stringToken = response.andReturn().response.contentAsString
         return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
+    }
+
+    @AfterEach
+    fun tearDown() {
+        commissionService.clearCommissions()
+        groupService.clearGroups()
+        studentService.clearStudents()
+        teacherService.clearTeachers()
+        matterService.clearMatters()
+        projectService.clearProjects()
+        adminService.clearAdmins()
     }
 }

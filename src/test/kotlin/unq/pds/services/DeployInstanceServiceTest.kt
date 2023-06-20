@@ -3,19 +3,12 @@ package unq.pds.services
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import unq.pds.Initializer
 import unq.pds.model.builder.DeployInstanceBuilder.Companion.aDeployInstance
 
 @SpringBootTest
 class DeployInstanceServiceTest {
 
     @Autowired lateinit var deployInstanceService: DeployInstanceService
-    @Autowired lateinit var initializer: Initializer
-
-    @BeforeEach
-    fun tearDown() {
-        initializer.cleanDataBase()
-    }
 
     @Test
     fun `should be create a deploy instance when it has valid credentials`() {
@@ -87,5 +80,10 @@ class DeployInstanceServiceTest {
         Assertions.assertEquals(2, deployInstances.size)
         Assertions.assertTrue(deployInstances.any { it.name == "Railway" })
         Assertions.assertTrue(deployInstances.any { it.name == "Heroku" })
+    }
+
+    @AfterEach
+    fun tearDown() {
+        deployInstanceService.clearDeployInstances()
     }
 }

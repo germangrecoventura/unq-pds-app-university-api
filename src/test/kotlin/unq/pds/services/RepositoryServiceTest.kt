@@ -1,12 +1,11 @@
 package unq.pds.services
 
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import unq.pds.Initializer
 import unq.pds.model.builder.ProjectBuilder.Companion.aProject
 import unq.pds.model.exceptions.AlreadyRegisteredException
 import unq.pds.services.builder.BuilderRepositoryDTO.Companion.aRepositoryDTO
@@ -24,14 +23,6 @@ class RepositoryServiceTest {
 
     @Autowired
     lateinit var projectService: ProjectService
-
-    @Autowired
-    lateinit var initializer: Initializer
-
-    @BeforeEach
-    fun tearDown() {
-        initializer.cleanDataBase()
-    }
 
     @Test
     fun `should be create a repository when it has valid credentials`() {
@@ -365,5 +356,12 @@ class RepositoryServiceTest {
             .withName("unq-pds-app-university-web")
             .withProjectId(project.getId()!!).build())
         assertDoesNotThrow { repositoryService.findPaginatedIssue(repository.name, 0, 5) }
+    }
+
+    @AfterEach
+    fun tearDown() {
+        studentService.clearStudents()
+        projectService.clearProjects()
+        repositoryService.clearRepositories()
     }
 }

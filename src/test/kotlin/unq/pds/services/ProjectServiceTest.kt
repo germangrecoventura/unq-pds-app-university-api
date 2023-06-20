@@ -1,11 +1,10 @@
 package unq.pds.services
 
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import unq.pds.Initializer
 import unq.pds.api.dtos.ProjectDTO
 import unq.pds.model.builder.DeployInstanceBuilder.Companion.aDeployInstance
 import unq.pds.model.builder.CommissionBuilder
@@ -28,9 +27,6 @@ class ProjectServiceTest {
     lateinit var repositoryService: RepositoryService
 
     @Autowired
-    lateinit var initializer: Initializer
-
-    @Autowired
     lateinit var studentService: StudentService
 
     @Autowired
@@ -47,11 +43,6 @@ class ProjectServiceTest {
 
     @Autowired
     lateinit var groupService: GroupService
-
-    @BeforeEach
-    fun tearDown() {
-        initializer.cleanDataBase()
-    }
 
     @Test
     fun `should be create a project when it has valid credentials`() {
@@ -264,5 +255,17 @@ class ProjectServiceTest {
         Assertions.assertEquals(2, projects.size)
         Assertions.assertTrue(projects.any { it.name == "unq-pds-app-university-api" })
         Assertions.assertTrue(projects.any { it.name == "unq-pdes-app" })
+    }
+
+    @AfterEach
+    fun tearDown() {
+        commissionService.clearCommissions()
+        groupService.clearGroups()
+        studentService.clearStudents()
+        teacherService.clearTeachers()
+        matterService.clearMatters()
+        projectService.clearProjects()
+        repositoryService.clearRepositories()
+        deployInstanceService.clearDeployInstances()
     }
 }

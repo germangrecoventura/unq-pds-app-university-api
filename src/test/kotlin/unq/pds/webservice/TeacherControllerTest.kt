@@ -1,6 +1,7 @@
 package unq.pds.webservice
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -13,7 +14,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import unq.pds.Initializer
 import unq.pds.model.builder.BuilderTeacher.Companion.aTeacher
 import unq.pds.model.builder.CommissionBuilder.Companion.aCommission
 import unq.pds.model.builder.MatterBuilder.Companion.aMatter
@@ -61,12 +61,8 @@ class TeacherControllerTest {
 
       private val mapper = ObjectMapper()
 
-      @Autowired
-      lateinit var initializer: Initializer
-
       @BeforeEach
       fun setUp() {
-          initializer.cleanDataBase()
           mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
       }
 
@@ -942,4 +938,16 @@ class TeacherControllerTest {
           val stringToken = response.andReturn().response.contentAsString
           return "Bearer ${stringToken.substring(10, stringToken.length - 2)}"
       }
+
+    @AfterEach
+    fun tearDown() {
+        commissionService.clearCommissions()
+        groupService.clearGroups()
+        studentService.clearStudents()
+        teacherService.clearTeachers()
+        matterService.clearMatters()
+        projectService.clearProjects()
+        repositoryService.clearRepositories()
+        adminService.clearAdmins()
+    }
 }
