@@ -64,7 +64,10 @@ sonarqube {
                 "src/main/kotlin/unq/pds/services/builder/**," +
                 "src/main/kotlin/unq/pds/api/controller/DeployInstanceController.kt," +
                 "src/main/kotlin/unq/pds/services/impl/AdminServiceImpl.kt," +
-                "src/main/kotlin/unq/pds/model/User.kt"
+                "src/main/kotlin/unq/pds/model/User.kt," +
+                "src/main/kotlin/unq/pds/model/builder/**," +
+                "src/main/kotlin/unq/pds/security/**," +
+                "src/main/kotlin/unq/pds/api/controller/ControllerHelper.kt"
         property "sonar.cpd.exclusions", "src/main/kotlin/unq/pds/api/controller/**," +
                 "src/main/kotlin/unq/pds/security/**," +
                 "src/main/kotlin/unq/pds/model/Teacher.kt," +
