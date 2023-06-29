@@ -8,3 +8,5 @@ Para la base de datos optamos por MySql
 Para el frontend decidimos usar React junto con JavaScript, ya que al igual que Angular es otra herramienta con la que se cuenta con mucha información en cuanto a documentación.
 
 Otro de los motivos a utilizarlos es que son herramientas ya trabajadas en cuatrimestres anteriores
+
+Hay que actualizar esto

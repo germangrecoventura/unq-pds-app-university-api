@@ -51,6 +51,7 @@ dependencies {
     implementation('ch.qos.logback:logback-core:1.4.6')
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30'
+    testImplementation("com.tngtech.archunit:archunit:1.0.1")
 
 }
 sonarqube {
@@ -101,7 +102,7 @@ test {
 }
 
 test {
-    if (System.getenv("DISABLED_TEST")) {
+    if (System.getenv("DISABLED_TEST") == null || System.getenv("DISABLED_TEST").isBlank()) {
         exclude '**/*'
     }
 }
