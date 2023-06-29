@@ -14,12 +14,17 @@ Hay que actualizar esto
 
 ## Utilización
  1 - Primero deben realizar un clone del repositorio o bajarse el .zip del mismo
+
+
  2 - Si utilizan Docker compose bastará con situarse dentro de la carpeta y utilizar el comando  `docker compose up --build`
         donde se inicializará la aplicación con datos precargados (Exceptuando el repositorio ya que trae una cantidad abismal de información).
-        Para cargar el repositorio intente agregar al proyecto cargado el siguiente: unq-pds-app-university-api
+        Para cargar el repositorio intente agregar al proyecto cargado el siguiente: `unq-pds-app-university-api`
+
+
  3 - Si por casualidad por la consola les visualiza: 
          `not foundapp  | /waitingDatabase.sh: line 2: springboot-app  | /waitingDatabase.sh: line 8: syntax error: unexpected end of file (expecting "done")springboot-app exited with code 2` solo les bastará con ir al archivo y eliminar la última linea.
         Por alguna razón Github agrega una linea extra por defecto
+
 
  4 - En caso de no usar docker compose puede ejecutar la aplicacion normalmente por el IDE pero acuerdese de agregar las siguientes variables de entorno:
           
