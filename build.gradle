@@ -102,8 +102,7 @@ test {
 }
 
 test {
-   // if (System.getenv("DISABLED_TEST")) {
-    if (true) {
+    if (System.getenv("DISABLED_TEST") == null || System.getenv("DISABLED_TEST").isBlank()) {
         exclude '**/*'
     }
 }
