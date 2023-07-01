@@ -27,8 +27,11 @@ Hay que actualizar esto
 
 
  4 - En caso de no usar docker compose puede ejecutar la aplicacion normalmente por el IDE pero acuerdese de agregar las siguientes variables de entorno:
-          
-         `ENCRYPT_PASSWORD`
+
+         `TOKEN_GITHUB` => En este caso, los buider de los proyectos se crean con esta variable. No obstante, siempre puede crear instancias disitintas con distinto atributos. Si quiere correr los tests comuniquese con nosotros ya que sí pasamos el Token por aqui Github automaticamente lo elimina
+
+         `ENCRYPT_PASSWORD` => "some_salt" Como ejemplo
+         
          `DISABLED_TEST` => Solo en caso que no quiera que cuando se buildee corran todos los tests agrege cualquier dato
 
 
