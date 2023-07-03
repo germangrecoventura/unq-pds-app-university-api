@@ -8,9 +8,11 @@ Para la base de datos optamos por MySql
 
 Para el frontend decidimos usar React junto con JavaScript, ya que al igual que Angular es otra herramienta con la que se cuenta con mucha información en cuanto a documentación.
 
-Otro de los motivos a utilizarlos es que son herramientas ya trabajadas en cuatrimestres anteriores
+Otro de los motivos a utilizarlos es que son herramientas ya trabajadas en cuatrimestres anteriores.
 
-Hay que actualizar esto
+Para los tests de carga se utilizó K6
+
+
 
 ## Utilización
  1 - Primero deben realizar un clone del repositorio o bajarse el .zip del mismo
@@ -33,6 +35,9 @@ Hay que actualizar esto
          `ENCRYPT_PASSWORD` => "some_salt" Como ejemplo
          
          `DISABLED_TEST` => Solo en caso que no quiera que cuando se buildee corran todos los tests agrege cualquier dato
+
+5 - Si quieren ejecutar el test de carga necesitan tener Docker o instalarlo por otro medio. En este caso lo realizamos con Docker y para ejecutarlo bastará con situarse en el directorio load test y ejecutar el siguiente comando: 
+         `cat script.js | docker run --rm -i grafana/k6 run -`
 
 
 ## Usuarios cargados
