@@ -71,6 +71,10 @@ class GroupController(
             )]
     )
     fun createGroup(request: HttpServletRequest, @RequestBody @Valid group: GroupDTO): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.GroupController.createGroup(GroupDTO)",
+            listOf("$group")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -137,6 +141,10 @@ class GroupController(
             )]
     )
     fun getGroup(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.GroupController.getGroup(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -200,6 +208,10 @@ class GroupController(
         request: HttpServletRequest,
         @RequestBody groupUpdateDTO: GroupUpdateDTO
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.GroupController.updateGroup(GroupUpdateDTO)",
+            listOf("$groupUpdateDTO")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -272,6 +284,10 @@ class GroupController(
             )]
     )
     fun deleteGroup(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.GroupController.deleteGroup(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -339,6 +355,10 @@ class GroupController(
         @NotBlank @PathVariable groupId: Long,
         @NotBlank @PathVariable studentId: Long
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.GroupController.addMember(Long, Long)",
+            listOf("$groupId", "$studentId")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -410,6 +430,10 @@ class GroupController(
         @NotBlank @PathVariable groupId: Long,
         @NotBlank @PathVariable studentId: Long
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.GroupController.removeMember(Long, Long)",
+            listOf("$groupId", "$studentId")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -481,6 +505,10 @@ class GroupController(
         @NotBlank @PathVariable groupId: Long,
         @NotBlank @PathVariable projectId: Long
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.GroupController.addProject(Long, Long)",
+            listOf("$groupId", "$projectId")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -538,6 +566,10 @@ class GroupController(
             )]
     )
     fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.GroupController.getAll()",
+            listOf()
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED

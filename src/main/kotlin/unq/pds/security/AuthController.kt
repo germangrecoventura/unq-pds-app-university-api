@@ -1,6 +1,5 @@
 package unq.pds.security
 
-import io.jsonwebtoken.Jwts
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
@@ -8,25 +7,25 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.util.StringUtils
 import org.springframework.web.bind.annotation.*
+import unq.pds.api.controller.ControllerHelper
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.services.AdminService
 import unq.pds.services.StudentService
 import unq.pds.services.TeacherService
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
+import kotlin.math.log
 
 @RestController
 @CrossOrigin
-class AuthController(
-) {
+class AuthController : ControllerHelper() {
+
     @Autowired
     private lateinit var jwtUtilService: JwtUtilService
 
@@ -41,9 +40,6 @@ class AuthController(
 
     @Autowired
     private lateinit var teacherService: TeacherService
-
-    private val messageNotAuthenticated = MessageDTO("It is not authenticated. Please log in")
-    private val passwordEncrypt = JwtUtilService.JWT_SECRET_KEY
 
     @PostMapping("/login")
     @Operation(
@@ -99,6 +95,10 @@ class AuthController(
             )]
     )
     fun login(@Valid @RequestBody loginDTO: LoginDTO): ResponseEntity<TokenInfo> {
+        showLogger(
+            "unq.pds.security.AuthController.login(LoginDTO)",
+            listOf("$loginDTO")
+        )
         val authentication =
             authenticationManager.authenticate(UsernamePasswordAuthenticationToken(loginDTO.email, loginDTO.password))
         SecurityContextHolder.getContext().authentication = authentication
@@ -152,8 +152,14 @@ class AuthController(
             )]
     )
     fun logout(request: HttpServletRequest): ResponseEntity<Any> {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
+        showLogger(
+            "unq.pds.security.AuthController.logout()",
+            listOf()
+        )
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
         return ResponseEntity(MessageDTO("You successfully logged out"), HttpStatus.OK)
     }
 
@@ -214,10 +220,15 @@ class AuthController(
     )
     @Suppress("UNCHECKED_CAST")
     fun user(request: HttpServletRequest): ResponseEntity<Any> {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION)
-        if (!existJWT(header)) return ResponseEntity(messageNotAuthenticated, HttpStatus.UNAUTHORIZED)
-        header = header.substring(7, header.length)
-        val body = Jwts.parser().setSigningKey(passwordEncrypt).parseClaimsJws(header).body
+        showLogger(
+            "unq.pds.security.AuthController.user()",
+            listOf()
+        )
+        if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
+            messageNotAuthenticated,
+            HttpStatus.UNAUTHORIZED
+        )
+        val body = bodyOfTheCurrentHeader()
         return when (body["role"] as List<String>) {
             listOf("STUDENT") -> ResponseEntity(studentService.findByEmail(body.subject), HttpStatus.OK)
             listOf("TEACHER") -> ResponseEntity(teacherService.findByEmail(body.subject), HttpStatus.OK)
@@ -227,11 +238,5 @@ class AuthController(
                 HttpStatus.BAD_REQUEST
             )
         }
-    }
-
-    private fun existJWT(jwt: String?): Boolean {
-        return StringUtils.hasText(jwt) &&
-                jwt!!.startsWith("Bearer ")
-                && !jwt.substring(7, jwt.length).isNullOrEmpty()
     }
 }

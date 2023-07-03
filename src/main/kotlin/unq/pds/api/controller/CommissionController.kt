@@ -81,6 +81,10 @@ class CommissionController(private val commissionService: CommissionService): Co
         request: HttpServletRequest,
         @RequestBody @Valid commission: CommissionDTO
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.CommissionController.createCommission(CommissionDTO)",
+            listOf("$commission")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -143,6 +147,10 @@ class CommissionController(private val commissionService: CommissionService): Co
             )]
     )
     fun getCommission(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.CommissionController.getCommission(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -205,6 +213,10 @@ class CommissionController(private val commissionService: CommissionService): Co
             )]
     )
     fun deleteCommission(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.CommissionController.deleteCommission(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -272,6 +284,10 @@ class CommissionController(private val commissionService: CommissionService): Co
         @NotBlank @PathVariable commissionId: Long,
         @NotBlank @PathVariable studentId: Long
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.CommissionController.addStudent(Long, Long)",
+            listOf("$commissionId", "$studentId")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -342,6 +358,10 @@ class CommissionController(private val commissionService: CommissionService): Co
         @NotBlank @PathVariable commissionId: Long,
         @NotBlank @PathVariable studentId: Long
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.CommissionController.removeStudent(Long, Long)",
+            listOf("$commissionId", "$studentId")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -412,6 +432,10 @@ class CommissionController(private val commissionService: CommissionService): Co
         @NotBlank @PathVariable commissionId: Long,
         @NotBlank @PathVariable teacherId: Long
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.CommissionController.addTeacher(Long, Long)",
+            listOf("$commissionId", "$teacherId")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -478,6 +502,10 @@ class CommissionController(private val commissionService: CommissionService): Co
         @NotBlank @PathVariable commissionId: Long,
         @NotBlank @PathVariable teacherId: Long
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.CommissionController.removeTeacher(Long, Long)",
+            listOf("$commissionId", "$teacherId")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -544,6 +572,10 @@ class CommissionController(private val commissionService: CommissionService): Co
         @NotBlank @PathVariable commissionId: Long,
         @NotBlank @PathVariable groupId: Long
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.CommissionController.addGroup(Long, Long)",
+            listOf("$commissionId", "$groupId")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -614,6 +646,10 @@ class CommissionController(private val commissionService: CommissionService): Co
         @NotBlank @PathVariable commissionId: Long,
         @NotBlank @PathVariable groupId: Long
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.CommissionController.removeGroup(Long, Long)",
+            listOf("$commissionId", "$groupId")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -670,6 +706,10 @@ class CommissionController(private val commissionService: CommissionService): Co
             )]
     )
     fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.CommissionController.getAll()",
+            listOf()
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED

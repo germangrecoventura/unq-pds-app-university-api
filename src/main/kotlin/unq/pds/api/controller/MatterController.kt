@@ -67,6 +67,10 @@ class MatterController(private val matterService: MatterService): ControllerHelp
             )]
     )
     fun createMatter(request: HttpServletRequest, @RequestBody @Valid matter: MatterDTO): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.MatterController.createMatter(MatterDTO)",
+            listOf("$matter")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -129,6 +133,10 @@ class MatterController(private val matterService: MatterService): ControllerHelp
             )]
     )
     fun getMatter(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.MatterController.getMatter(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -189,6 +197,10 @@ class MatterController(private val matterService: MatterService): ControllerHelp
             )]
     )
     fun updateMatter(request: HttpServletRequest, @RequestBody matter: Matter): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.MatterController.updateMatter(Matter)",
+            listOf("$matter")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -253,6 +265,10 @@ class MatterController(private val matterService: MatterService): ControllerHelp
             )]
     )
     fun deleteMatter(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.MatterController.deleteMatter(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -306,6 +322,10 @@ class MatterController(private val matterService: MatterService): ControllerHelp
             )]
     )
     fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.MatterController.getAll()",
+            listOf()
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED

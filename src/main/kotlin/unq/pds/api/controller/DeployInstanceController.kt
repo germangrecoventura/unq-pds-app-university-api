@@ -72,6 +72,10 @@ class DeployInstanceController(
     )
     fun createDeployInstance(@RequestBody @Valid deployInstance: DeployInstanceDTO,
                              request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.DeployInstanceController.createDeployInstance(DeployInstanceDTO)",
+            listOf("$deployInstance")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -137,6 +141,10 @@ class DeployInstanceController(
             )]
     )
     fun getDeployInstance(@NotBlank @RequestParam id: Long, request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.DeployInstanceController.getDeployInstance(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -197,6 +205,10 @@ class DeployInstanceController(
             )]
     )
     fun updateDeployInstance(@RequestBody @Valid deployInstance: DeployInstance, request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.DeployInstanceController.updateDeployInstance(DeployInstance)",
+            listOf("$deployInstance")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -264,6 +276,10 @@ class DeployInstanceController(
             )]
     )
     fun deleteDeployInstance(@NotBlank @RequestParam id: Long, request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.DeployInstanceController.deleteDeployInstance(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -320,6 +336,10 @@ class DeployInstanceController(
             )]
     )
     fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.DeployInstanceController.getAll()",
+            listOf()
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED

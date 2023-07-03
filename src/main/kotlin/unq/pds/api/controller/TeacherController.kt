@@ -78,6 +78,10 @@ class TeacherController(
         request: HttpServletRequest,
         @RequestBody @Valid teacher: TeacherCreateRequestDTO
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.TeacherController.createTeacher(TeacherCreateRequestDTO)",
+            listOf("$teacher")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -141,6 +145,10 @@ class TeacherController(
             )]
     )
     fun getTeacher(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.TeacherController.getTeacher(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -201,6 +209,10 @@ class TeacherController(
             )]
     )
     fun updateTeacher(request: HttpServletRequest, @RequestBody teacher: Teacher): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.TeacherController.updateTeacher(Teacher)",
+            listOf("$teacher")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -266,6 +278,10 @@ class TeacherController(
             )]
     )
     fun deleteTeacher(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.TeacherController.deleteTeacher(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -319,6 +335,10 @@ class TeacherController(
             )]
     )
     fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.TeacherController.getAll()",
+            listOf()
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -386,6 +406,10 @@ class TeacherController(
         @RequestBody @Valid comment:
         CommentCreateRequestDTO
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.TeacherController.addCommentToRepository(CommentCreateRequestDTO)",
+            listOf("$comment")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED

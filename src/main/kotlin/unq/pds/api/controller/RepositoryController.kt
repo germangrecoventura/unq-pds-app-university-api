@@ -88,6 +88,10 @@ class RepositoryController(
         request: HttpServletRequest,
         @RequestBody @Valid repository: RepositoryDTO
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.RepositoryController.createRepository(RepositoryDTO)",
+            listOf("$repository")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -157,6 +161,10 @@ class RepositoryController(
             )]
     )
     fun getRepository(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.RepositoryController.getRepository(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -220,6 +228,10 @@ class RepositoryController(
         request: HttpServletRequest,
         @RequestBody @Valid repository: RepositoryDTO
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.RepositoryController.updateRepository(RepositoryDTO)",
+            listOf("$repository")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -293,6 +305,10 @@ class RepositoryController(
             )]
     )
     fun deleteRepository(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.RepositoryController.deleteRepository(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -348,6 +364,10 @@ class RepositoryController(
             )]
     )
     fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.RepositoryController.getAll()",
+            listOf()
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -412,6 +432,10 @@ class RepositoryController(
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.RepositoryController.lengthPagesPaginatedCommit(String, Int)",
+            listOf(name, "$size")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -475,6 +499,10 @@ class RepositoryController(
         @NotBlank @RequestParam page: Int,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.RepositoryController.getPaginatedCommit(String, Int, Int)",
+            listOf(name, "$page", "$size")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -539,6 +567,10 @@ class RepositoryController(
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.RepositoryController.lengthPagesPaginatedIssue(String, Int)",
+            listOf(name, "$size")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -602,6 +634,10 @@ class RepositoryController(
         @NotBlank @RequestParam page: Int,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.RepositoryController.getPaginatedIssue(String, Int, Int)",
+            listOf(name, "$page", "$size")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -666,6 +702,10 @@ class RepositoryController(
         @NotBlank @RequestParam name: String,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.RepositoryController.lengthPagesPaginatedPullRequest(String, Int)",
+            listOf(name, "$size")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -729,6 +769,10 @@ class RepositoryController(
         @NotBlank @RequestParam page: Int,
         @NotBlank @RequestParam size: Int
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.RepositoryController.getPaginatedPullRequest(String, Int, Int)",
+            listOf(name, "$page", "$size")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED

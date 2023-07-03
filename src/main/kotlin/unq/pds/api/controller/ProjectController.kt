@@ -75,6 +75,10 @@ class ProjectController(
             )]
     )
     fun createProject(request: HttpServletRequest, @RequestBody @Valid project: ProjectDTO): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.ProjectController.createProject(ProjectDTO)",
+            listOf("$project")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -143,6 +147,10 @@ class ProjectController(
             )]
     )
     fun getProject(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.ProjectController.getProject(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -203,6 +211,10 @@ class ProjectController(
             )]
     )
     fun updateProject(request: HttpServletRequest, @RequestBody project: ProjectDTO): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.ProjectController.updateProject(ProjectDTO)",
+            listOf("$project")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -274,6 +286,10 @@ class ProjectController(
             )]
     )
     fun deleteProject(request: HttpServletRequest, @NotBlank @RequestParam id: Long): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.ProjectController.deleteProject(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -341,6 +357,10 @@ class ProjectController(
         @NotBlank @PathVariable projectId: Long,
         @NotBlank @PathVariable repositoryId: Long
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.ProjectController.addRepository(Long, Long)",
+            listOf("$projectId", "$repositoryId")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -416,6 +436,10 @@ class ProjectController(
         @NotBlank @PathVariable deployInstanceId: Long,
         request: HttpServletRequest
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.ProjectController.addDeployInstance(Long, Long)",
+            listOf("$projectId", "$deployInstanceId")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -473,6 +497,10 @@ class ProjectController(
             )]
     )
     fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.ProjectController.getAll()",
+            listOf()
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED

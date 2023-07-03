@@ -48,9 +48,7 @@ dependencies {
     implementation("com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5")
     implementation("org.springframework.boot:spring-boot-starter-actuator:3.1.0")
     implementation 'org.modelmapper:modelmapper:3.1.1'
-    implementation('ch.qos.logback:logback-core:1.4.6')
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30'
     testImplementation("com.tngtech.archunit:archunit:1.0.1")
 
 }

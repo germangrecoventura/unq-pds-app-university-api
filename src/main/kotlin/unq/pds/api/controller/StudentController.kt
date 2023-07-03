@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*
 import unq.pds.api.dtos.MessageDTO
 import unq.pds.api.dtos.StudentCreateRequestDTO
 import unq.pds.model.Student
-import unq.pds.services.GroupService
 import unq.pds.services.StudentService
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
@@ -26,8 +25,7 @@ import javax.validation.constraints.NotBlank
 @RequestMapping("students")
 @SecurityRequirement(name = "bearerAuth")
 class StudentController(
-    private val studentService: StudentService,
-    private val groupService: GroupService
+    private val studentService: StudentService
 ): ControllerHelper() {
 
     @PostMapping
@@ -77,6 +75,10 @@ class StudentController(
         @RequestBody @Valid student: StudentCreateRequestDTO,
         request: HttpServletRequest
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.StudentController.createStudent(StudentCreateRequestDTO)",
+            listOf("$student")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -139,6 +141,10 @@ class StudentController(
             )]
     )
     fun getStudent(@NotBlank @RequestParam id: Long, request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.StudentController.getStudent(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -202,6 +208,10 @@ class StudentController(
         @RequestBody @Valid student: StudentCreateRequestDTO,
         request: HttpServletRequest
     ): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.StudentController.updateStudent(StudentCreateRequestDTO)",
+            listOf("$student")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -271,6 +281,10 @@ class StudentController(
             )]
     )
     fun deleteStudent(@NotBlank @RequestParam id: Long, request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.StudentController.deleteStudent(Long)",
+            listOf("$id")
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
@@ -324,6 +338,10 @@ class StudentController(
             )]
     )
     fun getAll(request: HttpServletRequest): ResponseEntity<Any> {
+        showLogger(
+            "unq.pds.api.controller.StudentController.getAll()",
+            listOf()
+        )
         if (jwtDoesNotExistInTheHeader(request)) return ResponseEntity(
             messageNotAuthenticated,
             HttpStatus.UNAUTHORIZED
