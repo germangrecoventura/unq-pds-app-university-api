@@ -39,6 +39,8 @@ Para los tests de carga se utilizó K6
 5 - Si quieren ejecutar el test de carga necesitan tener Docker o instalarlo por otro medio. En este caso lo realizamos con Docker y para ejecutarlo bastará con situarse en el directorio load test y ejecutar el siguiente comando: 
          `cat script.js | docker run --rm -i grafana/k6 run -`
 
+6 - 5 - Si desean pueden ver métricas utilizando Prometheus y Grafana. En caso de usar Grafana en el directorio grafana pueden encontrar un .json para importar los paneles con nuestras metricas. Sino son libres de crear sus propios paneles.
+
 
 ## Usuarios cargados
                     Mail        |  Paswword
