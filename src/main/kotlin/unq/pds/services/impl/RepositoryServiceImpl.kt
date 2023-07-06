@@ -246,7 +246,7 @@ open class RepositoryServiceImpl : RepositoryService {
         operation: String,
         page: Int
     ): ResponseEntity<String> {
-        validation(ownerRepository, nameRepository, token)
+        validation(ownerRepository, nameRepository)
         val url = "https://api.github.com/repos/$ownerRepository/$nameRepository/$operation?page=$page&per_page=100&state=all"
         return makeRequest(url, token)
     }
@@ -272,7 +272,7 @@ open class RepositoryServiceImpl : RepositoryService {
 
     private fun getRepository(name: String?, owner: String?): JsonNode? {
         try {
-            validation(owner, name, token)
+            validation(owner, name)
             val url = "https://api.github.com/repos/${owner}/${name}"
             val repository = makeRequest(url, token)
             val mapper = ObjectMapper()
@@ -287,7 +287,7 @@ open class RepositoryServiceImpl : RepositoryService {
     private fun makeRequest(url: String, token: String): ResponseEntity<String> {
         val headers = HttpHeaders()
         headers["Accept"] = "application/vnd.github+json"
-        headers["Authorization"] = "Bearer $token"
+        if (token.startsWith("ghp")) headers["Authorization"] = "Bearer $token"
         val request: HttpEntity<*> = HttpEntity<Any?>(headers)
         return restTemplate.exchange(
             url, HttpMethod.GET, request,
@@ -308,10 +308,9 @@ open class RepositoryServiceImpl : RepositoryService {
         )
     }
 
-    private fun validation(owner: String?, name: String?, token: String?) {
+    private fun validation(owner: String?, name: String?) {
         if (owner.isNullOrBlank()) throw InvalidAttributeValueException("Repository owner cannot be empty")
         if (name.isNullOrBlank()) throw InvalidAttributeValueException("Repository name cannot be empty")
-        if (token.isNullOrBlank()) throw InvalidAttributeValueException("Repository token cannot be empty")
         if (Validator.containsSpecialCharacterGithub(name)) throw InvalidAttributeValueException("The repository name cannot contain special characters except - and _")
     }
 }
